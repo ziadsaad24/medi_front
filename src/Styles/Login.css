@@ -1,0 +1,128 @@
+/* صندوق اللوجو العلوي الملون */
+.logo-box {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #0F427D 0%, #008080 100%);
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+/* --- أنيميشن رسم اللوجو SVG --- */
+.logo-path-draw {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawStroke 2.5s ease-in-out forwards;
+}
+
+/* تأخير بسيط لخط النبض عشان يترسم بعد الدرع */
+.pulse-line {
+  animation-delay: 0.4s;
+}
+
+@keyframes drawStroke {
+  to { stroke-dashoffset: 0; }
+}
+
+/* --- حاوية الإسبينر والدائرة --- */
+.spinner-wrapper {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-origin: center; /* تثبيت مركز الدوران للـ SVG */
+}
+
+.spinner-path {
+  fill: none;
+  stroke: white;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 314; 
+  stroke-dashoffset: 314;
+  transform-origin: center; /* تثبيت مركز الدوران للعنصر */
+
+  /* أنيميشن الرسم أولاً ثم الدوران في مكانه */
+  animation: 
+    drawCircleFixed 1.5s ease-out forwards, 
+    rotateFull 3s linear infinite 1.5s; 
+}
+
+/* أنيميشن الرسم للفتحة المطلوبة */
+@keyframes drawCircleFixed {
+  from {
+    stroke-dashoffset: 314;
+    transform: rotate(-90deg);
+  }
+  to {
+    stroke-dashoffset: 60; 
+    transform: rotate(-90deg);
+  }
+}
+
+/* أنيميشن الدوران السلس في مكانه بدون "وقوع" */
+@keyframes rotateFull {
+  from { transform: rotate(-90deg); }
+  to { transform: rotate(270deg); }
+}
+
+/* اللوجو الداخلي (النبض) في المنتصف تماماً */
+.inner-pulse-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* إضافة نبض خفيف للوجو العلوي بعد انتهاء الرسم */
+.drawing-svg {
+  animation: logoPulse 4s ease-in-out infinite 2.5s;
+  transform-origin: center;
+}
+
+@keyframes logoPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+/* إطار المريض المتدرج */
+
+
+.patient-active {
+
+  border: 3px solid transparent !important;
+
+  background: linear-gradient(white, white) padding-box,
+
+              linear-gradient(to right, #34B18A, #218c6d) border-box !important;
+
+}
+
+
+
+/* إطار الطبيب المتدرج */
+
+.doctor-active {
+
+  border: 3px solid transparent !important;
+
+  background: linear-gradient(white, white) padding-box,
+
+              linear-gradient(to right, #2B7FFF, #4F39F6) border-box !important;
+
+              
+}
+

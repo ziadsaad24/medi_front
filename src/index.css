@@ -1,0 +1,289 @@
+@import "tailwindcss";
+:root {
+  --primary-dark: #0F427D;
+  --primary-teal: #008080;
+}
+
+body {
+  background-color: #FCFDFE;
+  overflow-x: hidden;
+}
+
+/* 1. أنيميشن رسم اللوجو اللانهائي */
+.logo-path-draw {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw-infinite 3s linear infinite !important;
+}
+
+@keyframes draw-infinite {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: -100; }
+}
+
+/* 2. ستايل الأزرار الموحد بـ Hover Effect احترافي */
+.custom-btn {
+    transition-property: all;
+    transition-duration: 1000ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #235692;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    border-radius: 10px;
+}
+.swal2-confirm:focus, 
+.swal2-styled:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+.custom-btn:hover {
+    box-shadow: rgb(255, 255, 255) -440px 0 0 0 inset !important;
+    color: #0F427D !important;
+    border: #008080 1px solid; /* يتحول للتيل عند الهوفر */
+}
+
+/* 3. أنيميشن نبض القلب الصغير */
+.heart-mini {
+  display: inline-block;
+  vertical-align: middle;
+  animation: heart-beat 1.2s infinite;
+}
+
+@keyframes heart-beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* أنيميشن كتابة كلمة Medicare بشكل مستمر */
+.animate-typing {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  /* الشرطة على اليمين */
+  border-right: 3px solid #008080; 
+  max-width: 0;
+  /* إضافة infinite و alternate عشان تتكتب وتتمسح */
+  animation: 
+    typing 3.5s steps(20, end) infinite alternate,
+    blink 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { max-width: 0; }
+  to { max-width: 100%; }
+}
+
+@keyframes blink {
+  from, to { border-color: transparent; }
+  50% { border-color: #008080; }
+}
+.swal2-popup{
+    box-shadow: #00808094 0px 2px 7px 2px;
+}
+
+/* =========================================
+   تنسيقات الفوتر والأمواج المتحركة (Medicare)
+   ========================================= */
+
+/* 1. حاوية الأمواج */
+.waves {
+  position: relative;
+  width: 100%;
+  height: 12vh;
+  margin-bottom: -10px; /* يمنع ظهور أي فجوة بيضاء بين الموجة وجسم الفوتر */
+  min-height: 100px;
+  max-height: 150px;
+}
+
+/* 2. تحريك طبقات الأمواج (Parallax Effect) */
+.parallax > use {
+  /* التوقيت والسرعة لجعل الحركة انسيابية ومريحة للعين */
+  animation: move-forever 25s cubic-bezier(.55, .5, .45, .5) infinite;
+}
+
+/* الطبقة الأولى (الأكثر شفافية) */
+.parallax > use:nth-child(1) {
+  animation-delay: -2s;
+  animation-duration: 7s;
+}
+
+/* الطبقة الثانية */
+.parallax > use:nth-child(2) {
+  animation-delay: -3s;
+  animation-duration: 10s;
+}
+
+/* الطبقة الثالثة */
+.parallax > use:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 13s;
+}
+
+/* الطبقة الرابعة (اللون الكامل والمصمت) */
+.parallax > use:nth-child(4) {
+  animation-delay: -5s;
+  animation-duration: 20s;
+}
+
+/* تعريف حركة الأمواج */
+@keyframes move-forever {
+  0% {
+    transform: translate3d(-90px, 0, 0);
+  }
+  100% {
+    transform: translate3d(85px, 0, 0);
+  }
+}
+
+/* 3. ستايل أيقونات السوشيال ميديا الدائرية */
+.social-icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* لجعلها دائرة كاملة */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.05); /* خلفية شفافة بسيطة */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* إطار رقيق جداً */
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+/* تأثير الـ Hover على الأيقونات */
+.social-icon-circle:hover {
+  transform: translateY(-5px); /* حركة بسيطة للأعلى */
+  border-color: transparent; /* إخفاء الإطار عند التلوين */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* ظل ناعم */
+}
+
+/* 4. استهداف المسارات (Paths) داخل الـ SVG للتأكد من تناسق الألوان */
+footer svg path {
+  transition: fill 0.3s ease;
+}
+
+/* لإلغاء أي هوامش افتراضية قد تظهر في المتصفح */
+.rotate-180 {
+  transform: rotate(180deg);
+}
+/* الألوان الحقيقية عند الهوفر لكل منصة */
+
+/* Facebook */
+.fb-h:hover { 
+    background-color: #1877F2 !important; 
+    border-color: #1877F2 !important;
+}
+
+/* Twitter / X */
+.tw-h:hover { 
+    background-color: #000000 !important; 
+    border-color: #000000 !important;
+}
+
+/* LinkedIn */
+.ln-h:hover { 
+    background-color: #0A66C2 !important; 
+    border-color: #0A66C2 !important;
+}
+
+/* Instagram Gradient - أضفناه هنا للتأكيد */
+.ig-h:hover { 
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+    border-color: transparent !important;
+}
+
+/* ضمان أن الأيقونة نفسها تتحول للأبيض تماماً عند الهوفر */
+.social-icon-circle:hover svg {
+    color: white !important;
+    transform: scale(1.1);
+}
+/* تحريك النصوص داخل السلايدر */
+.swiper-slide-active .hero-title {
+  animation: fadeInUp 0.8s ease forwards 0.2s;
+  opacity: 0;
+}
+.swiper-slide-active .hero-text {
+  animation: fadeInUp 0.8s ease forwards 0.4s;
+  opacity: 0;
+}
+.swiper-slide-active .hero-btns {
+  animation: fadeInUp 0.8s ease forwards 0.6s;
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/*
+--- Hero Slider Animations --- */
+
+/* 1. حركة النصوص ( fadeInUp ) */
+.swiper-slide-active .hero-title {
+  animation: fadeInUp 0.8s ease forwards 0.3s;
+  opacity: 0;
+}
+.swiper-slide-active .hero-text {
+  animation: fadeInUp 0.8s ease forwards 0.5s;
+  opacity: 0;
+}
+.swiper-slide-active .hero-btns {
+  animation: fadeInUp 0.8s ease forwards 0.7s;
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 2. حركة الدكتور ( الطلع من تحت ) */
+.swiper-slide-active .hero-doctor-img {
+  animation: doctorSlideUp 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards 0.5s;
+  opacity: 0;
+  transform: translateY(200px); /* يبدأ من مكان واطي جداً */
+}
+
+@keyframes doctorSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(200px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3. حركة كارت الاستشارات العائم */
+.swiper-slide-active .floating-card {
+  animation: cardPop 0.8s ease forwards 1.2s;
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+@keyframes cardPop {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 4. حل مشكلة تداخل السلايدات في الـ Fade Effect */
+.swiper-slide {
+  pointer-events: none;
+  z-index: 0;
+}
+
+.swiper-slide-active {
+  pointer-events: auto;
+  z-index: 10;
+}
+
+/* 5. ستايل نقاط السويبر (Dots) */
+.swiper-pagination-bullet-active {
+  background: #008080 !important;
+  width: 25px !important;
+  border-radius: 5px !important;
+}
