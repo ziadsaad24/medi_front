@@ -4,13 +4,16 @@ import Footer from '../Components/Layout/Footer';
 import HeroSlider from '../Components/HeroSlider';
 import ServicesSection from '../Components/ServicesSection';
 import DoctorsSection from '../Components/DoctorsSection';
+import { useAuth } from '../context/AuthContext';
 import Swal from 'sweetalert2';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const PatientHome = ({ allDoctors }) => { // استقبال الداتا من App.js
+  const { user } = useAuth();
+  
   const [patientData] = useState({
-    name: "أحمد محمد المنسي",
+    name: user?.name || "أحمد محمد المنسي",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
     role: "مريض محقق"
   });

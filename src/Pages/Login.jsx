@@ -77,7 +77,7 @@ const Login = () => {
       >
         <button 
           className="w-full py-4 bg-gradient-to-r from-[#0F427D] to-[#008080] text-white rounded-2xl font-bold shadow-lg hover:brightness-110 active:scale-95 transition-all"
-          onClick={() => navigate('/role-selection', { state: { mode: 'login' } })}
+          onClick={() => navigate('/auth', { state: { role: 'patient', initialMode: 'login' } })}
         >
           تسجيل الدخول
         </button>

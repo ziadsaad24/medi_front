@@ -1,17 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, User, Menu, X, Home, Users, Calendar, Pill, FileText, PhoneCall, Info } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Bell, User, Menu, X, Home, Users, Calendar, Pill, FileText, PhoneCall, Info, LogOut, UserCircle, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { NavLink, Link } from 'react-router-dom'; // إضافة React Router
+import { NavLink, Link, useNavigate } from 'react-router-dom'; // إضافة React Router
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = ({ patientData }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // إغلاق dropdown عند الضغط خارجه
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const navLinks = [
     { name: 'الرئيسية', icon: <Home size={18} />, path: '/' },
@@ -80,16 +106,70 @@ const Navbar = ({ patientData }) => {
               <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
             </div>
 
-            <div className="flex items-center gap-2 md:gap-3 bg-white p-1 rounded-2xl border border-gray-100 shadow-sm cursor-pointer group">
-              <div className="text-right hidden md:block pr-2">
-                <p className="text-xs font-black text-[#004060]">{patientData?.name || "زائر"}</p>
-                <p className="text-[10px] text-gray-400 font-bold uppercase">مريض محقق</p>
+            {/* Profile Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <div 
+                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                className="flex items-center gap-2 md:gap-3 bg-white p-1 rounded-2xl border border-gray-100 shadow-sm cursor-pointer group hover:border-[#008080] transition-all"
+              >
+                <div className="text-right hidden md:block pr-2">
+                  <p className="text-xs font-black text-[#004060]">
+                    {user?.name || patientData?.name || "زائر"}
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase">
+                    {user?.role === 'patient' ? 'مريض' : user?.role === 'doctor' ? 'طبيب' : 'زائر'}
+                  </p>
+                </div>
+                <ChevronDown 
+                  size={16} 
+                  className={`text-gray-400 hidden md:block transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} 
+                />
+                <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-teal-50 border-2 border-white overflow-hidden flex items-center justify-center">
+                  {patientData?.avatar ? (
+                    <img src={patientData.avatar} alt="user" className="w-full h-full object-cover" />
+                  ) : ( <User size={20} className="text-[#008080]" /> )}
+                </div>
               </div>
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-teal-50 border-2 border-white overflow-hidden flex items-center justify-center">
-                {patientData?.avatar ? (
-                  <img src={patientData.avatar} alt="user" className="w-full h-full object-cover" />
-                ) : ( <User size={20} className="text-[#008080]" /> )}
-              </div>
+
+              {/* Dropdown Menu */}
+              <AnimatePresence>
+                {isProfileDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-50"
+                    dir="rtl"
+                  >
+                    {/* User Info في الـ Dropdown */}
+                    <div className="p-3 border-b border-gray-100 mb-2">
+                      <p className="text-sm font-bold text-[#004060] mb-1">
+                        {user?.name || "زائر"}
+                      </p>
+                      <p className="text-xs text-gray-500">{user?.email || ""}</p>
+                    </div>
+
+                    {/* Profile Button - Static */}
+                    <button
+                      className="w-full flex items-center gap-3 p-3 rounded-xl text-right text-gray-600 hover:bg-gray-50 transition-all duration-200 group"
+                    >
+                      <UserCircle size={20} className="text-[#008080] group-hover:scale-110 transition-transform" />
+                      <span className="text-sm font-bold">الملف الشخصي</span>
+                      <span className="mr-auto text-xs bg-gray-100 px-2 py-1 rounded-lg text-gray-500">قريباً</span>
+                    </button>
+
+                    {/* Logout Button */}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl text-right text-red-500 hover:bg-red-50 transition-all duration-200 group"
+                    >
+                      <LogOut size={20} className="group-hover:scale-110 transition-transform" />
+                      <span className="text-sm font-bold">تسجيل الخروج</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
