@@ -1,91 +1,126 @@
 import React, { useEffect } from 'react';
 import Navbar from '../Components/Layout/Navbar';
 import Footer from '../Components/Layout/Footer';
-import { Clock } from 'lucide-react';
-import { motion } from 'framer-motion'; // استيراد framer-motion
+import { Clock, Star, CalendarCheck } from 'lucide-react'; 
+import { motion } from 'framer-motion';
+import ScrollToTop from '../Components/Layout/ScrollToTop';
 
 const DoctorsGridPage = ({ allDoctors }) => {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // إعدادات الانيميشن للحاوية (الأب)
+  // أنيميشن ظهور الحاوية (Stagger effect)
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1 // المسافة الزمنية بين ظهور كل كارت والآخر
-      }
+      transition: { staggerChildren: 0.12 }
     }
   };
 
-  // إعدادات الانيميشن لكل كارت (الابن)
+  // أنيميشن ظهور كارت الطبيب
   const itemVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20 // يبدأ من أسفل قليلاً
-    },
+    hidden: { opacity: 0, y: 30, scale: 0.9 },
     visible: { 
       opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5, ease: "easeOut" }
+      y: 0, 
+      scale: 1,
+      transition: { duration: 0.6, ease: "easeOut" } 
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <Navbar /> 
-      <div className="container mx-auto max-w-[1300px] px-6 py-28" dir="rtl">
-        <div className="text-right mb-12">
+    <div className="min-h-screen bg-[#0f172a] relative overflow-hidden">
+      <Navbar />
+      
+      {/* عناصر خلفية ديكورية لتعزيز تأثير الزجاج */}
+      <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="container mx-auto max-w-[1300px] px-6 pt-32 pb-20 relative z-10" dir="rtl">
+        
+        {/* Header Section */}
+        <div className="text-center mb-16 space-y-4">
           <motion.h1 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="text-4xl font-black text-[#004060]"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-6xl font-black text-white"
           >
-            كادرنا الطبي
+            نخبة <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">أطبائنا</span>
           </motion.h1>
           <motion.p 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-gray-500 mt-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-slate-400 text-lg max-w-xl mx-auto"
           >
-            تصفح قائمة الأطباء المتخصصين
+            اختر من بين أفضل المتخصصين المعتمدين لرعاية صحتك وصحة عائلتك
           </motion.p>
         </div>
 
-        {/* تحويل الـ div العادي إلى motion.div لتطبيق الـ stagger */}
+        {/* Doctors Grid */}
         <motion.div 
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
         >
           {allDoctors.map((doc) => (
             <motion.div 
               key={doc.id} 
               variants={itemVariants}
-              whileHover={{ y: -5 }} // حركة بسيطة عند تمرير الماوس
-              className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow text-center group"
+              whileHover={{ y: -10, transition: { duration: 0.3 } }}
+              className="relative group"
             >
-              <img 
-                src={doc.image} 
-                className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-slate-50 group-hover:border-[#008080] transition-all duration-300" 
-                alt={doc.name} 
-              />
-              <h4 className="font-black text-[#004060] text-lg">{doc.name}</h4>
-              <p className="text-[#008080] font-bold text-xs mb-4">{doc.specialty}</p>
+              {/* التوهج الخلفي للكارت عند الـ Hover */}
+              <div className="absolute -inset-0.5 bg-gradient-to-b from-blue-500 to-emerald-500 rounded-[2.5rem] blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
               
-              <div className="flex items-center justify-center gap-2 bg-slate-50 py-2 rounded-xl text-gray-500 text-[10px] mb-6">
-                <Clock size={14} /> <span>خبرة {doc.exp}</span>
+              <div className="relative h-full bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 flex flex-col items-center text-center shadow-2xl overflow-hidden">
+                
+                {/* صورة الطبيب داخل إطار زجاجي */}
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full scale-0 group-hover:scale-125 transition-transform duration-500" />
+                  <img 
+                    src={doc.image} 
+                    className="w-28 h-28 rounded-3xl mx-auto object-cover border-2 border-white/10 relative z-10 group-hover:border-blue-400/50 transition-colors duration-300 shadow-xl" 
+                    alt={doc.name} 
+                  />
+                  {/* شارة التقييم */}
+                  <div className="absolute -bottom-2 -right-2 bg-[#1e293b] border border-white/10 px-2 py-1 rounded-lg flex items-center gap-1 z-20 shadow-lg">
+                    <Star size={12} className="text-yellow-400 fill-yellow-400" />
+                    <span className="text-white text-[10px] font-bold">4.9</span>
+                  </div>
+                </div>
+
+                <div className="flex-grow">
+                  <h4 className="font-black text-white text-xl mb-1 group-hover:text-blue-400 transition-colors">{doc.name}</h4>
+                  <p className="text-emerald-400 font-bold text-sm mb-4 tracking-wide">{doc.specialty}</p>
+                  
+                  {/* تفاصيل الخبرة بشكل زجاجي مصغر */}
+                  <div className="flex items-center justify-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-2xl text-slate-300 text-xs mb-6 group-hover:bg-white/10 transition-colors">
+                    <Clock size={16} className="text-blue-400" />
+                    <span>خبرة {doc.exp} سنة</span>
+                  </div>
+                </div>
+                
+                {/* زر الحجز بالانيميشن المستمر */}
+                <button className="w-full relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-2xl font-bold transition-all hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] active:scale-95 group/btn">
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    <CalendarCheck size={18} />
+                    حجز موعد الآن
+                  </span>
+                  <motion.div 
+                    animate={{ x: ['100%', '-100%'] }}
+                    transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  />
+                </button>
               </div>
-              
-              <button className="custom-btn w-full bg-[#004060] text-white py-3 rounded-xl font-bold hover:bg-[#008080] transition-all">
-                حجز موعد
-              </button>
             </motion.div>
           ))}
         </motion.div>
       </div>
+
+      <ScrollToTop />
       <Footer />
     </div>
   );

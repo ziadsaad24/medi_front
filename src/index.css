@@ -287,3 +287,91 @@ footer svg path {
   width: 25px !important;
   border-radius: 5px !important;
 }
+
+/* Breathing scale animation for QR card */
+@keyframes breathing-scale {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.qr-breathing {
+  animation: breathing-scale 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Button container */
+.orbit-btn {
+  position: relative;
+  padding: 16px 40px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #06b6d4, #3b82f6);
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Border */
+.orbit-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+}
+
+/* Glowing orbit */
+.orbit-btn::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid white;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px #fff, 0 0 12px #3b82f6;
+  animation: glow-orbit 5s linear infinite;
+}
+
+/* Orbit animation */
+@keyframes glow-orbit {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) translateX(60px) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) translateX(60px) rotate(-360deg);
+  }
+}
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientMove 4s ease infinite;
+}

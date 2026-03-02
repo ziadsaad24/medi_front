@@ -15,6 +15,9 @@ import DoctorsGridPage from './Components/DoctorsGridPage';
 import Doctor1 from './assets/images/doctor.png';
 import Doctor2 from './assets/images/doctor2.png';
 import Doctor3 from './assets/images/doctor3.png';
+import FollowUs from './Components/FollowUs';
+import MedicalRecordPage from "./pages/MedicalRecordPage";
+import ViewRecordPage from "./pages/ViewRecordPage";
 
 
 
@@ -41,6 +44,8 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/recorded" element={<MedicalRecordPage />} />
+        <Route path="/recorded/view/:recordId" element={<ViewRecordPage />} />
           
           {/* Protected Routes for Patients - صفحات المرضى المحمية */}
           <Route 
@@ -59,6 +64,14 @@ function App() {
               </ProtectedRoute>
             } 
           />
+       <Route 
+  path="/patient/about" 
+  element={
+    <ProtectedRoute allowedRoles="patient">
+      <FollowUs />
+    </ProtectedRoute>
+  } 
+/>
           
           {/* Protected Routes for Doctors - صفحات الأطباء المحمية */}
           <Route 
@@ -104,6 +117,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DoctorsGridPage allDoctors={allDoctors} />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/about" 
+            element={
+              <ProtectedRoute>
+                <FollowUs  />
               </ProtectedRoute>
             } 
           />
