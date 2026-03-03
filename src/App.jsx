@@ -12,6 +12,11 @@ import ResetPassword from './Pages/ResetPassword';
 import PatientHome from './Pages/PatientHome';
 import DoctorsGridPage from './Components/DoctorsGridPage';
 import AdminDashboard from './Pages/AdminDashboard';
+import AdminUsers from './Pages/AdminUsers';
+import AdminDoctors from './Pages/AdminDoctors';
+import AdminDoctorRequests from './Pages/AdminDoctorRequests';
+import AdminComplaints from './Pages/AdminComplaints';
+import AdminSettings from './Pages/AdminSettings';
 // يمكنك وضع هذا الجزء في ملف منفصل باسم doctorsData.js أو في أعلى ملف App.js
 import Doctor1 from './assets/images/doctor.png';
 import Doctor2 from './assets/images/doctor2.png';
@@ -19,6 +24,7 @@ import Doctor3 from './assets/images/doctor3.png';
 import FollowUs from './Components/FollowUs';
 import MedicalRecordPage from "./Pages/MedicalRecordPage";
 import ViewRecordPage from "./Pages/ViewRecordPage";
+import EmergencyCardDemo from './Pages/EmergencyCardDemo';
 
 
 
@@ -47,6 +53,9 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/recorded" element={<MedicalRecordPage />} />
         <Route path="/recorded/view/:recordId" element={<ViewRecordPage />} />
+          
+          {/* DEMO PAGE - مؤقت للتوضيح فقط */}
+          <Route path="/demo-emergency-card" element={<EmergencyCardDemo />} />
           
           {/* Protected Routes for Patients - صفحات المرضى المحمية */}
           <Route 
@@ -102,7 +111,7 @@ function App() {
             path="/admin/doctor-requests" 
             element={
               <ProtectedRoute allowedRoles="admin">
-                <AdminDashboard />
+                <AdminDoctorRequests />
               </ProtectedRoute>
             } 
           />
@@ -110,12 +119,7 @@ function App() {
             path="/admin/users" 
             element={
               <ProtectedRoute allowedRoles="admin">
-                <div className="min-h-screen flex items-center justify-center bg-blue-50">
-                  <div className="text-center">
-                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">إدارة المستخدمين</h1>
-                    <p className="text-gray-600">قريباً...</p>
-                  </div>
-                </div>
+                <AdminUsers />
               </ProtectedRoute>
             } 
           />
@@ -123,12 +127,7 @@ function App() {
             path="/admin/doctors" 
             element={
               <ProtectedRoute allowedRoles="admin">
-                <div className="min-h-screen flex items-center justify-center bg-blue-50">
-                  <div className="text-center">
-                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">إدارة الأطباء</h1>
-                    <p className="text-gray-600">قريباً...</p>
-                  </div>
-                </div>
+                <AdminDoctors />
               </ProtectedRoute>
             } 
           />
@@ -136,12 +135,7 @@ function App() {
             path="/admin/complaints" 
             element={
               <ProtectedRoute allowedRoles="admin">
-                <div className="min-h-screen flex items-center justify-center bg-blue-50">
-                  <div className="text-center">
-                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">الشكاوى والبلاغات</h1>
-                    <p className="text-gray-600">قريباً...</p>
-                  </div>
-                </div>
+                <AdminComplaints />
               </ProtectedRoute>
             } 
           />
@@ -175,12 +169,7 @@ function App() {
             path="/admin/settings" 
             element={
               <ProtectedRoute allowedRoles="admin">
-                <div className="min-h-screen flex items-center justify-center bg-blue-50">
-                  <div className="text-center">
-                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">الإعدادات</h1>
-                    <p className="text-gray-600">قريباً...</p>
-                  </div>
-                </div>
+                <AdminSettings />
               </ProtectedRoute>
             } 
           />

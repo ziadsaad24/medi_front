@@ -157,7 +157,7 @@ export const doctorAPI = {
 export const adminAPI = {
   // احصل على إحصائيات Dashboard
   getDashboardStats: async () => {
-    const response = await api.get('/admin/dashboard/stats');
+    const response = await api.get('/admin/stats');
     return response.data;
   },
 
@@ -209,9 +209,33 @@ export const adminAPI = {
     return response.data;
   },
 
+  // تحديث حالة شكوى
+  updateComplaintStatus: async (id, status) => {
+    const response = await api.patch(`/admin/complaints/${id}/status`, { status });
+    return response.data;
+  },
+
+  // حذف شكوى
+  deleteComplaint: async (id) => {
+    const response = await api.delete(`/admin/complaints/${id}`);
+    return response.data;
+  },
+
+  // احصل على الإعدادات
+  getSettings: async () => {
+    const response = await api.get('/admin/settings');
+    return response.data;
+  },
+
+  // تحديث الإعدادات
+  updateSettings: async (category, settings) => {
+    const response = await api.put(`/admin/settings/${category}`, settings);
+    return response.data;
+  },
+
   // احصل على السجلات
   getActivityLogs: async (params) => {
-    const response = await api.get('/admin/logs', { params });
+    const response = await api.get('/admin/activity-logs', { params });
     return response.data;
   },
 

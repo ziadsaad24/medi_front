@@ -36,26 +36,27 @@ const AdminDashboard = () => {
 
   const fetchDashboardStats = async () => {
     try {
-      // في وضع التطوير، نستخدم بيانات تجريبية
-      // عند الاتصال بالـ Backend، استبدل هذا بـ:
-      // const response = await adminAPI.getDashboardStats();
-      // setStats({ ...response.data, loading: false });
+      const response = await adminAPI.getDashboardStats();
       
-      // بيانات تجريبية للتطوير
-      setTimeout(() => {
+      if (response.success) {
         setStats({
-          totalUsers: 1247,
-          totalDoctors: 89,
-          pendingDoctors: 12,
-          totalAppointments: 3456,
-          todayAppointments: 45,
-          activeUsers: 892,
+          totalUsers: response.data.totalUsers || 0,
+          totalDoctors: response.data.totalDoctors || 0,
+          pendingDoctors: response.data.pendingDoctors || 0,
+          activeUsers: response.data.activeUsers || 0,
           loading: false
         });
-      }, 800);
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
-      setStats(prev => ({ ...prev, loading: false }));
+      // في حالة فشل الاتصال، استخدم بيانات تجريبية للتطوير
+      setStats({
+        totalUsers: 0,
+        totalDoctors: 0,
+        pendingDoctors: 0,
+        activeUsers: 0,
+        loading: false
+      });
     }
   };
 

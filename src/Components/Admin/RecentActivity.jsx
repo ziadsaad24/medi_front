@@ -1,9 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, UserPlus, UserCheck, UserX, FileText, Clock } from 'lucide-react';
+import { adminAPI } from '../../services/api';
 
 const RecentActivity = () => {
-  const activities = [
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchActivityLogs();
+  }, []);
+
+  const fetchActivityLogs = async () => {
+    try {
+      const response = await adminAPI.getActivityLogs({ limit: 10 });
+      
+      if (response.success) {
+        // تحويل البيانات من Backend لـ format مناسب للعرض
+        const formattedActivities = response.data.map(log => ({
+          id: log.id,
+          type: log.type,
+          title: log.title,
+          description: log.description,
+          icon: getIconByType(log.type),
+          color: getColorByType(log.type),
+          bgColor: getBgColorByType(log.type),
+          time: log.time // from diffForHumans()
+        }));
+        
+        setActivities(formattedActivities);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error fetching activity logs:', error);
+      // في حالة فشل الاتصال، استخدم بيانات تجريبية للتطوير
+      setActivities([
     {
       id: 1,
       type: 'user_registered',
@@ -64,7 +95,50 @@ const RecentActivity = () => {
       bgColor: 'bg-blue-50',
       time: 'منذ 3 ساعات'
     }
-  ];
+  ]);
+  setLoading(false);
+    }
+  };
+
+  // Helper functions لتحديد الـ icon والـ color بناءً على نوع النشاط
+  const getIconByType = (type) => {
+    const iconMap = {
+      'user_registered': UserPlus,
+      'doctor_approved': UserCheck,
+      'doctor_rejected': UserX,
+      'user_deleted': UserX,
+      'user_status_changed': UserCheck,
+      'report_generated': FileText,
+      'default': Activity
+    };
+    return iconMap[type] || iconMap['default'];
+  };
+
+  const getColorByType = (type) => {
+    const colorMap = {
+      'user_registered': 'text-green-600',
+      'doctor_approved': 'text-blue-600',
+      'doctor_rejected': 'text-red-600',
+      'user_deleted': 'text-red-600',
+      'user_status_changed': 'text-yellow-600',
+      'report_generated': 'text-purple-600',
+      'default': 'text-gray-600'
+    };
+    return colorMap[type] || colorMap['default'];
+  };
+
+  const getBgColorByType = (type) => {
+    const bgColorMap = {
+      'user_registered': 'bg-green-50',
+      'doctor_approved': 'bg-blue-50',
+      'doctor_rejected': 'bg-red-50',
+      'user_deleted': 'bg-red-50',
+      'user_status_changed': 'bg-yellow-50',
+      'report_generated': 'bg-purple-50',
+      'default': 'bg-gray-50'
+    };
+    return bgColorMap[type] || bgColorMap['default'];
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full shadow-sm hover:shadow-md transition-shadow duration-300">

@@ -26,12 +26,15 @@ const DoctorRequests = () => {
 
   const fetchPendingRequests = async () => {
     try {
-      // في وضع التطوير، نستخدم بيانات تجريبية
-      // عند الاتصال بالـ Backend، استبدل هذا بـ:
-      // const response = await adminAPI.getPendingDoctors();
-      // setRequests(response.data);
+      const response = await adminAPI.getPendingDoctors();
       
-      // بيانات تجريبية للتطوير
+      if (response.success) {
+        setRequests(response.data || []);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error fetching pending doctors:', error);
+      // في حالة فشل الاتصال، استخدم بيانات تجريبية
       setTimeout(() => {
         setRequests([
           {
@@ -39,9 +42,10 @@ const DoctorRequests = () => {
             name: 'د. أحمد محمود السيد',
             email: 'ahmed.mahmoud@example.com',
             phone: '01012345678',
-            specialty: 'أخصائي قلب وأوعية دموية',
-            license: 'license_123456.pdf',
-            submittedAt: '2024-03-01T10:30:00',
+            specialization: 'أخصائي قلب وأوعية دموية',
+            license_file: 'license_123456.pdf',
+            license_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+            submitted_at: '2024-03-01T10:30:00',
             status: 'pending'
           },
           {
@@ -49,9 +53,10 @@ const DoctorRequests = () => {
             name: 'د. نورا خالد عبدالله',
             email: 'nora.khaled@example.com',
             phone: '01098765432',
-            specialty: 'أخصائية جلدية وتجميل',
-            license: 'license_789012.pdf',
-            submittedAt: '2024-03-01T09:15:00',
+            specialization: 'أخصائية جلدية وتجميل',
+            license_file: 'license_789012.pdf',
+            license_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+            submitted_at: '2024-03-01T09:15:00',
             status: 'pending'
           },
           {
@@ -59,17 +64,15 @@ const DoctorRequests = () => {
             name: 'د. محمد يوسف حسن',
             email: 'mohamed.youssef@example.com',
             phone: '01155667788',
-            specialty: 'أخصائي عظام ومفاصل',
-            license: 'license_345678.pdf',
-            submittedAt: '2024-02-29T14:20:00',
+            specialization: 'أخصائي عظام ومفاصل',
+            license_file: 'license_345678.pdf',
+            license_url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+            submitted_at: '2024-02-29T14:20:00',
             status: 'pending'
           }
         ]);
         setLoading(false);
       }, 1000);
-    } catch (error) {
-      console.error('Error fetching requests:', error);
-      setLoading(false);
     }
   };
 
@@ -88,20 +91,24 @@ const DoctorRequests = () => {
 
     if (result.isConfirmed) {
       try {
-        // await adminAPI.approveDoctorRequest(requestId);
-        setRequests(requests.filter(req => req.id !== requestId));
+        const response = await adminAPI.approveDoctor(requestId);
         
-        Swal.fire({
-          title: 'تم القبول!',
-          text: 'تم قبول الطبيب بنجاح وإرسال بريد إلكتروني بالتفعيل',
-          icon: 'success',
-          confirmButtonText: 'حسناً',
-          confirmButtonColor: '#10b981'
-        });
+        if (response.success) {
+          setRequests(requests.filter(req => req.id !== requestId));
+          
+          Swal.fire({
+            title: 'تم القبول!',
+            text: 'تم قبول الطبيب بنجاح وإرسال بريد إلكتروني بالتفعيل',
+            icon: 'success',
+            confirmButtonText: 'حسناً',
+            confirmButtonColor: '#10b981'
+          });
+        }
       } catch (error) {
+        console.error('Approve error:', error);
         Swal.fire({
           title: 'خطأ!',
-          text: 'حدث خطأ أثناء قبول الطلب',
+          text: error.response?.data?.message || 'حدث خطأ أثناء قبول الطلب',
           icon: 'error',
           confirmButtonText: 'حسناً'
         });
@@ -126,20 +133,24 @@ const DoctorRequests = () => {
 
     if (result.isConfirmed) {
       try {
-        // await adminAPI.rejectDoctorRequest(requestId, result.value);
-        setRequests(requests.filter(req => req.id !== requestId));
+        const response = await adminAPI.rejectDoctor(requestId, result.value);
         
-        Swal.fire({
-          title: 'تم الرفض',
-          text: 'تم رفض الطلب وإرسال إشعار للطبيب',
-          icon: 'info',
-          confirmButtonText: 'حسناً',
-          confirmButtonColor: '#3b82f6'
-        });
+        if (response.success) {
+          setRequests(requests.filter(req => req.id !== requestId));
+          
+          Swal.fire({
+            title: 'تم الرفض',
+            text: 'تم رفض الطلب وإرسال إشعار للطبيب',
+            icon: 'info',
+            confirmButtonText: 'حسناً',
+            confirmButtonColor: '#3b82f6'
+          });
+        }
       } catch (error) {
+        console.error('Reject error:', error);
         Swal.fire({
           title: 'خطأ!',
-          text: 'حدث خطأ أثناء رفض الطلب',
+          text: error.response?.data?.message || 'حدث خطأ أثناء رفض الطلب',
           icon: 'error',
           confirmButtonText: 'حسناً'
         });
@@ -148,6 +159,8 @@ const DoctorRequests = () => {
   };
 
   const viewDetails = (request) => {
+    const licenseUrl = request.license_url || `http://localhost:8000/storage/licenses/${request.license_file}`;
+    
     Swal.fire({
       title: `تفاصيل طلب ${request.name}`,
       html: `
@@ -168,15 +181,20 @@ const DoctorRequests = () => {
               </div>
               <div>
                 <strong style="color: #0F427D;">🏥 التخصص:</strong>
-                <p style="margin: 5px 0 0 0; color: #475569;">${request.specialty}</p>
+                <p style="margin: 5px 0 0 0; color: #475569;">${request.specialization || request.specialty}</p>
               </div>
               <div>
-                <strong style="color: #0F427D;">📄 الترخيص:</strong>
-                <p style="margin: 5px 0 0 0; color: #475569;">${request.license}</p>
+                <strong style="color: #0F427D;">📄 ملف الترخيص:</strong>
+                <p style="margin: 5px 0 0 0; color: #475569;">${request.license_file || request.license}</p>
+                ${request.license_url || request.license_file ? `
+                  <a href="${licenseUrl}" target="_blank" style="display: inline-block; margin-top: 8px; padding: 8px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: bold;">
+                    📥 عرض / تحميل الترخيص
+                  </a>
+                ` : ''}
               </div>
               <div>
                 <strong style="color: #0F427D;">📅 تاريخ التقديم:</strong>
-                <p style="margin: 5px 0 0 0; color: #475569;">${new Date(request.submittedAt).toLocaleDateString('ar-EG')}</p>
+                <p style="margin: 5px 0 0 0; color: #475569;">${new Date(request.submitted_at ||request.submittedAt || request.created_at).toLocaleDateString('ar-EG')}</p>
               </div>
             </div>
           </div>
@@ -276,7 +294,7 @@ const DoctorRequests = () => {
                       <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-[#0F427D] transition-colors">{request.name}</h3>
                       <p className="text-sm text-[#008080] font-semibold mb-3 flex items-center gap-1.5">
                         <Briefcase size={14} />
-                        {request.specialty}
+                        {request.specialization || request.specialty}
                       </p>
                       <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                         <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
@@ -309,6 +327,20 @@ const DoctorRequests = () => {
                       >
                         <Eye size={18} />
                       </motion.button>
+                      {(request.license_url || request.license_file) && (
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => {
+                            const licenseUrl = request.license_url || `http://localhost:8000/storage/licenses/${request.license_file}`;
+                            window.open(licenseUrl, '_blank');
+                          }}
+                          className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg transition-all shadow-md hover:shadow-lg"
+                          title="عرض الترخيص"
+                        >
+                          <FileText size={18} />
+                        </motion.button>
+                      )}
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}

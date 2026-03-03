@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -14,12 +14,54 @@ import {
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { adminAPI } from '../../services/api';
 
 const AdminSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [badges, setBadges] = useState({
+    pendingDoctors: 0,
+    pendingComplaints: 0
+  });
+
+  // **Fetch badge counts from backend**
+  useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        // Get pending doctors count
+        const statsResponse = await adminAPI.getDashboardStats();
+        if (statsResponse.success) {
+          setBadges(prev => ({
+            ...prev,
+            pendingDoctors: statsResponse.data.pendingDoctors || 0
+          }));
+        }
+
+        // Get pending complaints count
+        const complaintsResponse = await adminAPI.getComplaints();
+        if (complaintsResponse.success) {
+          const pendingCount = complaintsResponse.data.filter(
+            complaint => complaint.status === 'pending'
+          ).length;
+          setBadges(prev => ({
+            ...prev,
+            pendingComplaints: pendingCount
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching badges:', error);
+        // Keep zeros as fallback
+      }
+    };
+
+    fetchBadges();
+    
+    // **Refresh badges every 30 seconds**
+    const interval = setInterval(fetchBadges, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const menuItems = [
     {
@@ -32,7 +74,7 @@ const AdminSidebar = () => {
       title: 'طلبات الأطباء',
       icon: Clock,
       path: '/admin/doctor-requests',
-      badge: 12,
+      badge: badges.pendingDoctors,
       badgeColor: 'bg-amber-500'
     },
     {
@@ -51,7 +93,7 @@ const AdminSidebar = () => {
       title: 'الشكاوى والبلاغات',
       icon: AlertCircle,
       path: '/admin/complaints',
-      badge: 3,
+      badge: badges.pendingComplaints,
       badgeColor: 'bg-red-500'
     },
     {
@@ -65,7 +107,7 @@ const AdminSidebar = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/auth');
+      navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -132,14 +174,14 @@ const AdminSidebar = () => {
                   {!isCollapsed && (
                     <>
                       <span className="font-semibold text-sm">{item.title}</span>
-                      {item.badge && (
+                      {item.badge !== null && item.badge > 0 && (
                         <span className={`mr-auto px-2 py-0.5 rounded-full text-xs font-bold text-white ${item.badgeColor}`}>
                           {item.badge}
                         </span>
                       )}
                     </>
                   )}
-                  {isCollapsed && item.badge && (
+                  {isCollapsed && item.badge !== null && item.badge > 0 && (
                     <span className={`absolute -top-1 -left-1 w-5 h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center ${item.badgeColor}`}>
                       {item.badge}
                     </span>
