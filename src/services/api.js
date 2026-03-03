@@ -155,6 +155,12 @@ export const doctorAPI = {
 
 // دوال للمسؤولين (Admin Routes)
 export const adminAPI = {
+  // احصل على إحصائيات Dashboard
+  getDashboardStats: async () => {
+    const response = await api.get('/admin/dashboard/stats');
+    return response.data;
+  },
+
   // احصل على جميع الأطباء المعلقين (pending)
   getPendingDoctors: async () => {
     const response = await api.get('/admin/doctors/pending');
@@ -168,14 +174,52 @@ export const adminAPI = {
   },
 
   // رفض طبيب
-  rejectDoctor: async (id) => {
-    const response = await api.post(`/admin/doctors/${id}/reject`);
+  rejectDoctor: async (id, reason) => {
+    const response = await api.post(`/admin/doctors/${id}/reject`, { reason });
     return response.data;
   },
 
   // احصل على جميع المستخدمين
-  getAllUsers: async () => {
-    const response = await api.get('/admin/users');
+  getAllUsers: async (params) => {
+    const response = await api.get('/admin/users', { params });
+    return response.data;
+  },
+
+  // احصل على جميع الأطباء
+  getAllDoctors: async (params) => {
+    const response = await api.get('/admin/doctors', { params });
+    return response.data;
+  },
+
+  // حذف مستخدم
+  deleteUser: async (id) => {
+    const response = await api.delete(`/admin/users/${id}`);
+    return response.data;
+  },
+
+  // حظر/إلغاء حظر مستخدم
+  toggleUserStatus: async (id) => {
+    const response = await api.post(`/admin/users/${id}/toggle-status`);
+    return response.data;
+  },
+
+  // احصل على الشكاوى
+  getComplaints: async () => {
+    const response = await api.get('/admin/complaints');
+    return response.data;
+  },
+
+  // احصل على السجلات
+  getActivityLogs: async (params) => {
+    const response = await api.get('/admin/logs', { params });
+    return response.data;
+  },
+
+  // احصل على التقارير
+  getReports: async (type, startDate, endDate) => {
+    const response = await api.get('/admin/reports', {
+      params: { type, startDate, endDate }
+    });
     return response.data;
   },
 };

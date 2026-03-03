@@ -21,7 +21,7 @@ const Navbar = ({ patientData }) => {
   }, []);
 
   const navLinks = [
-    { name: 'الرئيسية', icon: <Home size={18} />, path: '/' },
+    { name: 'الرئيسية', icon: <Home size={18} />, path: '/home' },
     { name: 'من نحن', icon: <Info size={18} />, path: '/about' },
     { name: 'الأطباء', icon: <Users size={18} />, path: '/doctors' },
     { name: 'المواعيد', icon: <Calendar size={18} />, path: '/appointments' },

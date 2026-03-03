@@ -11,6 +11,7 @@ import ForgetPassword from './Pages/ForgetPassword';
 import ResetPassword from './Pages/ResetPassword';
 import PatientHome from './Pages/PatientHome';
 import DoctorsGridPage from './Components/DoctorsGridPage';
+import AdminDashboard from './Pages/AdminDashboard';
 // يمكنك وضع هذا الجزء في ملف منفصل باسم doctorsData.js أو في أعلى ملف App.js
 import Doctor1 from './assets/images/doctor.png';
 import Doctor2 from './assets/images/doctor2.png';
@@ -93,9 +94,90 @@ function App() {
             path="/admin/dashboard" 
             element={
               <ProtectedRoute allowedRoles="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/doctor-requests" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
                 <div className="min-h-screen flex items-center justify-center bg-blue-50">
                   <div className="text-center">
-                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">لوحة تحكم المسؤول</h1>
+                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">إدارة المستخدمين</h1>
+                    <p className="text-gray-600">قريباً...</p>
+                  </div>
+                </div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/doctors" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <div className="min-h-screen flex items-center justify-center bg-blue-50">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">إدارة الأطباء</h1>
+                    <p className="text-gray-600">قريباً...</p>
+                  </div>
+                </div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/complaints" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <div className="min-h-screen flex items-center justify-center bg-blue-50">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">الشكاوى والبلاغات</h1>
+                    <p className="text-gray-600">قريباً...</p>
+                  </div>
+                </div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/reports" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <div className="min-h-screen flex items-center justify-center bg-blue-50">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">التقارير</h1>
+                    <p className="text-gray-600">قريباً...</p>
+                  </div>
+                </div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/logs" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <div className="min-h-screen flex items-center justify-center bg-blue-50">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">السجلات</h1>
+                    <p className="text-gray-600">قريباً...</p>
+                  </div>
+                </div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/settings" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <div className="min-h-screen flex items-center justify-center bg-blue-50">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">الإعدادات</h1>
                     <p className="text-gray-600">قريباً...</p>
                   </div>
                 </div>
