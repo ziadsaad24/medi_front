@@ -18,6 +18,8 @@ import Doctor3 from './assets/images/doctor3.png';
 import FollowUs from './Components/FollowUs';
 import MedicalRecordPage from "./Pages/MedicalRecordPage";
 import ViewRecordPage from "./Pages/ViewRecordPage";
+import { MedicationsPage } from './Pages/MedicationsPage';
+
 
 
 
@@ -46,6 +48,8 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/recorded" element={<MedicalRecordPage />} />
         <Route path="/recorded/view/:recordId" element={<ViewRecordPage />} />
+        <Route path="/medications" element={<MedicationsPage />} />
+
           
           {/* Protected Routes for Patients - صفحات المرضى المحمية */}
           <Route 

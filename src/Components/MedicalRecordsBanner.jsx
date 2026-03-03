@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom';
 
 export function MedicalRecordsBanner() {
   return (
-    <div className="bg-[#f0f8ff]">
+    
 
 
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto px-4 my-8">
       <div className="relative overflow-hidden rounded-3xl shadow-2xl">
 
         {/* Background */}
@@ -96,7 +96,7 @@ export function MedicalRecordsBanner() {
         </div>
       </div>
     </div>
-    </div>
+   
   );
 }
 

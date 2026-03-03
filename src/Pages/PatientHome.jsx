@@ -10,6 +10,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MedicalRecordsBanner } from '../Components/MedicalRecordsBanner';
 import ScrollToTop from '../Components/Layout/ScrollToTop';
+import MedicationWidget from './MedicationWidget';
 
 const PatientHome = ({ allDoctors }) => {
   const { user } = useAuth();
@@ -56,7 +57,7 @@ const PatientHome = ({ allDoctors }) => {
   }, [patientData.name]);
 
   return (
-    <div className="min-h-screen bg-[#0f172a]"> {/* تغيير لون الخلفية ليتماشى مع الثيم الداكن الزجاجي */}
+    <div className="min-h-screen bg-gradient-to-b from-[#FCFDFE] via-[#F1F5F9] to-[#E2E8F0]"> {/* تغيير لون الخلفية ليتماشى مع الثيم الداكن الزجاجي */}
       <ToastContainer rtl={true} />
       <Navbar patientData={patientData} />
       
@@ -136,6 +137,7 @@ const PatientHome = ({ allDoctors }) => {
       <HeroSlider />
       <ServicesSection />
       <MedicalRecordsBanner/>
+      <MedicationWidget/>
       <DoctorsSection doctors={allDoctors} /> 
       <ScrollToTop /> 
       <Footer />
