@@ -25,7 +25,7 @@ const Navbar = ({ patientData }) => {
     { name: 'من نحن', icon: <Info size={18} />, path: '/about' },
     { name: 'الأطباء', icon: <Users size={18} />, path: '/doctors' },
     { name: 'المواعيد', icon: <Calendar size={18} />, path: '/appointments' },
-    { name: 'جدول الأدوية', icon: <Pill size={18} />, path: '/meds' },
+    { name: 'جدول الأدوية', icon: <Pill size={18} />, path: '/medications' },
     { name: 'السجلات الطبية', icon: <FileText size={18} />, path: '/recorded' },
     { name: 'اتصل بنا', icon: <PhoneCall size={18} />, path: '/contact' },
   ];
