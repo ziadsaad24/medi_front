@@ -94,7 +94,7 @@ const AdminDoctors = () => {
   });
 
   const viewLicense = (licenseUrl, licenseFile) => {
-    const url = licenseUrl || `http://localhost:8000/storage/licenses/${licenseFile}`;
+    const url = licenseUrl || `http://localhost:8000/storage/${licenseFile}`;
     window.open(url, '_blank');
   };
 

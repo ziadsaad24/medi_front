@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './Components/ProtectedRoute';
 import Login from './Pages/Login';
@@ -28,6 +28,33 @@ import EmergencyCardDemo from './Pages/EmergencyCardDemo';
 import { MedicationsPage } from './Pages/MedicationsPage';
 import ChatBot from './Components/ChatBot/ChatBot';
 
+// Component للتحكم في ظهور الشات بوت
+function ChatBotWrapper() {
+  const location = useLocation();
+  
+  // المسارات اللي الشات بوت مش هيظهر فيها
+  const hiddenRoutes = [
+    '/',
+    '/role-selection',
+    '/auth',
+    '/success',
+    '/pending-verification',
+    '/verify-email',
+    '/forgot-password',
+    '/reset-password'
+  ];
+  
+  // إخفاء الشات بوت من صفحات الأدمن
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isHiddenRoute = hiddenRoutes.includes(location.pathname);
+  
+  // إظهار الشات بوت فقط في صفحات المرضى والأطباء
+  if (isHiddenRoute || isAdminRoute) {
+    return null;
+  }
+  
+  return <ChatBot />;
+}
 
 
 function App() {
@@ -205,7 +232,7 @@ function App() {
             } 
           />
         </Routes>
-        <ChatBot />
+        <ChatBotWrapper />
       </Router>
     </AuthProvider>
   );
