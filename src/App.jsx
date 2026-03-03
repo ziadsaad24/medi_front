@@ -16,8 +16,8 @@ import Doctor1 from './assets/images/doctor.png';
 import Doctor2 from './assets/images/doctor2.png';
 import Doctor3 from './assets/images/doctor3.png';
 import FollowUs from './Components/FollowUs';
-import MedicalRecordPage from "./pages/MedicalRecordPage";
-import ViewRecordPage from "./pages/ViewRecordPage";
+import MedicalRecordPage from "./Pages/MedicalRecordPage";
+import ViewRecordPage from "./Pages/ViewRecordPage";
 
 
 
