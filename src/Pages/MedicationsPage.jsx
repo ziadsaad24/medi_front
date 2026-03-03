@@ -14,8 +14,10 @@ export function MedicationsPage() {
   const navigate = useNavigate(); // دالة التنقل
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#020617] text-white" >
+    <>
+    
       <Navbar />
+    <div className="flex flex-col min-h-screen bg-[#020617] text-white" dir="rtl">
       
       <main className="flex-grow pt-32 pb-20 px-4 md:px-8 relative overflow-hidden">
         
@@ -186,7 +188,8 @@ export function MedicationsPage() {
         )}
       </AnimatePresence>
 
-      <Footer />
     </div>
+      <Footer />
+    </>
   );
 }
