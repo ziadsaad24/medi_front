@@ -11,7 +11,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { MedicalRecordsBanner } from '../Components/MedicalRecordsBanner';
 import ScrollToTop from '../Components/Layout/ScrollToTop';
 import MedicationWidget from './MedicationWidget';
-import ChatBot from '../Components/ChatBot/ChatBot';
 
 const PatientHome = ({ allDoctors }) => {
   const { user } = useAuth();
@@ -149,7 +148,6 @@ const PatientHome = ({ allDoctors }) => {
       <MedicalRecordsBanner/>
       <MedicationWidget/>
       <DoctorsSection doctors={allDoctors} /> 
-      <ChatBot />
       <ScrollToTop /> 
       <Footer />
     </div>

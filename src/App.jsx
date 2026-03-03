@@ -26,6 +26,7 @@ import MedicalRecordPage from "./Pages/MedicalRecordPage";
 import ViewRecordPage from "./Pages/ViewRecordPage";
 import EmergencyCardDemo from './Pages/EmergencyCardDemo';
 import { MedicationsPage } from './Pages/MedicationsPage';
+import ChatBot from './Components/ChatBot/ChatBot';
 
 
 
@@ -204,6 +205,7 @@ function App() {
             } 
           />
         </Routes>
+        <ChatBot />
       </Router>
     </AuthProvider>
   );
