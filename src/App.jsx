@@ -25,6 +25,7 @@ import FollowUs from './Components/FollowUs';
 import MedicalRecordPage from "./Pages/MedicalRecordPage";
 import ViewRecordPage from "./Pages/ViewRecordPage";
 import EmergencyCardDemo from './Pages/EmergencyCardDemo';
+import { MedicationsPage } from './Pages/MedicationsPage';
 
 
 
@@ -56,6 +57,9 @@ function App() {
           
           {/* DEMO PAGE - مؤقت للتوضيح فقط */}
           <Route path="/demo-emergency-card" element={<EmergencyCardDemo />} />
+          
+          {/* Medications Page - صفحة إدارة الأدوية */}
+          <Route path="/medications" element={<MedicationsPage />} />
           
           {/* Protected Routes for Patients - صفحات المرضى المحمية */}
           <Route 
