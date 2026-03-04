@@ -39,7 +39,7 @@ const ScrollToTop = () => {
           whileTap={{ scale: 0.9 }}
           onClick={scrollToTop}
           // تم إضافة bg-slate-900/10 لضمان وجود ظل خفيف خلف السهم دائماً
-          className="fixed bottom-8 right-8 z-[90] w-14 h-14 flex items-center justify-center rounded-2xl bg-white/20 backdrop-blur-2xl border border-blue-500/30 shadow-2xl transition-all group overflow-hidden"
+          className="fixed bottom-32 right-8 z-[1050] w-14 h-14 flex items-center justify-center rounded-2xl bg-white/20 backdrop-blur-2xl border border-blue-500/30 shadow-2xl transition-all group overflow-hidden"
         >
           {/* طبقة سواد خفيفة جداً في الخلفية لزيادة التباين */}
           <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-blue-600/10 transition-colors" />

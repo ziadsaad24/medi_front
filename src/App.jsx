@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './Components/ProtectedRoute';
 import Login from './Pages/Login';
@@ -11,6 +11,12 @@ import ForgetPassword from './Pages/ForgetPassword';
 import ResetPassword from './Pages/ResetPassword';
 import PatientHome from './Pages/PatientHome';
 import DoctorsGridPage from './Components/DoctorsGridPage';
+import AdminDashboard from './Pages/AdminDashboard';
+import AdminUsers from './Pages/AdminUsers';
+import AdminDoctors from './Pages/AdminDoctors';
+import AdminDoctorRequests from './Pages/AdminDoctorRequests';
+import AdminComplaints from './Pages/AdminComplaints';
+import AdminSettings from './Pages/AdminSettings';
 // يمكنك وضع هذا الجزء في ملف منفصل باسم doctorsData.js أو في أعلى ملف App.js
 import Doctor1 from './assets/images/doctor.png';
 import Doctor2 from './assets/images/doctor2.png';
@@ -18,7 +24,37 @@ import Doctor3 from './assets/images/doctor3.png';
 import FollowUs from './Components/FollowUs';
 import MedicalRecordPage from "./Pages/MedicalRecordPage";
 import ViewRecordPage from "./Pages/ViewRecordPage";
+import EmergencyCardDemo from './Pages/EmergencyCardDemo';
+import { MedicationsPage } from './Pages/MedicationsPage';
+import ChatBot from './Components/ChatBot/ChatBot';
 
+// Component للتحكم في ظهور الشات بوت
+function ChatBotWrapper() {
+  const location = useLocation();
+  
+  // المسارات اللي الشات بوت مش هيظهر فيها
+  const hiddenRoutes = [
+    '/',
+    '/role-selection',
+    '/auth',
+    '/success',
+    '/pending-verification',
+    '/verify-email',
+    '/forgot-password',
+    '/reset-password'
+  ];
+  
+  // إخفاء الشات بوت من صفحات الأدمن
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isHiddenRoute = hiddenRoutes.includes(location.pathname);
+  
+  // إظهار الشات بوت فقط في صفحات المرضى والأطباء
+  if (isHiddenRoute || isAdminRoute) {
+    return null;
+  }
+  
+  return <ChatBot />;
+}
 
 
 function App() {
@@ -46,6 +82,12 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/recorded" element={<MedicalRecordPage />} />
         <Route path="/recorded/view/:recordId" element={<ViewRecordPage />} />
+          
+          {/* DEMO PAGE - مؤقت للتوضيح فقط */}
+          <Route path="/demo-emergency-card" element={<EmergencyCardDemo />} />
+          
+          {/* Medications Page - صفحة إدارة الأدوية */}
+          <Route path="/medications" element={<MedicationsPage />} />
           
           {/* Protected Routes for Patients - صفحات المرضى المحمية */}
           <Route 
@@ -93,12 +135,73 @@ function App() {
             path="/admin/dashboard" 
             element={
               <ProtectedRoute allowedRoles="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/doctor-requests" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <AdminDoctorRequests />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <AdminUsers />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/doctors" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <AdminDoctors />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/complaints" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <AdminComplaints />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/reports" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
                 <div className="min-h-screen flex items-center justify-center bg-blue-50">
                   <div className="text-center">
-                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">لوحة تحكم المسؤول</h1>
+                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">التقارير</h1>
                     <p className="text-gray-600">قريباً...</p>
                   </div>
                 </div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/logs" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <div className="min-h-screen flex items-center justify-center bg-blue-50">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">السجلات</h1>
+                    <p className="text-gray-600">قريباً...</p>
+                  </div>
+                </div>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/settings" 
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <AdminSettings />
               </ProtectedRoute>
             } 
           />
@@ -129,6 +232,7 @@ function App() {
             } 
           />
         </Routes>
+        <ChatBotWrapper />
       </Router>
     </AuthProvider>
   );

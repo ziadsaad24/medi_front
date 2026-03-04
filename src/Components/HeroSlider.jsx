@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // تم تصحيح الاستيراد
 import { ChevronLeft, ChevronRight, Circle, Play, Pause, QrCode } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 // import { ImageWithFallback } from './figma/ImageWithFallback'; // لو عندك مكون ImageWithFallback
 import photo1 from '../assets/images/photo-1.jpg';
 import photo2 from '../assets/images/photo-2.jpg';
@@ -14,7 +15,8 @@ const slides = [
     subtitle: 'معلوماتك في مكان واحد',
     description: 'احتفظ بسجلك الطبي الكامل، تقاريرك، وتاريخك المرضي بشكل آمن ومنظم يمكن الوصول إليه في أي وقت',
     image: photo1,
-    cta: 'سجلي الطبي'
+    cta: 'سجلي الطبي',
+    link: '/recorded'
   },
   {
     id: 2,
@@ -22,7 +24,8 @@ const slides = [
     subtitle: 'اختر طبيبك المناسب',
     description: 'تصفح قائمة الأطباء المتخصصين لدينا واختر الطبيب المناسب لحالتك الصحية بكل سهولة ويسر',
     image: photo2,
-    cta: 'تصفح الأطباء'
+    cta: 'تصفح الأطباء',
+    link: '/patient/doctors'
   },
   {
     id: 3,
@@ -30,7 +33,8 @@ const slides = [
     subtitle: 'حجز سريع ومرن',
     description: 'احجز موعد استشارتك الطبية في الوقت المناسب لك من خلال نظامنا الإلكتروني السهل والسريع',
       image: photo3,
-    cta: 'احجز الآن'
+    cta: 'احجز الآن',
+    link: '/patient/doctors'
   },
   {
     id: 4,
@@ -38,11 +42,13 @@ const slides = [
     subtitle: 'لن تنسى دواءك مرة أخرى',
     description: 'سجل أدويتك واحصل على تنبيهات تلقائية لتذكيرك بمواعيد تناول الدواء والجرعات المحددة',
      image: photo4,
-    cta: 'إضافة دواء'
+    cta: 'إضافة دواء',
+    link: '/medications'
   }
 ];
 
 export default function HeroSlider() {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [direction, setDirection] = useState(0);
@@ -171,7 +177,10 @@ export default function HeroSlider() {
                   transition={{ delay: 0.5, duration: 0.6 }}
                   className="flex flex-wrap gap-4"
                 >
-                  <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-105">
+                  <button 
+                    onClick={() => navigate(slides[currentSlide].link)}
+                    className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-105"
+                  >
                     {slides[currentSlide].cta}
                   </button>
                   <button className="px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-lg font-medium border border-white/20 transition-all duration-300 hover:scale-105">
