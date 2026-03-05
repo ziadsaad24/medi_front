@@ -26,7 +26,7 @@ const ServicesSection = () => {
   const MotionLink = motion(Link);
 
   return (
-    <section className="py-24 bg-gradient-to-b from-[#FCFDFE] via-[#F1F5F9] to-[#E2E8F0]">
+    <section className="py-24 ">
       <div className="container mx-auto max-w-[1300px] px-6">
         
         {/* Header */}

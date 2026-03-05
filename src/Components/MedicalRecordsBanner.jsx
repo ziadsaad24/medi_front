@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom';
 
 export function MedicalRecordsBanner() {
   return (
-    <div className="bg-[#f0f8ff]">
+    
 
 
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto px-4 my-8"  dir="rtl">
       <div className="relative overflow-hidden rounded-3xl shadow-2xl">
 
         {/* Background */}
@@ -22,7 +22,7 @@ export function MedicalRecordsBanner() {
 
         {/* Content */}
         <div className="relative px-10 py-20 text-white">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
+          <div className="flex flex-col- lg:flex-row items-center justify-between gap-16">
 
             {/* Text Section */}
             <div className="flex-1 space-y-8 animate-fade-in">
@@ -96,7 +96,7 @@ export function MedicalRecordsBanner() {
         </div>
       </div>
     </div>
-    </div>
+   
   );
 }
 

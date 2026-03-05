@@ -24,9 +24,14 @@ import Doctor3 from './assets/images/doctor3.png';
 import FollowUs from './Components/FollowUs';
 import MedicalRecordPage from "./Pages/MedicalRecordPage";
 import ViewRecordPage from "./Pages/ViewRecordPage";
-import EmergencyCardDemo from './Pages/EmergencyCardDemo';
+
 import { MedicationsPage } from './Pages/MedicationsPage';
+import AppointmentsPage from './Pages/AppointmentsPage';
+import  Contact  from './Components/Contact';
 import ChatBot from './Components/ChatBot/ChatBot';
+import EmergencyCardDemo from './Pages/EmergencyCardDemo';
+
+
 
 // Component للتحكم في ظهور الشات بوت
 function ChatBotWrapper() {
@@ -82,6 +87,13 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/recorded" element={<MedicalRecordPage />} />
         <Route path="/recorded/view/:recordId" element={<ViewRecordPage />} />
+        <Route path="/meds" element={<MedicationsPage />} />
+        <Route path="/appointments" element={< AppointmentsPage  />} />
+        <Route path="/contact" element={< Contact  />} />
+
+
+        
+
           
           {/* DEMO PAGE - مؤقت للتوضيح فقط */}
           <Route path="/demo-emergency-card" element={<EmergencyCardDemo />} />
