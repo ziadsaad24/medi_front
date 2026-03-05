@@ -7,7 +7,7 @@ export function MedicalRecordsBanner() {
     
 
 
-    <div className="container mx-auto px-4 my-8">
+    <div className="container mx-auto px-4 my-8"  dir="rtl">
       <div className="relative overflow-hidden rounded-3xl shadow-2xl">
 
         {/* Background */}
@@ -22,7 +22,7 @@ export function MedicalRecordsBanner() {
 
         {/* Content */}
         <div className="relative px-10 py-20 text-white">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
+          <div className="flex flex-col- lg:flex-row items-center justify-between gap-16">
 
             {/* Text Section */}
             <div className="flex-1 space-y-8 animate-fade-in">

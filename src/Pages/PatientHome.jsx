@@ -57,7 +57,7 @@ const PatientHome = ({ allDoctors }) => {
   }, [patientData.name]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FCFDFE] via-[#F1F5F9] to-[#E2E8F0]"> {/* تغيير لون الخلفية ليتماشى مع الثيم الداكن الزجاجي */}
+    <div className="min-h-screen "> {/* تغيير لون الخلفية ليتماشى مع الثيم الداكن الزجاجي */}
       <ToastContainer rtl={true} />
       <Navbar patientData={patientData} />
       
