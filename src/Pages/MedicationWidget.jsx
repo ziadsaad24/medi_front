@@ -11,6 +11,15 @@ const MedicationWidget = () => {
   const totalCount = medications.length;
   const progress = totalCount > 0 ? (takenCount / totalCount) * 100 : 0;
   
+import { useMedications } from '../hooks/use-medications';
+
+const MedicationWidget = () => {
+  const { medications } = useMedications();
+
+  const takenCount = medications.filter(m => m.taken).length;
+  const totalCount = medications.length;
+  const progress = totalCount > 0 ? (takenCount / totalCount) * 100 : 0;
+
   const nextMed = medications
     .filter(m => !m.taken)
     .sort((a, b) => a.time.localeCompare(b.time))[0];

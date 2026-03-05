@@ -22,38 +22,47 @@ const PatientHome = ({ allDoctors }) => {
   });
 
   useEffect(() => {
-    Swal.fire({
-      html: `
-        <div class="glass-popup-content" style="direction: rtl; font-family: 'Segoe UI', sans-serif;">
-          <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 25px;">
-            <div class="avatar-glow"></div>
-            <img src="${patientData.avatar}" class="glass-avatar" />
+    // نتحقق إذا المستخدم شاف رسالة الترحيب في الـ session الحالي
+    const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
+    
+    // نعرض الرسالة بس لو مشفهاش قبل كده
+    if (!hasSeenWelcome) {
+      Swal.fire({
+        html: `
+          <div class="glass-popup-content" style="direction: rtl; font-family: 'Segoe UI', sans-serif;">
+            <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 25px;">
+              <div class="avatar-glow"></div>
+              <img src="${patientData.avatar}" class="glass-avatar" />
+            </div>
+
+            <h2 style="color: white; font-weight: 900; font-size: 24px; margin-bottom: 10px;">
+              أهلاً بك مجدداً، <span style="color: #60a5fa;">${patientData.name.split(' ')[0]}</span> 
+            </h2>
+
+            <p style="color: #cbd5e1; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              صحتك هي أولويتنا. <br/> جاهز لمتابعة جدولك الصحي اليوم؟
+            </p>
           </div>
-
-          <h2 style="color: white; font-weight: 900; font-size: 24px; margin-bottom: 10px;">
-            أهلاً بك مجدداً، <span style="color: #60a5fa;">${patientData.name.split(' ')[0]}</span> 
-          </h2>
-
-          <p style="color: #cbd5e1; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-            صحتك هي أولويتنا. <br/> جاهز لمتابعة جدولك الصحي اليوم؟
-          </p>
-        </div>
-      `,
-      confirmButtonText: 'ابدأ بمتابعة صحتك الآن',
-      buttonsStyling: false,
-      background: 'transparent', // نجعل الخلفية شفافة لنطبق الزجاج بأنفسنا
-      customClass: {
-        popup: 'glass-swal-container',
-        confirmButton: 'infinite-pulse-btn'
-      },
-      showClass: {
-        popup: 'animate__animated animate__zoomIn'
-      },
-      hideClass: {
-        popup: 'animate__animated animate__zoomOut'
-      },
-      backdrop: `rgba(15, 23, 42, 0.7)` // خلفية داكنة لزيادة تباين الزجاج
-    });
+        `,
+        confirmButtonText: 'ابدأ بمتابعة صحتك الآن',
+        buttonsStyling: false,
+        background: 'transparent',
+        customClass: {
+          popup: 'glass-swal-container',
+          confirmButton: 'infinite-pulse-btn'
+        },
+        showClass: {
+          popup: 'animate__animated animate__zoomIn'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__zoomOut'
+        },
+        backdrop: `rgba(15, 23, 42, 0.7)`
+      });
+      
+      // نحفظ إن المستخدم شاف الرسالة
+      sessionStorage.setItem('hasSeenWelcome', 'true');
+    }
   }, [patientData.name]);
 
   return (
