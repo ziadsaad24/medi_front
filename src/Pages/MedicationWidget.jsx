@@ -2,15 +2,6 @@ import React from 'react';
 import { Pill, Clock, Activity, LayoutGrid } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useMedications } from '../hooks/use-medications'; 
-
-const MedicationWidget = () => {
-  const { medications } = useMedications();
-  
-  const takenCount = medications.filter(m => m.taken).length;
-  const totalCount = medications.length;
-  const progress = totalCount > 0 ? (takenCount / totalCount) * 100 : 0;
-  
 import { useMedications } from '../hooks/use-medications';
 
 const MedicationWidget = () => {
@@ -27,10 +18,6 @@ const MedicationWidget = () => {
   return (
     <div className="w-full px-4 md:px-10 my-10 flex justify-center">
       <motion.div
-        // أنيميشن "العوم" الهادئ جداً
-        animate={{ y: [0, -5, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        
         style={{
           background: 'linear-gradient(270deg, #0f172a, #1e1b4b, #020617)',
           backgroundSize: '400% 400%',

@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'; // استيراد Link للربط بي�
 const services = [
   { name: 'الأطباء', desc: 'تواصل مع نخبة من الأطباء المتخصصين', icon: <Users size={32} />, color: 'blue', path: '/doctors' },
   { name: 'المواعيد الطبية', desc: 'إدارة وحجز مواعيدك بكل سهولة', icon: <Calendar size={32} />, color: 'purple', path: '/appointments' },
-  { name: 'تذكير الأدوية', desc: 'جدولك اليومي لتنظيم جرعات الدواء', icon: <Pill size={32} />, color: 'teal', path: '/medicine' },
+  { name: 'تذكير الأدوية', desc: 'جدولك اليومي لتنظيم جرعات الدواء', icon: <Pill size={32} />, color: 'teal', path: '/medications' },
   { name: 'السجلات الطبية', desc: 'الوصول لتقاريرك وفحوصاتك بأمان', icon: <FileText size={32} />, color: 'indigo', path: '/records' },
   { name: 'اتصل بنا', desc: 'نحن هنا للإجابة على استفساراتك', icon: <PhoneCall size={32} />, color: 'red', path: '/contact' },
   { name: 'من نحن', desc: 'تعرف على رؤيتنا في تقديم الرعاية', icon: <Info size={32} />, color: 'emerald', path: '/about' },
