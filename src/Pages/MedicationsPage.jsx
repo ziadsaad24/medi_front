@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // أضفنا أيقونة ArrowRight للعودة
 import { Plus, X, Trash2, CheckCircle2, Circle, Clock, Pill, LayoutDashboard, Activity, ArrowRight } from 'lucide-react';
@@ -31,7 +31,7 @@ export function MedicationsPage() {
           <motion.button
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            onClick={() => navigate(-1)} // يعود للصفحة السابقة
+            onClick={() => navigate('/home')} // يعود مباشرة للصفحة الرئيسية
             className="group flex items-center gap-2 text-slate-400 hover:text-blue-400 transition-colors mb-6 font-bold text-sm"
           >
             <div className="p-2 rounded-full bg-white/5 border border-white/10 group-hover:border-blue-500/50 group-hover:bg-blue-500/10 transition-all">
@@ -62,7 +62,7 @@ export function MedicationsPage() {
               className="flex items-center gap-3 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-900/20"
             >
               <Plus size={24} />
-              <span>إضافة سجل جديد</span>
+              <span>إضافة دواء جديد</span>
             </motion.button>
           </header>
 
@@ -75,7 +75,7 @@ export function MedicationsPage() {
                   className="text-center py-24 bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[3rem]"
                 >
                   <Pill className="mx-auto mb-4 text-slate-700" size={48} />
-                  <p className="text-slate-500 text-xl font-medium">لا توجد سجلات طبية نشطة حالياً.</p>
+                  <p className="text-slate-500 text-xl font-medium">لا توجد أدوية مسجلة حالياً.</p>
                 </motion.div>
               ) : (
                 medications.map((med) => (

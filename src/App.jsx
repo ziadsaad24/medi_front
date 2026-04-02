@@ -10,6 +10,7 @@ import VerifyEmail from './Pages/VerifyEmail';
 import ForgetPassword from './Pages/ForgetPassword';
 import ResetPassword from './Pages/ResetPassword';
 import PatientHome from './Pages/PatientHome';
+import PatientProfile from './Pages/PatientProfile';
 import DoctorsGridPage from './Components/DoctorsGridPage';
 import AdminDashboard from './Pages/AdminDashboard';
 import AdminUsers from './Pages/AdminUsers';
@@ -30,6 +31,7 @@ import AppointmentsPage from './Pages/AppointmentsPage';
 import  Contact  from './Components/Contact';
 import ChatBot from './Components/ChatBot/ChatBot';
 import EmergencyCardDemo from './Pages/EmergencyCardDemo';
+import EmergencyCard3DPage from './Pages/EmergencyCard3DPage';
 
 
 
@@ -98,6 +100,9 @@ function App() {
           {/* DEMO PAGE - مؤقت للتوضيح فقط */}
           <Route path="/demo-emergency-card" element={<EmergencyCardDemo />} />
           
+          {/* Emergency Card 3D - بطاقة الطوارئ الطبية ثلاثية الأبعاد */}
+          <Route path="/emergency-card-3d" element={<EmergencyCard3DPage />} />
+          
           {/* Medications Page - صفحة إدارة الأدوية */}
           <Route path="/medications" element={<MedicationsPage />} />
           
@@ -126,6 +131,14 @@ function App() {
     </ProtectedRoute>
   } 
 />
+          <Route 
+            path="/patient/profile" 
+            element={
+              <ProtectedRoute allowedRoles="patient">
+                <PatientProfile />
+              </ProtectedRoute>
+            } 
+          />
           
           {/* Protected Routes for Doctors - صفحات الأطباء المحمية */}
           <Route 

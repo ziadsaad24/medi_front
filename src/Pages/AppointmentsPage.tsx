@@ -1,14 +1,18 @@
+import { useEffect, useState } from "react";
 import { AppointmentCard } from "../Components/AppointmentCard";
 import { motion } from "framer-motion";
 import Navbar from "../Components/Layout/Navbar";
 import Footer from "../Components/Layout/Footer";
 
-const appointments = [
+const APPOINTMENTS_STORAGE_KEY = "appointments-data";
+
+const defaultAppointments = [
   {
     id: "1",
     doctorName: "د. فاطمة خالد",
     specialty: "أمراض الجلدية والتجميل",
     date: "2025-11-22",
+    time24: "10:00",
     time: "10:00 صباحاً",
     type: "استشارة عبر الإنترنت",
     status: "مؤكد",
@@ -21,6 +25,7 @@ const appointments = [
     doctorName: "د. أحمد العلي",
     specialty: "أمراض القلب",
     date: "2025-11-23",
+    time24: "14:30",
     time: "02:30 مساءً",
     type: "زيارة في العيادة",
     status: "قيد الانتظار",
@@ -33,6 +38,7 @@ const appointments = [
     doctorName: "د. سارة محمود",
     specialty: "طب الأطفال",
     date: "2025-11-24",
+    time24: "11:00",
     time: "11:00 صباحاً",
     type: "استشارة عبر الإنترنت",
     status: "مؤكد",
@@ -45,6 +51,7 @@ const appointments = [
     doctorName: "د. مريم حسن",
     specialty: "طب العيون",
     date: "2025-11-25",
+    time24: "09:00",
     time: "09:00 صباحاً",
     type: "فحص شامل",
     status: "مؤكد",
@@ -57,6 +64,7 @@ const appointments = [
     doctorName: "د. خالد سعيد",
     specialty: "طب الأعصاب",
     date: "2025-11-26",
+    time24: "15:00",
     time: "03:00 مساءً",
     type: "استشارة عبر الإنترنت",
     status: "قيد الانتظار",
@@ -69,6 +77,7 @@ const appointments = [
     doctorName: "د. نور الدين",
     specialty: "الطب العام",
     date: "2025-11-27",
+    time24: "13:00",
     time: "01:00 مساءً",
     type: "زيارة في العيادة",
     status: "مؤكد",
@@ -79,6 +88,15 @@ const appointments = [
 ];
 
 export default function AppointmentsPage() {
+  const [appointments, setAppointments] = useState(() => {
+    const stored = localStorage.getItem(APPOINTMENTS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : defaultAppointments;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
+  }, [appointments]);
+
   return (
     <div className="flex flex-col min-h-screen bg-[#0f172a]">
       <Navbar />
