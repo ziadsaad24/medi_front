@@ -119,6 +119,22 @@ export const patientAPI = {
     return response.data;
   },
 
+  // =========================
+  // Patient Profile
+  // =========================
+
+  // احصل على ملفي الشخصي
+  getProfile: async () => {
+    const response = await api.get('/patient/profile');
+    return response.data;
+  },
+
+  // تحديث ملفي الشخصي
+  updateProfile: async (data) => {
+    const response = await api.put('/patient/profile', data);
+    return response.data;
+  },
+
   // احجز موعد
   bookAppointment: async (data) => {
     const response = await api.post('/patient/appointments', data);
@@ -128,6 +144,50 @@ export const patientAPI = {
   // احصل على مواعيدي
   getMyAppointments: async () => {
     const response = await api.get('/patient/appointments');
+    return response.data;
+  },
+
+  // =========================
+  // Medications
+  // =========================
+
+  // احصل على الأدوية الخاصة بي
+  getMedications: async () => {
+    const response = await api.get('/patient/medications');
+    return response.data;
+  },
+
+  // إضافة دواء جديد
+  addMedication: async (data) => {
+    const response = await api.post('/patient/medications', data);
+    return response.data;
+  },
+
+  // تحديث دواء
+  updateMedication: async (id, data) => {
+    const response = await api.put(`/patient/medications/${id}`, data);
+    return response.data;
+  },
+
+  // تبديل حالة أخذ الدواء
+  toggleMedication: async (id) => {
+    const response = await api.patch(`/patient/medications/${id}/toggle`);
+    return response.data;
+  },
+
+  // حذف دواء
+  deleteMedication: async (id) => {
+    const response = await api.delete(`/patient/medications/${id}`);
+    return response.data;
+  },
+
+  // =========================
+  // Notifications
+  // =========================
+
+  // التنبيهات القادمة (دواء/موعد)
+  getUpcomingNotifications: async () => {
+    const response = await api.get('/patient/notifications/upcoming');
     return response.data;
   },
 };
