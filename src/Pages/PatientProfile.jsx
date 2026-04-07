@@ -12,32 +12,33 @@ const PatientProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showMedicalCard, setShowMedicalCard] = useState(false);
   const [cardFlipped, setCardFlipped] = useState(false);
+  const [medicalCardId, setMedicalCardId] = useState(user?.medical_card_id || '');
   const cardFrontRef = useRef(null);
   const cardBackRef = useRef(null);
 
-  // بيانات افتراضية للتجربة إذا لم يكن هناك مستخدم
-  const defaultUser = {
-    name: 'أحمد محمد علي',
-    email: 'ahmed@example.com',
-    phone: '01012345678',
-    id: '12345'
+  const currentUser = user || {};
+
+  const getDisplayValue = (value, fallback = '--') => {
+    return value ? value : fallback;
   };
 
-  const currentUser = user || defaultUser;
+  const getContactValue = (value) => {
+    return value ? value : 'لا يوجد';
+  };
 
   const [formData, setFormData] = useState({
     name: currentUser?.name || '',
     email: currentUser?.email || '',
     phone: currentUser?.phone || '',
-    birthDate: currentUser?.birth_date || '1995-05-15',
-    address: currentUser?.address || 'القاهرة، مصر',
-    bloodType: currentUser?.blood_type || 'A+',
-    emergencyContact: currentUser?.emergency_contact || '01098765432',
-    emergencyName: currentUser?.emergency_name || 'محمد علي (الأخ)',
-    allergies: currentUser?.allergies || 'حساسية من البنسلين',
+    birthDate: currentUser?.birth_date || '',
+    address: currentUser?.address || '',
+    bloodType: currentUser?.blood_type || '',
+    emergencyContact: currentUser?.emergency_contact || '',
+    emergencyName: currentUser?.emergency_name || '',
+    allergies: currentUser?.allergies || '',
     chronicDiseases: currentUser?.chronic_diseases || '',
-    height: currentUser?.height || '175',
-    weight: currentUser?.weight || '75',
+    height: currentUser?.height || '',
+    weight: currentUser?.weight || '',
   });
 
   useEffect(() => {
@@ -48,25 +49,32 @@ const PatientProfile = () => {
         const response = await patientAPI.getProfile();
         const profile = response?.data || response?.profile || response;
 
-        if (profile) {
-          setFormData((prev) => ({
-            ...prev,
-            name: profile.name ?? prev.name,
-            email: profile.email ?? prev.email,
-            phone: profile.phone ?? prev.phone,
-            birthDate: profile.birth_date ?? prev.birthDate,
-            address: profile.address ?? prev.address,
-            bloodType: profile.blood_type ?? prev.bloodType,
-            emergencyContact: profile.emergency_contact ?? prev.emergencyContact,
-            emergencyName: profile.emergency_name ?? prev.emergencyName,
-            allergies: profile.allergies ?? prev.allergies,
-            chronicDiseases: profile.chronic_diseases ?? prev.chronicDiseases,
-            height: profile.height ?? prev.height,
-            weight: profile.weight ?? prev.weight,
-          }));
+        // التحقق من أن البيانات موجودة وليست فارغة
+        if (profile && Object.keys(profile).length > 0) {
+          const hasApiData = profile.name || profile.email || profile.phone || profile.birth_date || profile.blood_type;
+          
+          if (hasApiData) {
+            console.log('Loading profile from API:', profile);
+            setMedicalCardId(profile.medical_card_id || user?.medical_card_id || '');
+            setFormData({
+              name: profile.name || '',
+              email: profile.email || '',
+              phone: profile.phone || '',
+              birthDate: profile.birth_date || '',
+              address: profile.address || '',
+              bloodType: profile.blood_type || '',
+              emergencyContact: profile.emergency_contact || '',
+              emergencyName: profile.emergency_name || '',
+              allergies: profile.allergies || '',
+              chronicDiseases: profile.chronic_diseases || '',
+              height: profile.height || '',
+              weight: profile.weight || '',
+            });
+            return;
+          }
         }
       } catch (error) {
-        console.warn('Unable to load patient profile from API, using local state:', error);
+        console.warn('Unable to load patient profile from API:', error);
       }
     };
 
@@ -99,6 +107,7 @@ const PatientProfile = () => {
       if (updateUser) {
         updateUser({
           ...currentUser,
+          medical_card_id: profile?.medical_card_id ?? medicalCardId,
           name: profile?.name ?? formData.name,
           email: profile?.email ?? formData.email,
           phone: profile?.phone ?? formData.phone,
@@ -125,7 +134,7 @@ const PatientProfile = () => {
       name: currentUser?.name || '',
       email: currentUser?.email || '',
       phone: currentUser?.phone || '',
-      birthDate: currentUser?.birth_date || '1995-05-15',
+      birthDate: currentUser?.birth_date || '',
       address: currentUser?.address || '',
       bloodType: currentUser?.blood_type || '',
       emergencyContact: currentUser?.emergency_contact || '',
@@ -158,17 +167,17 @@ const PatientProfile = () => {
   };
 
   const patientCardData = {
-    name: formData.name || currentUser?.name || 'اسم المريض',
-    id: currentUser?.id || '12345',
-    age: `${calculateAge()} سنة`,
-    bloodType: formData.bloodType || 'A+',
-    height: `${formData.height || '175'} سم`,
-    weight: `${formData.weight || '75'} كجم`,
-    allergies: formData.allergies || 'لا يوجد',
+    name: formData.name || currentUser?.name || '--',
+    medical_card_id: medicalCardId || currentUser?.medical_card_id || '--',
+    age: calculateAge() === '--' ? '--' : `${calculateAge()} سنة`,
+    bloodType: getDisplayValue(formData.bloodType),
+    height: formData.height ? `${formData.height} سم` : '--',
+    weight: formData.weight ? `${formData.weight} كجم` : '--',
+    allergies: getContactValue(formData.allergies),
     qrValue: `https://medicare.com/patient/${currentUser?.id || 'unknown'}`,
     emergencyContact: {
-      name: formData.emergencyName || 'جهة اتصال الطوارئ',
-      phone: formData.emergencyContact || formData.phone || '---'
+      name: getContactValue(formData.emergencyName),
+      phone: getContactValue(formData.emergencyContact)
     }
   };
 

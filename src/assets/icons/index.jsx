@@ -5,7 +5,7 @@ import healthcare from './healthcare.svg';
 import shield from './shield.svg';
 import heartbeat from './heartbeat.svg';
 import heartbeatWave from './heartbeat-wave.svg';
-import waveBg from './wave-bg.svg';
+import subtract from './Subtract.png';
 import logoPulse from './logo-pulse.svg';
 import idCard from './be1e2013b2f3f759c175662dd8f723d9839d9813 (1).png';
 
@@ -17,7 +17,7 @@ export const icons = {
   shield,
   heartbeat,
   heartbeatWave,
-  waveBg,
+  subtract,
   logoPulse,
   idCard,
 };

@@ -1,12 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { AppointmentCard } from "../Components/AppointmentCard";
 import { motion } from "framer-motion";
 import Navbar from "../Components/Layout/Navbar";
 import Footer from "../Components/Layout/Footer";
+import AuthContext from "../context/AuthContext";
 
-const APPOINTMENTS_STORAGE_KEY = "appointments-data";
+type Appointment = {
+  id: string;
+  doctorName: string;
+  specialty: string;
+  date: string;
+  time24: string;
+  time: string;
+  type: string;
+  status: string;
+  statusColor: string;
+  avatarUrl: string;
+};
 
-const defaultAppointments = [
+const getAppointmentsStorageKey = (userId?: string | number) => {
+  return userId ? `appointments-data-${userId}` : "appointments-data";
+};
+
+const defaultAppointments: Appointment[] = [
   {
     id: "1",
     doctorName: "د. فاطمة خالد",
@@ -88,14 +104,18 @@ const defaultAppointments = [
 ];
 
 export default function AppointmentsPage() {
-  const [appointments, setAppointments] = useState(() => {
+  const authContext = useContext(AuthContext) as any;
+  const userId = authContext?.user?.id;
+  const APPOINTMENTS_STORAGE_KEY = getAppointmentsStorageKey(userId);
+
+  const [appointments, setAppointments] = useState<Appointment[]>(() => {
     const stored = localStorage.getItem(APPOINTMENTS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : defaultAppointments;
+    return stored ? (JSON.parse(stored) as Appointment[]) : defaultAppointments;
   });
 
   useEffect(() => {
     localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
-  }, [appointments]);
+  }, [appointments, APPOINTMENTS_STORAGE_KEY]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0f172a]">

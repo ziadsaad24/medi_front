@@ -8,9 +8,9 @@ import Navbar from '../Components/Layout/Navbar';
 import Footer from '../Components/Layout/Footer';
 
 export function MedicationsPage() {
-  const { medications, addMedication, toggleMedication, deleteMedication } = useMedications();
+  const { medications, isLoading, addMedication, toggleMedication, deleteMedication } = useMedications();
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name: '', dosage: '', time: '', frequency: 'مرة يومياً' });
+  const [form, setForm] = useState({ name: '', dosage: '', time: '', frequency: '' });
   const navigate = useNavigate(); // دالة التنقل
 
   return (
@@ -69,7 +69,24 @@ export function MedicationsPage() {
           {/* قائمة الأدوية */}
           <div className="grid gap-5">
             <AnimatePresence mode="popLayout">
-              {medications.length === 0 ? (
+              {isLoading ? (
+                <>
+                  {[1, 2, 3].map((item) => (
+                    <motion.div
+                      key={`med-loading-${item}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="p-8 rounded-[2.5rem] border border-white/10 bg-white/[0.03]"
+                    >
+                      <div className="animate-pulse space-y-4">
+                        <div className="h-6 w-48 bg-white/10 rounded-lg" />
+                        <div className="h-4 w-72 bg-white/10 rounded-lg" />
+                        <div className="h-4 w-56 bg-white/10 rounded-lg" />
+                      </div>
+                    </motion.div>
+                  ))}
+                </>
+              ) : medications.length === 0 ? (
                 <motion.div 
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   className="text-center py-24 bg-white/[0.02] border-2 border-dashed border-white/5 rounded-[3rem]"
@@ -113,7 +130,6 @@ export function MedicationsPage() {
                           <span className="text-sm text-slate-400 font-bold flex items-center gap-2">
                             <Activity size={16} className="text-slate-500" /> {med.dosage}
                           </span>
-                          <span className="text-[11px] bg-white/5 text-slate-500 px-3 py-1 rounded-lg border border-white/5 font-bold">{med.frequency}</span>
                         </div>
                       </div>
                     </div>
