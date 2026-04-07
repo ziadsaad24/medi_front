@@ -4,16 +4,41 @@ import { Send, User, Mail, MessageSquare, ArrowRight, Phone, MapPin, CheckCircle
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Components/Layout/Navbar';
 import Footer from '../Components/Layout/Footer';
+import { patientAPI } from '../services/api';
 
 export default function ContactPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("بيانات النموذج:", formData);
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        title: `شكوى من ${formData.name || 'مستخدم'}`,
+        message: formData.message,
+        category: 'technical',
+      };
+
+      await patientAPI.addComplaint(payload);
+      setIsSubmitted(true);
+      setFormData({ name: '', email: '', message: '' });
+    } catch (error) {
+      console.error('Error submitting complaint:', error?.response?.data || error);
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message;
+
+      if (status === 401) {
+        window.alert('يجب تسجيل الدخول أولاً لإرسال الشكوى.');
+      } else {
+        window.alert(backendMessage || 'تعذر إرسال الشكوى الآن. حاول مرة أخرى.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -124,9 +149,10 @@ export default function ContactPage() {
                       <motion.button 
                         whileHover={{ scale: 1.01, translateY: -2 }}
                         whileTap={{ scale: 0.98 }}
+                        disabled={isSubmitting}
                         className="w-full bg-blue-600 hover:bg-blue-500 text-white py-6 rounded-[2rem] font-black text-2xl shadow-2xl shadow-blue-900/40 transition-all flex items-center justify-center gap-4 mt-4"
                       >
-                        <span>إرسال الطلب الآن</span>
+                        <span>{isSubmitting ? 'جاري الإرسال...' : 'إرسال الطلب الآن'}</span>
                         <Send size={26} className="rotate-180" />
                       </motion.button>
                     </motion.form>

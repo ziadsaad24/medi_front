@@ -5,7 +5,7 @@ import './EmergencyCard3D.css';
 import { icons } from '../assets/icons';
 
 // Local SVG Assets
-const imgSubtract = icons.waveBg;
+const imgSubtract = icons.subtract;
 const imgIcon = icons.healthcare;
 const imgIcon1 = icons.shield;
 const imgVector = icons.heartbeatWave;
@@ -16,6 +16,18 @@ const imgIcon4 = icons.security;
 const backLogo = icons.logoPulse;
 const backWave = icons.heartbeatWave;
 
+const getDisplayValue = (value, fallback = '--') => {
+  if (value === undefined || value === null) return fallback;
+  const text = String(value).trim();
+  return text ? text : fallback;
+};
+
+const getContactValue = (value) => {
+  if (value === undefined || value === null) return 'لا يوجد';
+  const text = String(value).trim();
+  return text ? text : 'لا يوجد';
+};
+
 const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, onFlip, hideFlipButton = false, staticSide = null }) => {
   // Use external flip control if provided, otherwise use internal state
   const [internalFlipped, setInternalFlipped] = useState(false);
@@ -23,22 +35,40 @@ const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, on
   const handleFlip = onFlip || (() => setInternalFlipped(!internalFlipped));
 
   // Default data if not provided
-  const data = patientData || {
-    name: "محمد أحمد محمود",
-    id: "664221",
-    age: "32 سنة",
-    bloodType: "A+",
-    height: "170 سم",
-    weight: "66 كجم",
-    allergies: "البنسلين",
+  const data = patientData || {};
+
+  const normalizedData = {
+    name: getDisplayValue(data.name),
+    id: getDisplayValue(data.medical_card_id),
+    age: getDisplayValue(data.age),
+    bloodType: getDisplayValue(data.bloodType),
+    height: getDisplayValue(data.height),
+    weight: getDisplayValue(data.weight),
+    allergies: getContactValue(data.allergies),
+    qrValue: data.qrValue || `https://medicare.com/patient/${getDisplayValue(data.id, 'unknown')}`,
     emergencyContact: {
-      name: "محمد أحمد (اخ)",
-      phone: "01012345678"
-    }
+      name: getContactValue(data.emergencyContact?.name),
+      phone: getContactValue(data.emergencyContact?.phone),
+    },
   };
 
+  const emergencyContactText = (() => {
+    const contactName = normalizedData.emergencyContact.name;
+    const contactPhone = normalizedData.emergencyContact.phone;
+
+    if (contactName === 'لا يوجد' && contactPhone === 'لا يوجد') {
+      return 'لا يوجد';
+    }
+
+    if (contactName !== 'لا يوجد' && contactPhone !== 'لا يوجد') {
+      return `${contactName} - ${contactPhone}`;
+    }
+
+    return contactName !== 'لا يوجد' ? contactName : contactPhone;
+  })();
+
   const QRComp = QRCode?.default ? QRCode.default : QRCode;
-  const nameWords = data.name.split(' ');
+  const nameWords = normalizedData.name.split(' ');
 
   return (
     <div className={`emergency-card-container ${staticSide ? `static-side-${staticSide}` : ''}`}>
@@ -61,7 +91,7 @@ const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, on
           {/* QR Code - Left Side */}
           <div className="qr-container">
             <QRComp
-              value={data.qrValue || `https://medicare.com/patient/${data.id}`}
+              value={normalizedData.qrValue}
               size={190}
               fgColor="#0f172a"
               bgColor="#ffffff"
@@ -82,7 +112,7 @@ const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, on
           <div className="id-section">
             <p className="id-text">
               <span className="id-white">id:</span>
-              <span className="id-dark">#{data.id}</span>
+              <span className="id-dark">#{normalizedData.id}</span>
             </p>
             <img src={imgIdLogoIconPngSvg1} alt="" className="id-logo" />
           </div>
@@ -91,19 +121,19 @@ const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, on
           <div className="stats-container">
             <div className="stat-box">
               <p className="stat-label">العمر</p>
-              <p className="stat-value">{data.age}</p>
+              <p className="stat-value">{normalizedData.age}</p>
             </div>
             <div className="stat-box">
               <p className="stat-label">فصيلة الدم</p>
-              <p className="stat-value">{data.bloodType}</p>
+              <p className="stat-value">{normalizedData.bloodType}</p>
             </div>
             <div className="stat-box">
               <p className="stat-label">الطول</p>
-              <p className="stat-value">{data.height}</p>
+              <p className="stat-value">{normalizedData.height}</p>
             </div>
             <div className="stat-box">
               <p className="stat-label">الوزن</p>
-              <p className="stat-value">{data.weight}</p>
+              <p className="stat-value">{normalizedData.weight}</p>
             </div>
           </div>
 
@@ -132,7 +162,7 @@ const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, on
             </div>
             <div className="allergy-pill">
               <span className="red-dot" />
-              <p className="allergy-text-content">{data.allergies}</p>
+              <p className="allergy-text-content">{normalizedData.allergies}</p>
             </div>
           </div>
 
@@ -143,7 +173,7 @@ const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, on
               <img src={imgIcon4} alt="" className="alert-icon-img" />
             </div>
             <p className="contact-details">
-              {data.emergencyContact.name}            {data.emergencyContact.phone}
+              {emergencyContactText}
             </p>
           </div>
 

@@ -2,30 +2,76 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AdminSidebar from '../Components/Admin/AdminSidebar';
 import Swal from 'sweetalert2';
-import { adminAPI } from '../services/api';
+import { adminAPI, complaintAPI } from '../services/api';
 
 const AdminComplaints = () => {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
 
-  // **Fetch complaints from backend with fallback**
+  const mapPriority = (priority) => {
+    if (typeof priority === 'string') return priority;
+    const mapping = { 0: 'low', 1: 'medium', 2: 'high', 3: 'urgent' };
+    return mapping[priority] || 'medium';
+  };
+
+  const normalizeComplaint = (complaint) => ({
+    id: complaint.id,
+    complaint_id: complaint.complaint_id || `#C-${String(complaint.id).padStart(6, '0')}`,
+    user_name: complaint.user_name || complaint.user?.name || 'مستخدم',
+    user_email: complaint.user_email || complaint.user?.email || '-',
+    type: complaint.type || complaint.category || 'other',
+    subject: complaint.subject || complaint.title || 'بدون عنوان',
+    description: complaint.description || complaint.message || '-',
+    status: complaint.status || 'pending',
+    priority: mapPriority(complaint.priority),
+    created_at: complaint.created_at,
+    updated_at: complaint.updated_at,
+    admin_response: complaint.admin_response || null,
+  });
+
+  const getComplaintsList = (response) => {
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.data)) return response.data;
+    if (Array.isArray(response?.data?.data)) return response.data.data;
+    if (Array.isArray(response?.data?.items)) return response.data.items;
+    if (Array.isArray(response?.complaints)) return response.complaints;
+    if (Array.isArray(response?.data?.complaints)) return response.data.complaints;
+    return [];
+  };
+
+  // **Fetch complaints from backend**
   const fetchComplaints = async () => {
     try {
       setLoading(true);
-      const response = await adminAPI.getComplaints();
-      
-      if (response.success) {
-        setComplaints(response.data);
-      } else {
-        // Fallback to dummy data
-        setComplaints(dummyComplaints);
+      setFetchError('');
+      let response;
+      try {
+        response = await adminAPI.getComplaints();
+      } catch (adminError) {
+        if (adminError?.response?.status === 404) {
+          response = await complaintAPI.getComplaints();
+        } else {
+          throw adminError;
+        }
       }
+      const complaintsList = getComplaintsList(response);
+      setComplaints(complaintsList.map(normalizeComplaint));
     } catch (error) {
       console.error('Error fetching complaints:', error);
-      setComplaints(dummyComplaints);
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message;
+      if (status === 401) {
+        setFetchError('غير مصرح: سجل دخولك كمسؤول ثم أعد المحاولة.');
+      } else if (status === 403) {
+        setFetchError('ليس لديك صلاحية الوصول لشكاوى الأدمن.');
+      } else {
+        setFetchError(backendMessage || 'تعذر تحميل الشكاوى من قاعدة البيانات.');
+      }
+      setComplaints([]);
     } finally {
       setLoading(false);
     }
@@ -34,75 +80,6 @@ const AdminComplaints = () => {
   useEffect(() => {
     fetchComplaints();
   }, []);
-
-  // **Dummy data for testing**
-  const dummyComplaints = [
-    {
-      id: 1,
-      complaint_id: '#C-2024-001',
-      user_name: 'أحمد محمد',
-      user_email: 'ahmed@example.com',
-      type: 'technical',
-      subject: 'مشكلة في تحميل التطبيق',
-      description: 'التطبيق لا يعمل بشكل صحيح على جهاز الآيفون. يتوقف عند شاشة التحميل.',
-      status: 'pending',
-      priority: 'high',
-      created_at: '2024-01-15 10:30:00',
-      updated_at: '2024-01-15 10:30:00'
-    },
-    {
-      id: 2,
-      complaint_id: '#C-2024-002',
-      user_name: 'فاطمة علي',
-      user_email: 'fatima@example.com',
-      type: 'service',
-      subject: 'تأخير في موعد الحجز',
-      description: 'تم حجز موعد مع الطبيب ولكن تأخر الموعد لمدة 30 دقيقة بدون إشعار.',
-      status: 'in_progress',
-      priority: 'medium',
-      created_at: '2024-01-14 14:20:00',
-      updated_at: '2024-01-15 09:00:00'
-    },
-    {
-      id: 3,
-      complaint_id: '#C-2024-003',
-      user_name: 'خالد حسن',
-      user_email: 'khaled@example.com',
-      type: 'payment',
-      subject: 'مشكلة في الدفع',
-      description: 'تم خصم المبلغ من البطاقة الائتمانية ولكن الحجز لم يتم تأكيده.',
-      status: 'resolved',
-      priority: 'high',
-      created_at: '2024-01-13 11:00:00',
-      updated_at: '2024-01-14 15:30:00'
-    },
-    {
-      id: 4,
-      complaint_id: '#C-2024-004',
-      user_name: 'سارة إبراهيم',
-      user_email: 'sara@example.com',
-      type: 'doctor',
-      subject: 'سلوك غير لائق من الطبيب',
-      description: 'الطبيب كان غير محترم خلال الكشف وتعامل بطريقة سيئة.',
-      status: 'pending',
-      priority: 'urgent',
-      created_at: '2024-01-15 16:45:00',
-      updated_at: '2024-01-15 16:45:00'
-    },
-    {
-      id: 5,
-      complaint_id: '#C-2024-005',
-      user_name: 'محمد عبدالله',
-      user_email: 'mohamed@example.com',
-      type: 'technical',
-      subject: 'خطأ في عرض البيانات',
-      description: 'السجلات الطبية الخاصة بي تظهر بيانات خاطئة. أرجو التصحيح.',
-      status: 'dismissed',
-      priority: 'low',
-      created_at: '2024-01-12 09:15:00',
-      updated_at: '2024-01-13 10:00:00'
-    }
-  ];
 
   // **Filter complaints**
   const filteredComplaints = complaints.filter(complaint => {
@@ -235,37 +212,22 @@ const AdminComplaints = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // Call backend API
-          const response = await adminAPI.updateComplaintStatus(complaintId, newStatus);
-          
-          if (response.success) {
-            Swal.fire({
-              title: 'تم التحديث!',
-              text: 'تم تحديث حالة الشكوى بنجاح',
-              icon: 'success',
-              confirmButtonText: 'حسناً',
-              confirmButtonColor: '#0F427D'
-            });
-            fetchComplaints(); // Refresh
-          } else {
-            throw new Error('Failed to update');
-          }
-        } catch (error) {
-          console.error('Error updating complaint:', error);
-          // For demo: update locally
-          setComplaints(prev => 
-            prev.map(c => 
-              c.id === complaintId 
-                ? { ...c, status: newStatus, updated_at: new Date().toISOString() }
-                : c
-            )
-          );
+          await adminAPI.updateComplaintStatus(complaintId, newStatus);
           Swal.fire({
-            title: 'تم التحديث (Demo)!',
-            text: 'تم تحديث حالة الشكوى محلياً',
+            title: 'تم التحديث!',
+            text: 'تم تحديث حالة الشكوى بنجاح',
             icon: 'success',
             confirmButtonText: 'حسناً',
             confirmButtonColor: '#0F427D'
+          });
+          fetchComplaints(); // Refresh
+        } catch (error) {
+          console.error('Error updating complaint:', error);
+          Swal.fire({
+            title: 'فشل التحديث',
+            text: error?.response?.data?.message || 'تعذر تحديث حالة الشكوى من قاعدة البيانات',
+            icon: 'error',
+            confirmButtonText: 'حسناً'
           });
         }
       }
@@ -286,31 +248,22 @@ const AdminComplaints = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // Call backend API
-          const response = await adminAPI.deleteComplaint(complaintId);
-          
-          if (response.success) {
-            Swal.fire({
-              title: 'تم الحذف!',
-              text: 'تم حذف الشكوى بنجاح',
-              icon: 'success',
-              confirmButtonText: 'حسناً',
-              confirmButtonColor: '#0F427D'
-            });
-            fetchComplaints(); // Refresh
-          } else {
-            throw new Error('Failed to delete');
-          }
-        } catch (error) {
-          console.error('Error deleting complaint:', error);
-          // For demo: delete locally
-          setComplaints(prev => prev.filter(c => c.id !== complaintId));
+          await adminAPI.deleteComplaint(complaintId);
           Swal.fire({
-            title: 'تم الحذف (Demo)!',
-            text: 'تم حذف الشكوى محلياً',
+            title: 'تم الحذف!',
+            text: 'تم حذف الشكوى بنجاح',
             icon: 'success',
             confirmButtonText: 'حسناً',
             confirmButtonColor: '#0F427D'
+          });
+          fetchComplaints(); // Refresh
+        } catch (error) {
+          console.error('Error deleting complaint:', error);
+          Swal.fire({
+            title: 'فشل الحذف',
+            text: error?.response?.data?.message || 'تعذر حذف الشكوى من قاعدة البيانات',
+            icon: 'error',
+            confirmButtonText: 'حسناً'
           });
         }
       }
@@ -348,6 +301,12 @@ const AdminComplaints = () => {
               </div>
             </motion.div>
           </div>
+
+          {fetchError && (
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+              {fetchError}
+            </div>
+          )}
 
           {/* Stats Cards */}
           <motion.div
