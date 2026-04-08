@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, User, Menu, X, Home, Users, Calendar, Pill, FileText, PhoneCall, Info, LogOut, UserCircle, ChevronDown } from 'lucide-react';
+import { Bell, User, Menu, X, Home, Users, Calendar, Pill, FileText, PhoneCall, Info, LogOut, UserCircle, ChevronDown, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/use-notifications';
+import { useTheme } from '../../context/ThemeContext';
 
 const Navbar = (props = {}) => {
   const { patientData } = props;
@@ -12,7 +13,8 @@ const Navbar = (props = {}) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { user, logout } = useAuth();
-  const { notifications, unreadCount } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   
   // 1. الحصول على المسار الحالي
@@ -108,6 +110,15 @@ const Navbar = (props = {}) => {
 
           {/* User Actions */}
           <div className="flex items-center gap-3 flex-row-reverse">
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}
+              title={isDark ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'}
+              aria-label="toggle-theme"
+            >
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
             <button onClick={() => setIsMobileMenuOpen(true)} className={`xl:hidden p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}>
               <Menu size={24} />
             </button>
@@ -158,10 +169,12 @@ const Navbar = (props = {}) => {
                           <button
                             key={item.id}
                             onClick={() => {
-                              navigate(item.route);
+                              markAsRead(item.id);
+                              markAllAsRead();
+                              navigate('/medications');
                               setIsNotificationsOpen(false);
                             }}
-                            className="w-full text-right px-4 py-3 border-b last:border-b-0 border-slate-100 hover:bg-slate-50 transition-colors"
+                            className={`w-full text-right px-4 py-3 border-b last:border-b-0 border-slate-100 hover:bg-slate-50 transition-colors ${item.isRead ? 'opacity-70' : ''}`}
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div>
@@ -169,7 +182,7 @@ const Navbar = (props = {}) => {
                                 <p className="text-xs text-slate-500 mt-1 leading-5">{item.message}</p>
                                 <p className="text-[11px] text-[#008080] font-bold mt-1">{item.meta}</p>
                               </div>
-                              <span className={`mt-1 w-2.5 h-2.5 rounded-full ${item.priority === 'urgent' ? 'bg-rose-500' : 'bg-emerald-500'}`}></span>
+                              <span className={`mt-1 w-2.5 h-2.5 rounded-full ${item.isRead ? 'bg-slate-300' : (item.priority === 'urgent' ? 'bg-rose-500' : 'bg-emerald-500')}`}></span>
                             </div>
                           </button>
                         ))
@@ -199,11 +212,7 @@ const Navbar = (props = {}) => {
                   </p>
                 </div>
                 <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-teal-50 border-2 border-white overflow-hidden flex items-center justify-center">
-                  {user?.avatar || patientData?.avatar ? (
-                    <img src={user?.avatar || patientData?.avatar} alt="user" className="w-full h-full object-cover" />
-                  ) : ( 
-                    <User size={20} className="text-[#008080]" /> 
-                  )}
+                  <User size={20} className="text-[#008080]" />
                 </div>
               </div>
 

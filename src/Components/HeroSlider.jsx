@@ -95,7 +95,7 @@ export default function HeroSlider() {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gray-900" dir="rtl">
+    <div className="relative w-full h-screen overflow-hidden" dir="rtl">
       <AnimatePresence initial={false} custom={direction} mode="wait">
         <motion.div
           key={currentSlide}
@@ -117,7 +117,7 @@ export default function HeroSlider() {
               alt={slides[currentSlide].title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 via-gray-900/70 to-gray-900/40" />
+            <div className="absolute inset-0" style={{ background: 'var(--hero-home-overlay)' }} />
           </div>
 
           <div className="relative h-full flex items-center">

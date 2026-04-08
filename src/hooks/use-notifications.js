@@ -1,114 +1,158 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { patientAPI } from '../services/api';
+import AuthContext from '../context/AuthContext';
 
-const MEDICATIONS_KEY = 'medications-data';
-const APPOINTMENTS_KEY = 'appointments-data';
+const formatRelativeMinutes = (value) => {
+  const mins = Math.max(1, Math.round(Number(value)));
+  if (mins < 60) return `بعد ${mins} دقيقة`;
 
-const parseJSON = (value, fallback) => {
-  try {
-    return value ? JSON.parse(value) : fallback;
-  } catch {
-    return fallback;
+  const hours = Math.floor(mins / 60);
+  const remaining = mins % 60;
+  if (remaining === 0) return `بعد ${hours} ساعة`;
+
+  return `بعد ${hours}س ${remaining}د`;
+};
+
+const formatNotificationMeta = (meta) => {
+  if (meta === null || meta === undefined) return '';
+
+  if (typeof meta === 'number' && Number.isFinite(meta)) {
+    return formatRelativeMinutes(meta);
   }
+
+  const text = String(meta).trim();
+  if (!text) return '';
+
+  // If backend returns only a number as string, format it directly.
+  if (/^\d+(?:\.\d+)?$/.test(text)) {
+    return formatRelativeMinutes(Number(text));
+  }
+
+  // If text already starts with "بعد" and contains decimal number, round it.
+  if (text.startsWith('بعد')) {
+    return text.replace(/\d+(?:\.\d+)?/, (match) => String(Math.max(1, Math.round(Number(match)))));
+  }
+
+  return text;
 };
 
-const parseAppointmentDateTime = (date, time24) => {
-  if (!date || !time24) return null;
-  const d = new Date(`${date}T${time24}:00`);
-  return Number.isNaN(d.getTime()) ? null : d;
-};
+const getMinutesUntilDueAt = (item) => {
+  if (!item?.due_at) return null;
 
-const nextMedicationTime = (time) => {
-  if (!time) return null;
-  const [h, m] = time.split(':').map(Number);
-  if (Number.isNaN(h) || Number.isNaN(m)) return null;
+  const dueAt = new Date(item.due_at);
+  if (Number.isNaN(dueAt.getTime())) return null;
 
   const now = new Date();
-  const next = new Date();
-  next.setHours(h, m, 0, 0);
+  let minutes = Math.ceil((dueAt.getTime() - now.getTime()) / 60000);
 
-  if (next < now) {
-    next.setDate(next.getDate() + 1);
+  // Medication reminders are daily. If the time already passed today,
+  // calculate the next occurrence (tomorrow at the same time).
+  if (item?.type === 'medication' && minutes < 0) {
+    const oneDayMinutes = 24 * 60;
+    minutes = ((minutes % oneDayMinutes) + oneDayMinutes) % oneDayMinutes;
+    if (minutes === 0) minutes = oneDayMinutes;
   }
-  return next;
+
+  return minutes;
 };
 
-const minutesDiff = (futureDate, now) => Math.round((futureDate.getTime() - now.getTime()) / 60000);
+const normalizeNotification = (item, index) => {
+  const minutesUntilDue = getMinutesUntilDueAt(item);
 
-const relativeLabel = (mins) => {
-  if (mins <= 60) return `بعد ${Math.max(1, mins)} دقيقة`;
-  const hrs = Math.floor(mins / 60);
-  const rem = mins % 60;
-  return rem === 0 ? `بعد ${hrs} ساعة` : `بعد ${hrs}س ${rem}د`;
+  return {
+    id: String(item?.id ?? `notification-${index}`),
+    type: item?.type ?? 'general',
+    priority: item?.priority ?? 'normal',
+    title: item?.title ?? 'تنبيه',
+    message: item?.message ?? '',
+    meta: minutesUntilDue !== null ? formatRelativeMinutes(minutesUntilDue) : formatNotificationMeta(item?.meta),
+    route: '/medications',
+  };
 };
 
 export const useNotifications = () => {
-  const [refreshTick, setRefreshTick] = useState(0);
+  const authContext = useContext(AuthContext);
+  const userId = authContext?.user?.id ?? 'anonymous';
+  const readStorageKey = `notifications-read-${userId}`;
+
+  const [notifications, setNotifications] = useState([]);
+  const [readNotificationIds, setReadNotificationIds] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem(readStorageKey);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
-    const interval = window.setInterval(() => {
-      setRefreshTick((prev) => prev + 1);
-    }, 60000);
+    try {
+      const stored = sessionStorage.getItem(readStorageKey);
+      setReadNotificationIds(stored ? JSON.parse(stored) : []);
+    } catch {
+      setReadNotificationIds([]);
+    }
+  }, [readStorageKey]);
 
-    const onStorage = () => setRefreshTick((prev) => prev + 1);
-    window.addEventListener('storage', onStorage);
+  useEffect(() => {
+    sessionStorage.setItem(readStorageKey, JSON.stringify(readNotificationIds));
+  }, [readNotificationIds, readStorageKey]);
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const response = await patientAPI.getUpcomingNotifications();
+        const items = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.notifications)
+            ? response.notifications
+            : Array.isArray(response)
+              ? response
+              : [];
+
+        setNotifications(items.map((item, index) => normalizeNotification(item, index)).slice(0, 8));
+      } catch (error) {
+        console.warn('Unable to load notifications from API:', error);
+        setNotifications([]);
+      }
+    };
+
+    loadNotifications();
+
+    const interval = window.setInterval(() => {
+      loadNotifications();
+    }, 60000);
 
     return () => {
       window.clearInterval(interval);
-      window.removeEventListener('storage', onStorage);
     };
   }, []);
 
-  const notifications = useMemo(() => {
-    const now = new Date();
-    const meds = parseJSON(localStorage.getItem(MEDICATIONS_KEY), []);
-    const appointments = parseJSON(localStorage.getItem(APPOINTMENTS_KEY), []);
-    const nextItems = [];
+  const notificationsWithReadState = useMemo(() => {
+    const readSet = new Set(readNotificationIds);
+    return notifications.map((item) => ({
+      ...item,
+      isRead: readSet.has(item.id),
+    }));
+  }, [notifications, readNotificationIds]);
 
-    for (const med of meds) {
-      if (!med || med.taken) continue;
-      const dueAt = nextMedicationTime(med.time);
-      if (!dueAt) continue;
-      const mins = minutesDiff(dueAt, now);
-      if (mins < 0 || mins > 180) continue;
+  const markAsRead = (notificationId) => {
+    setReadNotificationIds((prev) => {
+      if (prev.includes(notificationId)) return prev;
+      return [...prev, notificationId];
+    });
+  };
 
-      nextItems.push({
-        id: `med-${med.id}`,
-        type: 'medication',
-        priority: mins <= 45 ? 'urgent' : 'normal',
-        title: 'ميعاد دواء قريب',
-        message: `${med.name} - ${med.dosage}`,
-        meta: relativeLabel(mins),
-        route: '/medications',
-        dueAt,
-      });
-    }
+  const markAllAsRead = () => {
+    setReadNotificationIds(notifications.map((item) => item.id));
+  };
 
-    for (const appt of appointments) {
-      if (!appt || appt.status !== 'مؤكد') continue;
-      const dueAt = parseAppointmentDateTime(appt.date, appt.time24);
-      if (!dueAt) continue;
-      const mins = minutesDiff(dueAt, now);
-      if (mins < 0 || mins > 24 * 60) continue;
-
-      nextItems.push({
-        id: `appt-${appt.id}`,
-        type: 'appointment',
-        priority: mins <= 120 ? 'urgent' : 'normal',
-        title: 'موعد حجز قريب',
-        message: `${appt.doctorName} - ${appt.specialty}`,
-        meta: relativeLabel(mins),
-        route: '/appointments',
-        dueAt,
-      });
-    }
-
-    return nextItems
-      .sort((a, b) => a.dueAt.getTime() - b.dueAt.getTime())
-      .slice(0, 8);
-  }, [refreshTick]);
+  const unreadCount = notificationsWithReadState.filter((item) => !item.isRead).length;
 
   return {
-    notifications,
-    unreadCount: notifications.length,
+    notifications: notificationsWithReadState,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
   };
 };
