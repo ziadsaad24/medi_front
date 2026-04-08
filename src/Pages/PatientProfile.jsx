@@ -6,9 +6,11 @@ import Navbar from '../Components/Layout/Navbar';
 import Footer from '../Components/Layout/Footer';
 import EmergencyCard3D from '../Components/EmergencyCard3D';
 import { patientAPI } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 
 const PatientProfile = () => {
   const { user, updateUser } = useAuth();
+  const { isDark } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [showMedicalCard, setShowMedicalCard] = useState(false);
   const [cardFlipped, setCardFlipped] = useState(false);
@@ -181,10 +183,17 @@ const PatientProfile = () => {
     }
   };
 
+  const fieldLabelClass = `flex items-center gap-2 text-sm font-bold ${isDark ? 'text-slate-300' : 'text-gray-600'}`;
+  const fieldClass = `w-full px-4 py-3 border rounded-xl outline-none transition-all ${
+    isDark
+      ? 'border-slate-700 bg-slate-900/70 text-slate-100 placeholder:text-slate-400'
+      : 'border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-400'
+  } ${isEditing ? (isDark ? 'focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20' : 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100') : 'cursor-not-allowed opacity-80'}`;
+
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 pt-28 pb-20 px-4" dir="rtl">
+      <div className="min-h-screen theme-page pt-28 pb-20 px-4" dir="rtl">
         <div className="max-w-6xl mx-auto">
           
           {/* Header with Generate Card Button */}
@@ -193,8 +202,8 @@ const PatientProfile = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-10"
           >
-            <h1 className="text-4xl font-black text-[#0F427D] mb-2">الملف الشخصي</h1>
-            <p className="text-gray-500 mb-6">معلوماتك الشخصية والطبية</p>
+            <h1 className="text-4xl font-black theme-title mb-2">الملف الشخصي</h1>
+            <p className="theme-text-muted mb-6">معلوماتك الشخصية والطبية</p>
             
             <button
               onClick={() => setShowMedicalCard(true)}
@@ -213,16 +222,16 @@ const PatientProfile = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="lg:col-span-2 bg-white rounded-3xl shadow-xl p-8"
+              className="lg:col-span-2 theme-card rounded-3xl shadow-xl p-8"
             >
               {/* Edit Buttons */}
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-black text-[#004060]">المعلومات الشخصية</h2>
+                <h2 className="text-2xl font-black theme-title">المعلومات الشخصية</h2>
                 
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-[#0F427D] rounded-xl font-bold hover:bg-blue-100 transition-all"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all ${isDark ? 'bg-slate-800 text-cyan-300 hover:bg-slate-700' : 'bg-blue-50 text-[#0F427D] hover:bg-blue-100'}`}
                   >
                     <Edit2 size={18} />
                     تعديل
@@ -251,7 +260,7 @@ const PatientProfile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* الاسم */}
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                  <label className={fieldLabelClass}>
                     <User size={16} className="text-[#008080]" />
                     الاسم الكامل
                   </label>
@@ -261,15 +270,13 @@ const PatientProfile = () => {
                     value={formData.name}
                     onChange={handleChange}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                      isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                    }`}
+                    className={fieldClass}
                   />
                 </div>
 
                 {/* البريد الإلكتروني */}
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                  <label className={fieldLabelClass}>
                     <Mail size={16} className="text-[#008080]" />
                     البريد الإلكتروني
                   </label>
@@ -279,15 +286,13 @@ const PatientProfile = () => {
                     value={formData.email}
                     onChange={handleChange}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                      isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                    }`}
+                    className={fieldClass}
                   />
                 </div>
 
                 {/* رقم الهاتف */}
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                  <label className={fieldLabelClass}>
                     <Phone size={16} className="text-[#008080]" />
                     رقم الهاتف
                   </label>
@@ -297,15 +302,13 @@ const PatientProfile = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                      isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                    }`}
+                    className={fieldClass}
                   />
                 </div>
 
                 {/* تاريخ الميلاد */}
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                  <label className={fieldLabelClass}>
                     <Calendar size={16} className="text-[#008080]" />
                     تاريخ الميلاد
                   </label>
@@ -315,15 +318,13 @@ const PatientProfile = () => {
                     value={formData.birthDate}
                     onChange={handleChange}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                      isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                    }`}
+                    className={fieldClass}
                   />
                 </div>
 
                 {/* العنوان */}
                 <div className="md:col-span-2 space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                  <label className={fieldLabelClass}>
                     <MapPin size={16} className="text-[#008080]" />
                     العنوان
                   </label>
@@ -333,16 +334,14 @@ const PatientProfile = () => {
                     value={formData.address}
                     onChange={handleChange}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                      isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                    }`}
+                    className={fieldClass}
                   />
                 </div>
               </div>
 
               {/* Medical Information Section */}
-              <div className="mt-8 pt-8 border-t border-gray-200">
-                <h3 className="text-xl font-black text-[#004060] mb-6 flex items-center gap-2">
+              <div className={`mt-8 pt-8 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
+                <h3 className="text-xl font-black theme-title mb-6 flex items-center gap-2">
                   <Shield size={20} className="text-[#008080]" />
                   المعلومات الطبية
                 </h3>
@@ -350,7 +349,7 @@ const PatientProfile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* فصيلة الدم */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                    <label className={fieldLabelClass}>
                       <Droplet size={16} className="text-red-500" />
                       فصيلة الدم
                     </label>
@@ -359,9 +358,7 @@ const PatientProfile = () => {
                       value={formData.bloodType}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                        isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                      }`}
+                      className={fieldClass}
                     >
                       <option value="">اختر فصيلة الدم</option>
                       <option value="A+">A+</option>
@@ -377,7 +374,7 @@ const PatientProfile = () => {
 
                   {/* الطول */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                    <label className={fieldLabelClass}>
                       <User size={16} className="text-[#008080]" />
                       الطول (سم)
                     </label>
@@ -388,15 +385,13 @@ const PatientProfile = () => {
                       onChange={handleChange}
                       disabled={!isEditing}
                       placeholder="175"
-                      className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                        isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                      }`}
+                      className={fieldClass}
                     />
                   </div>
 
                   {/* الوزن */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                    <label className={fieldLabelClass}>
                       <User size={16} className="text-[#008080]" />
                       الوزن (كجم)
                     </label>
@@ -407,15 +402,13 @@ const PatientProfile = () => {
                       onChange={handleChange}
                       disabled={!isEditing}
                       placeholder="70"
-                      className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                        isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                      }`}
+                      className={fieldClass}
                     />
                   </div>
 
                   {/* اسم جهة الاتصال للطوارئ */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                    <label className={fieldLabelClass}>
                       <User size={16} className="text-orange-500" />
                       اسم جهة الاتصال للطوارئ
                     </label>
@@ -426,15 +419,13 @@ const PatientProfile = () => {
                       onChange={handleChange}
                       disabled={!isEditing}
                       placeholder="محمد أحمد (الأخ)"
-                      className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                        isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                      }`}
+                      className={fieldClass}
                     />
                   </div>
 
                   {/* رقم الطوارئ */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                    <label className={fieldLabelClass}>
                       <Phone size={16} className="text-orange-500" />
                       رقم الطوارئ
                     </label>
@@ -445,15 +436,13 @@ const PatientProfile = () => {
                       onChange={handleChange}
                       disabled={!isEditing}
                       placeholder="01012345678"
-                      className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all ${
-                        isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                      }`}
+                      className={fieldClass}
                     />
                   </div>
 
                   {/* الحساسية */}
                   <div className="md:col-span-2 space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                    <label className={fieldLabelClass}>
                       <AlertCircle size={16} className="text-red-500" />
                       الحساسية (إن وجدت)
                     </label>
@@ -464,15 +453,13 @@ const PatientProfile = () => {
                       disabled={!isEditing}
                       rows="2"
                       placeholder="مثال: حساسية من البنسلين، حساسية من الفول السوداني"
-                      className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all resize-none ${
-                        isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                      }`}
+                      className={`${fieldClass} resize-none`}
                     />
                   </div>
 
                   {/* الأمراض المزمنة */}
                   <div className="md:col-span-2 space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                    <label className={fieldLabelClass}>
                       <FileText size={16} className="text-[#008080]" />
                       الأمراض المزمنة (إن وجدت)
                     </label>
@@ -483,9 +470,7 @@ const PatientProfile = () => {
                       disabled={!isEditing}
                       rows="2"
                       placeholder="مثال: ضغط الدم، السكري"
-                      className={`w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 outline-none transition-all resize-none ${
-                        isEditing ? 'focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100' : 'cursor-not-allowed'
-                      }`}
+                      className={`${fieldClass} resize-none`}
                     />
                   </div>
                 </div>
@@ -498,42 +483,42 @@ const PatientProfile = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow"
+                className={`rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow ${isDark ? 'bg-slate-900/80 border border-slate-700' : 'bg-white'}`}
               >
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
                   <Calendar size={28} className="text-[#0F427D]" />
                 </div>
-                <h3 className="font-bold text-gray-800 mb-1">المواعيد</h3>
+                <h3 className={`font-bold mb-1 ${isDark ? 'text-slate-100' : 'text-gray-800'}`}>المواعيد</h3>
                 <p className="text-3xl font-black text-[#0F427D]">12</p>
-                <p className="text-sm text-gray-500 mt-1">موعد قادم</p>
+                <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>موعد قادم</p>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow"
+                className={`rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow ${isDark ? 'bg-slate-900/80 border border-slate-700' : 'bg-white'}`}
               >
-                <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-teal-500/20' : 'bg-teal-100'}`}>
                   <User size={28} className="text-[#008080]" />
                 </div>
-                <h3 className="font-bold text-gray-800 mb-1">الأطباء</h3>
+                <h3 className={`font-bold mb-1 ${isDark ? 'text-slate-100' : 'text-gray-800'}`}>الأطباء</h3>
                 <p className="text-3xl font-black text-[#008080]">5</p>
-                <p className="text-sm text-gray-500 mt-1">طبيب متابع</p>
+                <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>طبيب متابع</p>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow"
+                className={`rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow ${isDark ? 'bg-slate-900/80 border border-slate-700' : 'bg-white'}`}
               >
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-green-500/20' : 'bg-green-100'}`}>
                   <Mail size={28} className="text-green-600" />
                 </div>
-                <h3 className="font-bold text-gray-800 mb-1">الرسائل</h3>
+                <h3 className={`font-bold mb-1 ${isDark ? 'text-slate-100' : 'text-gray-800'}`}>الرسائل</h3>
                 <p className="text-3xl font-black text-green-600">8</p>
-                <p className="text-sm text-gray-500 mt-1">رسالة جديدة</p>
+                <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>رسالة جديدة</p>
               </motion.div>
             </div>
           </div>
@@ -555,11 +540,11 @@ const PatientProfile = () => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl shadow-2xl max-w-[1120px] w-[95vw] max-h-[85vh] overflow-y-auto"
+              className={`rounded-3xl shadow-2xl max-w-[1120px] w-[95vw] max-h-[85vh] overflow-y-auto ${isDark ? 'bg-slate-900 border border-slate-700' : 'bg-white'}`}
             >
               {/* Modal Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center rounded-t-3xl z-10">
-                <h2 className="text-2xl font-black text-[#0F427D]">البطاقة الطبية</h2>
+              <div className={`sticky top-0 p-6 flex justify-between items-center rounded-t-3xl z-10 ${isDark ? 'bg-slate-900 border-b border-slate-700' : 'bg-white border-b border-gray-200'}`}>
+                <h2 className="text-2xl font-black theme-title">البطاقة الطبية</h2>
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownloadCard}
@@ -590,7 +575,7 @@ const PatientProfile = () => {
                 </div>
                 
                 {/* Flip Hint */}
-                <div className="flex items-center gap-2 text-gray-600">
+                <div className={`flex items-center gap-2 ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
                   <RotateCcw size={18} className="animate-spin" style={{ animationDuration: '3s' }} />
                   <p className="text-sm">اضغط على زر التقليب لرؤية الوجه الآخر من البطاقة</p>
                 </div>
@@ -598,8 +583,8 @@ const PatientProfile = () => {
 
               {/* Instructions */}
               <div className="px-8 pb-8">
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <p className="text-sm text-gray-700 text-center">
+                <div className={`p-4 rounded-xl ${isDark ? 'bg-blue-500/10 border border-blue-400/20' : 'bg-blue-50 border border-blue-200'}`}>
+                  <p className={`text-sm text-center ${isDark ? 'text-slate-200' : 'text-gray-700'}`}>
                     <strong className="text-[#0F427D]">💡 نصيحة:</strong> عند الضغط على زر التحميل ستفتح نافذة الطباعة بترتيب مناسب: الوجه الأمامي بالأعلى والوجه الخلفي بالأسفل
                   </p>
                 </div>

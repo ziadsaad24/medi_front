@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, User, Menu, X, Home, Users, Calendar, Pill, FileText, PhoneCall, Info, LogOut, UserCircle, ChevronDown } from 'lucide-react';
+import { Bell, User, Menu, X, Home, Users, Calendar, Pill, FileText, PhoneCall, Info, LogOut, UserCircle, ChevronDown, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/use-notifications';
+import { useTheme } from '../../context/ThemeContext';
 
 const Navbar = (props = {}) => {
   const { patientData } = props;
@@ -13,6 +14,7 @@ const Navbar = (props = {}) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { user, logout } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   
   // 1. الحصول على المسار الحالي
@@ -108,6 +110,15 @@ const Navbar = (props = {}) => {
 
           {/* User Actions */}
           <div className="flex items-center gap-3 flex-row-reverse">
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}
+              title={isDark ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'}
+              aria-label="toggle-theme"
+            >
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
             <button onClick={() => setIsMobileMenuOpen(true)} className={`xl:hidden p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}>
               <Menu size={24} />
             </button>

@@ -4,9 +4,103 @@
   --primary-teal: #008080;
 }
 
+:root,
+html[data-theme='light'] {
+  --app-bg: #f4f8fc;
+  --app-bg-soft: rgba(255, 255, 255, 0.78);
+  --app-surface: #ffffff;
+  --app-text: #0b2540;
+  --app-text-muted: #5a6f84;
+  --app-border: rgba(15, 66, 125, 0.16);
+  --app-primary: #0f427d;
+  --app-accent: #008080;
+  --app-glow-a: rgba(15, 66, 125, 0.16);
+  --app-glow-b: rgba(0, 128, 128, 0.16);
+  --hero-home-overlay: linear-gradient(90deg, rgba(9, 34, 63, 0.84) 0%, rgba(12, 65, 112, 0.62) 42%, rgba(0, 128, 128, 0.34) 100%);
+  --hero-about-bg: linear-gradient(180deg, #0f427d 0%, #11608a 55%, #0c5a73 100%);
+}
+
+html[data-theme='dark'] {
+  --app-bg: #020617;
+  --app-bg-soft: rgba(15, 23, 42, 0.55);
+  --app-surface: #0f172a;
+  --app-text: #e2e8f0;
+  --app-text-muted: #94a3b8;
+  --app-border: rgba(148, 163, 184, 0.22);
+  --app-primary: #3b82f6;
+  --app-accent: #22d3ee;
+  --app-glow-a: rgba(59, 130, 246, 0.2);
+  --app-glow-b: rgba(99, 102, 241, 0.2);
+  --hero-home-overlay: linear-gradient(90deg, rgba(2, 6, 23, 0.92) 0%, rgba(15, 23, 42, 0.78) 45%, rgba(14, 54, 88, 0.5) 100%);
+  --hero-about-bg: radial-gradient(120% 120% at 20% 0%, #153b6d 0%, #0f213f 44%, #050b17 100%);
+}
+
 body {
-  background-color: #FCFDFE;
+  background-color: var(--app-bg);
+  color: var(--app-text);
   overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+body,
+nav,
+main,
+section,
+article,
+div,
+button,
+input,
+textarea,
+select {
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+.theme-page {
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+.theme-surface {
+  background: var(--app-bg-soft);
+  border: 1px solid var(--app-border);
+}
+
+.theme-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+}
+
+.theme-title {
+  color: var(--app-text);
+}
+
+.theme-text-muted {
+  color: var(--app-text-muted);
+}
+
+.theme-accent {
+  color: var(--app-accent);
+}
+
+.theme-primary {
+  color: var(--app-primary);
+}
+
+.theme-input {
+  background: color-mix(in srgb, var(--app-surface) 88%, transparent);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+}
+
+.theme-input::placeholder {
+  color: var(--app-text-muted);
+}
+
+.theme-input:focus {
+  border-color: var(--app-primary);
 }
 
 /* 1. أنيميشن رسم اللوجو اللانهائي */

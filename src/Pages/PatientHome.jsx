@@ -65,7 +65,7 @@ const PatientHome = ({ allDoctors }) => {
   }, [firstName, user?.id]);
 
   return (
-    <div className="min-h-screen "> {/* تغيير لون الخلفية ليتماشى مع الثيم الداكن الزجاجي */}
+    <div className="min-h-screen theme-page"> {/* تغيير لون الخلفية ليتماشى مع الثيم الداكن الزجاجي */}
       <ToastContainer rtl={true} />
       <Navbar patientData={patientData} />
       
