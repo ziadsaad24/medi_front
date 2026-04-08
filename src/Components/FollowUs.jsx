@@ -3,6 +3,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import Navbar from "./Layout/Navbar";
 import Footer from "./Layout/Footer";
+import { useTheme } from "../context/ThemeContext";
 
 
 /* ================= Helpers ================= */
@@ -62,6 +63,8 @@ const Counter = ({ end, suffix = "" }) => {
 /* ================= PAGE ================= */
 
 export default function App() {
+  const { isDark } = useTheme();
+
   const features = [
     {
       title: "السجل الطبي الإلكتروني",
@@ -88,10 +91,12 @@ export default function App() {
   return (
     <>
     <Navbar/>
-    <div className="bg-white font-sans" dir="rtl">
+    <div className="theme-page font-sans" dir="rtl">
 
       {/* ================= HERO ================= */}
-      <section className="relative min-h-[90vh] flex items-center bg-gradient-to-b from-[#004060] to-[#0f427d]">
+      <section className="relative min-h-[90vh] flex items-center" style={{ background: 'var(--hero-about-bg)' }}>
+        <div className="absolute top-0 left-0 w-[420px] h-[420px] rounded-full blur-[120px] opacity-60 pointer-events-none" style={{ background: 'var(--app-glow-a)' }} />
+        <div className="absolute bottom-0 right-0 w-[420px] h-[420px] rounded-full blur-[120px] opacity-60 pointer-events-none" style={{ background: 'var(--app-glow-b)' }} />
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
 
           <motion.div
@@ -147,31 +152,31 @@ export default function App() {
         viewport={{ once: true, amount: 0.3 }}
         className="-mt-20 px-6 relative z-10"
       >
-        <div className="max-w-6xl mx-auto bg-white rounded-[3rem] shadow-2xl p-10 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+        <div className="max-w-6xl mx-auto theme-card rounded-[3rem] shadow-2xl p-10 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
           <div>
             <div className="text-4xl font-black text-teal-600">
               <Counter end={12000} suffix="+" />
             </div>
-            <p className="text-gray-400 font-bold">مريض</p>
+            <p className="theme-text-muted font-bold">مريض</p>
           </div>
 
           <div>
             <div className="text-4xl font-black text-blue-700">
               <Counter end={550} suffix="+" />
             </div>
-            <p className="text-gray-400 font-bold">طبيب</p>
+            <p className="theme-text-muted font-bold">طبيب</p>
           </div>
 
           <div>
             <div className="text-4xl font-black text-teal-600">
               <Counter end={52000} suffix="+" />
             </div>
-            <p className="text-gray-400 font-bold">موعد</p>
+            <p className="theme-text-muted font-bold">موعد</p>
           </div>
 
           <div>
             <div className="text-4xl font-black text-blue-700">24/7</div>
-            <p className="text-gray-400 font-bold">دعم</p>
+            <p className="theme-text-muted font-bold">دعم</p>
           </div>
         </div>
       </motion.section>
@@ -182,27 +187,32 @@ export default function App() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        className="py-24 bg-[#F8FAFC] px-6"
+        className="py-24 px-6"
+        style={{
+          background: isDark
+            ? 'linear-gradient(180deg, #06142f 0%, #081a39 55%, #051227 100%)'
+            : 'color-mix(in srgb, var(--app-bg) 86%, white)'
+        }}
       >
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8">
           {features.map((f, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -10 }}
-              className="group relative bg-white p-10 rounded-[2.5rem] shadow-md overflow-hidden"
+              className={`group relative p-10 rounded-[2.5rem] shadow-md overflow-hidden ${isDark ? 'bg-slate-900/80 border border-slate-700/60 hover:border-cyan-400/35' : 'theme-card'}`}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#004060] to-[#008080] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isDark ? 'bg-gradient-to-r from-[#0b2a4d] to-[#0a4f66]' : 'bg-gradient-to-r from-[#004060] to-[#008080]'}`} />
 
-              <div className="relative z-10 flex gap-6 items-start text-[#004060] group-hover:text-white transition-colors">
+              <div className={`relative z-10 flex gap-6 items-start group-hover:text-white transition-colors ${isDark ? 'text-cyan-200' : 'theme-primary'}`}>
                 <lord-icon
                   src={f.icon}
                   trigger="loop"
-                  colors="primary:#004060"
+                  colors={isDark ? 'primary:#67e8f9' : 'primary:#004060'}
                   style={{ width: 56, height: 56 }}
                 />
                 <div>
                   <h3 className="text-xl font-black">{f.title}</h3>
-                  <p className="mt-2 opacity-80">{f.desc}</p>
+                  <p className={`mt-2 opacity-80 ${isDark ? 'text-slate-300 group-hover:text-white' : ''}`}>{f.desc}</p>
                 </div>
               </div>
             </motion.div>
@@ -216,7 +226,12 @@ export default function App() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.25 }}
-        className="relative py-32 px-6 overflow-hidden bg-gradient-to-b from-[#f8fafc] to-white"
+        className="relative py-32 px-6 overflow-hidden"
+        style={{
+          background: isDark
+            ? 'linear-gradient(180deg, #071a35 0%, #051226 100%)'
+            : 'linear-gradient(to bottom, color-mix(in srgb, var(--app-bg) 85%, white), var(--app-surface))'
+        }}
       >
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <lord-icon
@@ -244,7 +259,7 @@ export default function App() {
 
       {/* ================= FOOTER ================= */}
       <footer className="py-10 text-center border-t">
-        <p className="text-gray-400 font-bold text-sm">
+        <p className="theme-text-muted font-bold text-sm">
           © 2026 MediCare Health System
         </p>
       </footer>

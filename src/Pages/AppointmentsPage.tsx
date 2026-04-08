@@ -118,14 +118,14 @@ export default function AppointmentsPage() {
   }, [appointments, APPOINTMENTS_STORAGE_KEY]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0f172a]">
+    <div className="flex flex-col min-h-screen theme-page">
       <Navbar />
 
       <main className="flex-grow relative overflow-x-hidden">
 
         {/* Decorative Background */}
-        <div className="fixed top-20 right-[-5%] w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
-        <div className="fixed bottom-20 left-[-5%] w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+        <div className="fixed top-20 right-[-5%] w-96 h-96 rounded-full blur-[120px] pointer-events-none z-0" style={{ background: 'var(--app-glow-a)' }} />
+        <div className="fixed bottom-20 left-[-5%] w-96 h-96 rounded-full blur-[120px] pointer-events-none z-0" style={{ background: 'var(--app-glow-b)' }} />
 
         {/* Content */}
         <div className="relative z-10 px-4 pt-28 pb-24">
@@ -138,11 +138,11 @@ export default function AppointmentsPage() {
               transition={{ duration: 0.6 }}
               className="text-center mb-16"
             >
-              <h1 className="text-4xl md:text-5xl font-black text-white mb-4">
+              <h1 className="text-4xl md:text-5xl font-black theme-title mb-4">
                 المواعيد <span className="text-blue-500">القادمة</span>
               </h1>
 
-              <p className="text-slate-400 text-lg">
+              <p className="theme-text-muted text-lg">
                 تابع مواعيدك الطبية القادمة بسهولة
               </p>
             </motion.div>
@@ -167,13 +167,13 @@ export default function AppointmentsPage() {
               transition={{ delay: 0.5 }}
               className="mt-16 flex justify-center"
             >
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl px-10 py-6 flex gap-10 text-center">
+              <div className="theme-surface backdrop-blur-xl rounded-3xl px-10 py-6 flex gap-10 text-center">
 
                 <div>
-                  <p className="text-3xl font-black text-white">
+                  <p className="text-3xl font-black theme-title">
                     {appointments.length}
                   </p>
-                  <p className="text-slate-400 text-sm">
+                  <p className="theme-text-muted text-sm">
                     إجمالي المواعيد
                   </p>
                 </div>
@@ -182,7 +182,7 @@ export default function AppointmentsPage() {
                   <p className="text-3xl font-black text-emerald-400">
                     {appointments.filter(a => a.status === "مؤكد").length}
                   </p>
-                  <p className="text-slate-400 text-sm">
+                  <p className="theme-text-muted text-sm">
                     مؤكدة
                   </p>
                 </div>
@@ -191,7 +191,7 @@ export default function AppointmentsPage() {
                   <p className="text-3xl font-black text-amber-400">
                     {appointments.filter(a => a.status === "قيد الانتظار").length}
                   </p>
-                  <p className="text-slate-400 text-sm">
+                  <p className="theme-text-muted text-sm">
                     قيد الانتظار
                   </p>
                 </div>
