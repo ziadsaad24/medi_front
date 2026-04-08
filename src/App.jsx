@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import 'animate.css';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './Components/ProtectedRoute';
 import Login from './Pages/Login';
@@ -31,9 +32,16 @@ import AppointmentsPage from './Pages/AppointmentsPage';
 import  Contact  from './Components/Contact';
 import ChatBot from './Components/ChatBot/ChatBot';
 import EmergencyCardDemo from './Pages/EmergencyCardDemo';
+
+import DoctorDashboard from './Pages/doctor/Docdashboard'
+
 import EmergencyCard3DPage from './Pages/EmergencyCard3DPage';
 
-
+import PatientsPage from './Pages/doctor/PatientsPage';
+import Settings  from './Pages/doctor/SettingsPage';
+import RequestsPage from "./Pages/doctor/RequestsPage";
+import ProfilePage from "./Pages/doctor/ProfilePage";
+import { ProfileProvider } from "./context/ProfileContext";
 
 // Component للتحكم في ظهور الشات بوت
 function ChatBotWrapper() {
@@ -76,6 +84,7 @@ function App() {
   
   return (
     <AuthProvider>
+      <ProfileProvider>
       <Router>
         <Routes>
           {/* Public Routes - الصفحات المتاحة للجميع */}
@@ -141,20 +150,52 @@ function App() {
           />
           
           {/* Protected Routes for Doctors - صفحات الأطباء المحمية */}
-          <Route 
-            path="/doctor/dashboard" 
-            element={
-              <ProtectedRoute allowedRoles="doctor">
-                <div className="min-h-screen flex items-center justify-center bg-blue-50">
-                  <div className="text-center">
-                    <h1 className="text-4xl font-bold text-[#0F427D] mb-4">لوحة تحكم الطبيب</h1>
-                    <p className="text-gray-600">قريباً...</p>
-                  </div>
-                </div>
-              </ProtectedRoute>
-            } 
-          />
-          
+
+  <Route 
+    path="/doctor/dashboard" 
+    element={
+      <ProtectedRoute allowedRoles="doctor">
+        <DoctorDashboard />
+      </ProtectedRoute>
+    } 
+  />
+
+  <Route 
+    path="/doctor/patients" 
+    element={
+      <ProtectedRoute allowedRoles="doctor">
+        <PatientsPage />
+      </ProtectedRoute>
+    } 
+  />
+
+  <Route 
+    path="/doctor/settings" 
+    element={
+      <ProtectedRoute allowedRoles="doctor">
+        <Settings />
+      </ProtectedRoute>
+    } 
+  />
+
+  <Route 
+    path="/doctor/requests" 
+    element={
+      <ProtectedRoute allowedRoles="doctor">
+        <RequestsPage />
+      </ProtectedRoute>
+    } 
+  />
+
+  <Route 
+    path="/doctor/profile" 
+    element={
+      <ProtectedRoute allowedRoles="doctor">
+        <ProfilePage />
+      </ProtectedRoute>
+    } 
+  />
+
           {/* Protected Routes for Admin - صفحات المسؤول المحمية */}
           <Route 
             path="/admin/dashboard" 
@@ -256,9 +297,13 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          
+        
+
         </Routes>
         <ChatBotWrapper />
       </Router>
+      </ProfileProvider>
     </AuthProvider>
   );
 }
