@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Lock, Eye, EyeOff, Shield, Edit2, X } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 export function ChangePassword() {
+  const { isDark } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -47,17 +49,17 @@ export function ChangePassword() {
   };
 
   return (
-    <div className="backdrop-blur-xl bg-gradient-to-b from-blue-950/95 via-blue-900/90 to-cyan-800/85 border border-white/30 rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 lg:p-10 relative group max-w-full mx-auto">
+    <div className={`backdrop-blur-xl border rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 lg:p-10 relative group max-w-full mx-auto ${isDark ? "bg-gradient-to-b from-blue-950/95 via-blue-900/90 to-cyan-800/85 border-white/30" : "bg-white border-[#0f427d]/16"}`}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4 sm:gap-0">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700 flex items-center justify-center">
             <Shield className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-200">
+            <h3 className={`text-xl sm:text-2xl md:text-3xl font-bold ${isDark ? "text-gray-200" : "text-[#0f427d]"}`}>
               تغيير كلمة المرور
             </h3>
-            <p className="text-xs sm:text-sm md:text-base mt-1 sm:mt-2 text-gray-300">
+            <p className={`text-xs sm:text-sm md:text-base mt-1 sm:mt-2 ${isDark ? "text-gray-300" : "text-[#0f427d]/70"}`}>
               حافظ على أمان حسابك بتحديث كلمة المرور
             </p>
           </div>
@@ -74,7 +76,7 @@ export function ChangePassword() {
         ) : (
           <button
             onClick={() => setIsEditing(false)}
-            className="w-10 h-10 rounded-xl backdrop-blur-xl bg-white/60 border border-white/60 text-gray-600 hover:bg-white/80 transition-all flex items-center justify-center"
+            className={`w-10 h-10 rounded-xl backdrop-blur-xl border transition-all flex items-center justify-center ${isDark ? "bg-white/60 border-white/60 text-gray-600 hover:bg-white/80" : "bg-[#0f427d]/10 border-[#0f427d]/20 text-[#0f427d] hover:bg-[#0f427d]/18"}`}
             title="إلغاء التعديل"
           >
             <X className="w-5 h-5" />
@@ -97,8 +99,8 @@ export function ChangePassword() {
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8">
         {/* كلمة المرور الحالية */}
         <div>
-          <label className="flex items-center gap-2 text-gray-300 font-semibold mb-2 sm:mb-3">
-            <Lock className="w-5 h-5 text-gray-300" />
+          <label className={`flex items-center gap-2 font-semibold mb-2 sm:mb-3 ${isDark ? "text-gray-300" : "text-[#0f427d]/80"}`}>
+            <Lock className={`w-5 h-5 ${isDark ? "text-gray-300" : "text-[#0f427d]/80"}`} />
             كلمة المرور الحالية <span className="text-red-300">*</span>
           </label>
           <div className="relative">
@@ -109,15 +111,15 @@ export function ChangePassword() {
               placeholder="أدخل كلمة المرور الحالية"
               disabled={!isEditing}
               className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl backdrop-blur-xl ${
-                isEditing ? 'bg-white/10' : 'bg-white/20'
-              } border ${errors.current ? 'border-red-400' : 'border-white/60'} text-sm sm:text-base md:text-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-600/50 pl-10 sm:pl-12 ${
+                isEditing ? (isDark ? 'bg-white/10' : 'bg-[#0f427d]/5') : (isDark ? 'bg-white/20' : 'bg-[#0f427d]/10')
+              } border ${errors.current ? 'border-red-400' : isDark ? 'border-white/60' : 'border-[#0f427d]/25'} text-sm sm:text-base md:text-lg ${isDark ? 'placeholder-gray-400 text-white' : 'placeholder-[#0f427d]/40 text-[#0f427d]'} focus:outline-none focus:ring-2 focus:ring-cyan-600/50 pl-10 sm:pl-12 ${
                 !isEditing ? 'cursor-not-allowed' : ''
               }`}
             />
             <button
               type="button"
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              className={`absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 ${isDark ? "text-gray-500 hover:text-gray-700" : "text-[#0f427d]/50 hover:text-[#0f427d]"}`}
             >
               {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -127,8 +129,8 @@ export function ChangePassword() {
 
         {/* كلمة المرور الجديدة */}
         <div>
-          <label className="flex items-center gap-2 text-gray-300 font-semibold mb-2 sm:mb-3">
-            <Lock className="w-5 h-5 text-gray-300" />
+          <label className={`flex items-center gap-2 font-semibold mb-2 sm:mb-3 ${isDark ? "text-gray-300" : "text-[#0f427d]/80"}`}>
+            <Lock className={`w-5 h-5 ${isDark ? "text-gray-300" : "text-[#0f427d]/80"}`} />
             كلمة المرور الجديدة <span className="text-red-300">*</span>
           </label>
           <div className="relative">
@@ -139,27 +141,27 @@ export function ChangePassword() {
               placeholder="أدخل كلمة المرور الجديدة"
               disabled={!isEditing}
               className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl backdrop-blur-xl ${
-                isEditing ? 'bg-white/10' : 'bg-white/20'
-              } border ${errors.new ? 'border-red-400' : 'border-white/60'} text-sm sm:text-base md:text-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-600/50 pl-10 sm:pl-12 ${
+                isEditing ? (isDark ? 'bg-white/10' : 'bg-[#0f427d]/5') : (isDark ? 'bg-white/20' : 'bg-[#0f427d]/10')
+              } border ${errors.new ? 'border-red-400' : isDark ? 'border-white/60' : 'border-[#0f427d]/25'} text-sm sm:text-base md:text-lg ${isDark ? 'placeholder-gray-400 text-white' : 'placeholder-[#0f427d]/40 text-[#0f427d]'} focus:outline-none focus:ring-2 focus:ring-cyan-600/50 pl-10 sm:pl-12 ${
                 !isEditing ? 'cursor-not-allowed' : ''
               }`}
             />
             <button
               type="button"
               onClick={() => setShowNewPassword(!showNewPassword)}
-              className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              className={`absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 ${isDark ? "text-gray-500 hover:text-gray-700" : "text-[#0f427d]/50 hover:text-[#0f427d]"}`}
             >
               {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
           {errors.new && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.new}</p>}
-          <p className="text-xs sm:text-sm text-gray-400 mt-1">يجب أن تحتوي على 8 أحرف على الأقل</p>
+          <p className={`text-xs sm:text-sm mt-1 ${isDark ? "text-gray-400" : "text-[#0f427d]/55"}`}>يجب أن تحتوي على 8 أحرف على الأقل</p>
         </div>
 
         {/* تأكيد كلمة المرور */}
         <div>
-          <label className="flex items-center gap-2 text-gray-300 font-semibold mb-2 sm:mb-3">
-            <Lock className="w-5 h-5 text-gray-300" />
+          <label className={`flex items-center gap-2 font-semibold mb-2 sm:mb-3 ${isDark ? "text-gray-300" : "text-[#0f427d]/80"}`}>
+            <Lock className={`w-5 h-5 ${isDark ? "text-gray-300" : "text-[#0f427d]/80"}`} />
             تأكيد كلمة المرور <span className="text-red-300">*</span>
           </label>
           <div className="relative">
@@ -170,15 +172,15 @@ export function ChangePassword() {
               placeholder="أعد إدخال كلمة المرور الجديدة"
               disabled={!isEditing}
               className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl backdrop-blur-xl ${
-                isEditing ? 'bg-white/10' : 'bg-white/20'
-              } border ${errors.confirm ? 'border-red-400' : 'border-white/60'} text-sm sm:text-base md:text-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-600/50 pl-10 sm:pl-12 ${
+                isEditing ? (isDark ? 'bg-white/10' : 'bg-[#0f427d]/5') : (isDark ? 'bg-white/20' : 'bg-[#0f427d]/10')
+              } border ${errors.confirm ? 'border-red-400' : isDark ? 'border-white/60' : 'border-[#0f427d]/25'} text-sm sm:text-base md:text-lg ${isDark ? 'placeholder-gray-400 text-white' : 'placeholder-[#0f427d]/40 text-[#0f427d]'} focus:outline-none focus:ring-2 focus:ring-cyan-600/50 pl-10 sm:pl-12 ${
                 !isEditing ? 'cursor-not-allowed' : ''
               }`}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              className={`absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 ${isDark ? "text-gray-500 hover:text-gray-700" : "text-[#0f427d]/50 hover:text-[#0f427d]"}`}
             >
               {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>

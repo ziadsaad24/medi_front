@@ -8,7 +8,7 @@ export default function DoctorLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // للتحكم في Sidebar في الموبايل
 
   return (
-    <div dir="rtl" className="min-h-screen flex bg-[#0f2f57] relative">
+    <div dir="rtl" className="min-h-screen flex theme-page relative">
 
       {/* Sidebar Desktop + Mobile Overlay */}
       <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />

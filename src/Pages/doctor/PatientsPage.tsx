@@ -2,6 +2,7 @@ import { useState } from "react";
 import DoctorLayout from "../../Components/DoctorLayout";
 import PatientsTable from "../../Components/PatientsTable";
 import PatientsToolbar from "../../Components/PatientsToolbar";
+import { useTheme } from "../../context/ThemeContext";
 
 export interface Patient {
   id: string;
@@ -28,6 +29,7 @@ const mockPatients: Patient[] = [
 ];
 
 export default function PatientsPage() {
+  const { isDark } = useTheme();
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [searchTerm, setSearchTerm] = useState(""); 
   const [filterStatus, setFilterStatus] = useState("الكل");
@@ -44,7 +46,7 @@ export default function PatientsPage() {
 
   return (
     <DoctorLayout>
-      <div className="p-4 sm:p-6 md:p-8 min-h-full">
+      <div className="p-4 sm:p-6 md:p-8 min-h-full theme-page">
 
         {/* Toolbar */}
         <PatientsToolbar 
@@ -66,39 +68,43 @@ export default function PatientsPage() {
             {filteredPatients.map((patient) => (
               <div 
                 key={patient.id} 
-                className="flex flex-col justify-between w-full bg-white/10 backdrop-blur-md p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-3xl border border-white/20 text-white shadow-lg hover:bg-white/20 transition-all cursor-pointer"
+                className={`flex flex-col justify-between w-full backdrop-blur-md p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-3xl border shadow-lg transition-all cursor-pointer ${isDark ? "bg-white/10 border-white/20 text-white hover:bg-white/20" : "bg-white border-[#0f427d]/15 text-[#0f427d] hover:bg-[#0f427d]/5"}`}
               >
                 {/* Header */}
                 <div className="flex items-center gap-3 sm:gap-4 mb-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl 
-                    bg-gradient-to-r from-[#144A89] to-[#008080] 
+                    bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 
                     flex items-center justify-center font-bold text-sm sm:text-lg shadow-inner">
                     {patient.avatar}
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-bold text-sm sm:text-base md:text-lg truncate">{patient.name}</h3>
-                    <p className="text-[10px] sm:text-xs text-white/50 truncate">{patient.patientId}</p>
+                    <p className={`text-[10px] sm:text-xs truncate ${isDark ? "text-white/50" : "text-[#0f427d]/60"}`}>{patient.patientId}</p>
                   </div>
                 </div>
 
                 {/* Info */}
-                <div className="grid grid-cols-2 gap-y-3 text-xs sm:text-sm border-t border-white/10 pt-3 md:pt-4">
+                <div className={`grid grid-cols-2 gap-y-3 text-xs sm:text-sm border-t pt-3 md:pt-4 ${isDark ? "border-white/10" : "border-[#0f427d]/12"}`}>
                   <div>
-                    <p className="text-white/40 text-[10px] sm:text-xs mb-1">العمر</p>
+                    <p className={`text-[10px] sm:text-xs mb-1 ${isDark ? "text-white/40" : "text-[#0f427d]/50"}`}>العمر</p>
                     <p className="font-medium">{patient.age} عام</p>
                   </div>
                   <div>
-                    <p className="text-white/40 text-[10px] sm:text-xs mb-1">الحالة</p>
+                    <p className={`text-[10px] sm:text-xs mb-1 ${isDark ? "text-white/40" : "text-[#0f427d]/50"}`}>الحالة</p>
                     <span className={`px-2 py-0.5 rounded-lg text-[10px] sm:text-xs ${
                       patient.status === "نشط" 
-                        ? "bg-green-500/20 text-green-300" 
-                        : "bg-yellow-500/20 text-yellow-300"
+                        ? isDark
+                          ? "bg-green-500/20 text-green-300"
+                          : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                        : isDark
+                          ? "bg-yellow-500/20 text-yellow-300"
+                          : "bg-amber-100 text-amber-700 border border-amber-200"
                     }`}>
                       {patient.status}
                     </span>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-white/40 text-[10px] sm:text-xs mb-1">آخر زيارة</p>
+                    <p className={`text-[10px] sm:text-xs mb-1 ${isDark ? "text-white/40" : "text-[#0f427d]/50"}`}>آخر زيارة</p>
                     <p className="font-medium text-xs sm:text-sm">{patient.lastVisit}</p>
                   </div>
                 </div>
@@ -109,7 +115,7 @@ export default function PatientsPage() {
 
         {/* Empty State */}
         {filteredPatients.length === 0 && (
-          <div className="text-center py-16 md:py-20 text-white/50 text-sm md:text-base">
+          <div className={`text-center py-16 md:py-20 text-sm md:text-base ${isDark ? "text-white/50" : "text-[#0f427d]/60"}`}>
             لا توجد سجلات تطابق بحثك الحالي..
           </div>
         )}

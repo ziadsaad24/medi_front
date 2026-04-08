@@ -10,7 +10,7 @@ export default function ProfilePage() {
 
   return (
     <DoctorLayout>
-      <div className="p-4 sm:p-5 md:p-6 lg:p-8 min-h-full space-y-6 bg-gradient-to-b from-blue-950/95 via-blue-900/90 to-cyan-800/85">
+      <div className="p-4 sm:p-5 md:p-6 lg:p-8 min-h-full space-y-6 theme-page">
         {/* Hero Section */}
         <ProfileHeroSection 
           profile={profile} 

@@ -1,3 +1,5 @@
+import { useTheme } from "../context/ThemeContext";
+
 interface Patient {
   id: string;
   name: string;
@@ -14,9 +16,10 @@ interface Props {
 }
 
 export default function PatientRow({ patient }: Props) {
+  const { isDark } = useTheme();
+
   return (
-    <tr className="border-b border-white/10 text-white/80 
-      transition-all duration-300 hover:bg-white/10">
+    <tr className={`border-b transition-all duration-300 ${isDark ? "border-white/10 text-white/80 hover:bg-white/10" : "border-[#0f427d]/15 text-[#0f427d]/80 hover:bg-[#0f427d]/6"}`}>
 
       {/* 👤 المريض */}
       <td className="p-3 md:p-4">
@@ -24,7 +27,7 @@ export default function PatientRow({ patient }: Props) {
 
           <div className="w-8 h-8 md:w-10 md:h-10 rounded-full 
             bg-gradient-to-r from-[#144A89] to-[#008080] 
-            flex items-center justify-center text-white text-xs md:text-sm font-bold">
+            flex items-center justify-center text-white text-xs md:text-sm font-bold ">
             {patient.avatar}
           </div>
 
@@ -32,7 +35,7 @@ export default function PatientRow({ patient }: Props) {
             <p className="font-semibold text-xs md:text-sm">
               {patient.name}
             </p>
-            <p className="text-[10px] md:text-xs text-gray-400">
+            <p className={`text-[10px] md:text-xs ${isDark ? "text-gray-400" : "text-[#0f427d]/55"}`}>
               {patient.patientId}
             </p>
           </div>
@@ -43,7 +46,7 @@ export default function PatientRow({ patient }: Props) {
       {/* 📊 المعلومات */}
       <td className="p-3 md:p-4">
         <p className="text-xs md:text-sm">{patient.age} سنة</p>
-        <p className="text-[10px] md:text-xs text-gray-400">
+        <p className={`text-[10px] md:text-xs ${isDark ? "text-gray-400" : "text-[#0f427d]/55"}`}>
           {patient.phone}
         </p>
       </td>
