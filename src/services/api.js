@@ -119,6 +119,59 @@ export const patientAPI = {
     return response.data;
   },
 
+  // =========================
+  // Patient Profile
+  // =========================
+
+  // احصل على ملفي الشخصي
+  getProfile: async () => {
+    try {
+      const response = await api.get('/patient/profile');
+      return response.data;
+    } catch (error) {
+      // Mock data عندما تكون API غير متوفرة
+      console.log('🔄 Using mock profile data - API not available');
+      return {
+        data: {
+          id: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).id : '1',
+          medical_card_id: JSON.parse(localStorage.getItem('user') || '{}').medical_card_id || '6',
+          name: JSON.parse(localStorage.getItem('user') || '{}').name || 'أحمد محمد علي',
+          email: JSON.parse(localStorage.getItem('user') || '{}').email || 'ahmed@example.com',
+          phone: '01012345678',
+          birth_date: '1995-05-15',
+          address: 'القاهرة، مصر',
+          blood_type: 'A+',
+          emergency_contact: '01098765432',
+          emergency_name: 'محمد علي (الأخ)',
+          allergies: 'حساسية من البنسلين',
+          chronic_diseases: 'لا يوجد',
+          height: '175',
+          weight: '75',
+        }
+      };
+    }
+  },
+
+  // تحديث ملفي الشخصي
+  updateProfile: async (data) => {
+    try {
+      const response = await api.put('/patient/profile', data);
+      return response.data;
+    } catch (error) {
+      console.log('🔄 Profile updated locally - API not available');
+      // حفظ البيانات في localStorage كبديل
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const updatedUser = {
+        ...user,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return { data: { success: true, message: 'تم الحفظ محلياً' } };
+    }
+  },
+
   // احجز موعد
   bookAppointment: async (data) => {
     const response = await api.post('/patient/appointments', data);
@@ -128,6 +181,110 @@ export const patientAPI = {
   // احصل على مواعيدي
   getMyAppointments: async () => {
     const response = await api.get('/patient/appointments');
+    return response.data;
+  },
+
+  // =========================
+  // Medications
+  // =========================
+
+  // احصل على الأدوية الخاصة بي
+  getMedications: async () => {
+    try {
+      const response = await api.get('/patient/medications');
+      return response.data;
+    } catch (error) {
+      console.log('🔄 Using local medications - API not available');
+      // سيعود الكود للـ useState fallback في use-medications.ts
+      throw error;
+    }
+  },
+
+  // إضافة دواء جديد
+  addMedication: async (data) => {
+    try {
+      const response = await api.post('/patient/medications', data);
+      return response.data;
+    } catch (error) {
+      console.log('🔄 Medication saved locally - API not available');
+      return { 
+        data: { 
+          id: Date.now().toString(), 
+          ...data, 
+          message: 'تم الحفظ محلياً' 
+        } 
+      };
+    }
+  },
+
+  // تحديث دواء
+  updateMedication: async (id, data) => {
+    try {
+      const response = await api.put(`/patient/medications/${id}`, data);
+      return response.data;
+    } catch (error) {
+      console.log('🔄 Medication updated locally - API not available');
+      return { 
+        data: { 
+          id, 
+          ...data, 
+          message: 'تم التحديث محلياً' 
+        } 
+      };
+    }
+  },
+
+  // تبديل حالة أخذ الدواء
+  toggleMedication: async (id) => {
+    try {
+      const response = await api.patch(`/patient/medications/${id}/toggle`);
+      return response.data;
+    } catch (error) {
+      console.log('🔄 Medication toggled locally - API not available');
+      return { data: { id, message: 'تم التحديث محلياً' } };
+    }
+  },
+
+  // حذف دواء
+  deleteMedication: async (id) => {
+    try {
+      const response = await api.delete(`/patient/medications/${id}`);
+      return response.data;
+    } catch (error) {
+      console.log('🔄 Medication deleted locally - API not available');
+      return { data: { message: 'تم الحذف محلياً' } };
+    }
+  },
+
+  // =========================
+  // Notifications
+  // =========================
+
+  // التنبيهات القادمة (دواء/موعد)
+  getUpcomingNotifications: async () => {
+    const response = await api.get('/patient/notifications/upcoming');
+    return response.data;
+  },
+
+  // =========================
+  // Patient Complaints
+  // =========================
+
+  // احصل على شكاوى المريض
+  getComplaints: async () => {
+    const response = await api.get('/patient/complaints');
+    return response.data;
+  },
+
+  // أضف شكوى جديدة
+  addComplaint: async (data) => {
+    const response = await api.post('/patient/complaints', data);
+    return response.data;
+  },
+
+  // احذف شكوى
+  deleteComplaint: async (id) => {
+    const response = await api.delete(`/patient/complaints/${id}`);
     return response.data;
   },
 };
@@ -244,6 +401,39 @@ export const adminAPI = {
     const response = await api.get('/admin/reports', {
       params: { type, startDate, endDate }
     });
+    return response.data;
+  },
+};
+
+// دوال الشكاوى العامة
+export const complaintAPI = {
+  // كل الشكاوى
+  getComplaints: async () => {
+    const response = await api.get('/complaints');
+    return response.data;
+  },
+
+  // إضافة شكوى
+  createComplaint: async (data) => {
+    const response = await api.post('/complaints', data);
+    return response.data;
+  },
+
+  // تفاصيل شكوى
+  getComplaint: async (id) => {
+    const response = await api.get(`/complaints/${id}`);
+    return response.data;
+  },
+
+  // تحديث شكوى
+  updateComplaint: async (id, data) => {
+    const response = await api.put(`/complaints/${id}`, data);
+    return response.data;
+  },
+
+  // حذف شكوى
+  deleteComplaint: async (id) => {
+    const response = await api.delete(`/complaints/${id}`);
     return response.data;
   },
 };

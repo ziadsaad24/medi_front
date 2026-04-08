@@ -1,0 +1,895 @@
+.emergency-card-container {
+  perspective: 2000px;
+  width: 100%;
+  max-width: 980px;
+  margin: 40px auto;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.emergency-card-3d {
+  position: relative;
+  width: 100%;
+  max-width: 980px;
+  height: 532px;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+  z-index: 1;
+  transform-origin: center center;
+}
+
+.emergency-card-3d.flipped {
+  transform: rotateY(180deg);
+  z-index: 2;
+}
+
+.card-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  transform-style: preserve-3d;
+}
+
+/* FRONT SIDE */
+.card-front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotateY(0deg);
+  z-index: 2;
+}
+
+.card-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, #144a89, #008080);
+  border-radius: 32px;
+}
+
+/* Logo Section - Top Left */
+.logo-section {
+  position: absolute;
+  top: 36px;
+  left: 76px;
+  display: flex;
+  align-items: center;
+  gap: 16.34px;
+  z-index: 10;
+  flex-direction: row;
+}
+
+.logo-icon-box {
+  width: 75.28px;
+  height: 75.28px;
+  background: #0f172a;
+  border-radius: 18.82px;
+  box-shadow: 0px 19.604px 39.208px -9.41px rgba(43, 127, 255, 0.4);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-heart-icon {
+  position: absolute;
+  width: 37.64px;
+  height: 37.64px;
+}
+
+.logo-heart-icon2 {
+  position: absolute;
+  width: 37.64px;
+  height: 37.64px;
+}
+
+.logo-text {
+  font-family: 'Metropolis', 'Arial', sans-serif;
+  font-size: 32.683px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* QR Code - Left Side */
+.qr-container {
+  position: absolute;
+  left: 66px;
+  top: 136px;
+  width: 271px;
+  height: 238px;
+  background: white;
+  border: 10px solid #0f172a;
+  border-radius: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 5;
+}
+
+.qr-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Patient Name - Top Right */
+.name-section {
+  position: absolute;
+  top: 32px;
+  right: 176px;
+  left: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  z-index: 10;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.name-icon {
+  width: 31.5px;
+  height: 31.5px;
+  position: static;
+  flex-shrink: 0;
+}
+
+.patient-name {
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 31.5px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  white-space: nowrap;
+  direction: rtl;
+  position: static;
+  line-height: 1;
+}
+
+.name-first {
+  color: #0f172a;
+}
+
+.name-rest {
+  color: white;
+}
+
+/* ID Section */
+.id-section {
+  position: absolute;
+  top: 74px;
+  right: 176px;
+  left: auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  z-index: 10;
+}
+
+.id-text {
+  margin: 0;
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 19.688px;
+  font-weight: 700;
+  line-height: 26.25px;
+}
+
+.id-white {
+  color: white;
+}
+
+.id-dark {
+  color: #0f172a;
+}
+
+.id-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+/* Patient Stats - Right Side */
+.stats-container {
+  position: absolute;
+  top: 136px;
+  right: 175px;
+  display: flex;
+  flex-direction: column;
+  gap: 23px;
+  z-index: 10;
+}
+
+.stat-box {
+  text-align: right;
+  direction: rtl;
+}
+
+.stat-label {
+  font-family: 'Inter', 'Noto Sans Arabic', 'Arial', sans-serif;
+  font-size: 16.5px;
+  font-weight: 400;
+  color: white;
+  opacity: 1;
+  margin: 0 0 3px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 21px;
+}
+
+.stat-value {
+  font-family: 'Inter', 'Noto Sans Arabic', 'Arial', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  line-height: 28px;
+}
+
+/* Icon Bar - Far Right */
+.icon-bar {
+  position: absolute;
+  top: 120px;
+  bottom: 90px;
+  right: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
+  padding: 24px 16px;
+}
+
+.bar-bg {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  width: 96px;
+  height: 344px;
+  background: rgba(15, 23, 42, 0.98);
+  border-radius: 48px;
+  z-index: -1;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.icon-item {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.purple-bg {
+  background: rgba(173, 70, 255, 0.25);
+}
+
+.red-bg {
+  background: rgba(251, 44, 54, 0.25);
+}
+
+.blue-bg {
+  background: rgba(43, 127, 255, 0.25);
+}
+
+.teal-bg {
+  background: rgba(0, 187, 167, 0.25);
+}
+
+/* Alert Boxes */
+.alert-box {
+  position: absolute;
+  left: 367px;
+  width: 303px;
+  height: 75px;
+  border-radius: 10px 0 0 10px;
+  padding: 13px 18px 13px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.allergy-box {
+  top: 252px;
+  background: linear-gradient(to bottom, #fff0f0, #ffe8ea);
+  border-right: 4px solid #ff5252;
+}
+
+.contact-box {
+  top: 343px;
+  background: linear-gradient(to bottom, #ffffff, #fffbf5);
+  border-right: 4px solid #ff9500;
+}
+
+.alert-heading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  direction: ltr;
+  margin-bottom: 2px;
+}
+
+.alert-icon-img {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.alert-label {
+  font-family: 'Inter', 'Noto Sans Arabic', 'Arial', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  margin: 0;
+  line-height: 16px;
+}
+
+.red-label {
+  color: #f44336;
+  font-size: 11px;
+}
+
+.orange-label {
+  color: #ff8800;
+  font-size: 11px;
+}
+
+.allergy-pill {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  background: white;
+  border: 1px solid #ffd5d5;
+  border-radius: 7px;
+  padding: 8px 16px;
+  direction: rtl;
+  margin-top: 3px;
+}
+
+.red-dot {
+  width: 7px;
+  height: 7px;
+  background: #ff3b30;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.allergy-text-content {
+  font-family: 'Inter', 'Noto Sans Arabic', 'Arial', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e2e2e;
+  margin: 0;
+  line-height: 16px;
+  text-align: right;
+  direction: rtl;
+  width: 100%;
+}
+
+.contact-details {
+  font-family: 'Inter', 'Noto Sans Arabic', 'Arial', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2e2e2e;
+  margin: 0;
+  text-align: right;
+  direction: rtl;
+  line-height: 22px;
+  margin-top: 5px;
+}
+
+/* Wave Bottom */
+.wave-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 102px;
+  z-index: 8;
+}
+
+.wave-img {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 102px;
+  object-fit: cover;
+  object-position: center bottom;
+  max-width: 100%;
+  max-height: 102px;
+}
+
+.wave-line {
+  position: absolute;
+  bottom: 8px;
+  left: 2px;
+  width: calc(100% - 4px);
+  height: 67px;
+  object-fit: cover;
+}
+
+/* BACK SIDE */
+.card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotateY(180deg);
+  z-index: 1;
+}
+
+.back-bg {
+  position: absolute;
+  inset: 0;
+  background: #0f172a;
+  border-radius: 32px;
+}
+
+.back-logo-img {
+  position: absolute;
+  top: 115px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 120px;
+  filter: drop-shadow(0 0 30px rgba(43, 127, 255, 0.5));
+  z-index: 10;
+}
+
+.back-title-text {
+  position: absolute;
+  top: 260px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Metropolis', 'Arial', sans-serif;
+  font-size: 61.37px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 61.37px;
+  z-index: 10;
+}
+
+.back-subtitle-text {
+  position: absolute;
+  top: 325px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Metropolis', 'Arial', sans-serif;
+  font-size: 27.8px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 27.8px;
+  z-index: 10;
+}
+
+.back-wave-img {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  z-index: 5;
+}
+
+/* Flip Button */
+.flip-btn {
+  display: block;
+  margin: 30px auto 0;
+  padding: 15px 40px;
+  background: linear-gradient(135deg, #144a89, #008080);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 128, 128, 0.3);
+  transition: all 0.3s ease;
+  font-family: 'Inter', 'Arial', sans-serif;
+  position: relative;
+  z-index: 10;
+  opacity: 1;
+  visibility: visible;
+}
+
+.flip-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 40px rgba(0, 128, 128, 0.4);
+}
+
+.flip-btn:active {
+  transform: translateY(0);
+}
+
+.flip-btn span {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.print-card-sheet {
+  display: none;
+}
+
+.static-side-front,
+.static-side-back {
+  perspective: none;
+}
+
+.static-side-front .emergency-card-3d,
+.static-side-back .emergency-card-3d {
+  transform: none !important;
+}
+
+.static-side-front .card-face,
+.static-side-back .card-face {
+  backface-visibility: visible;
+}
+
+.static-side-front .card-back {
+  display: none;
+}
+
+.static-side-back .card-front {
+  display: none;
+}
+
+.static-side-back .card-back {
+  transform: none;
+  z-index: 2;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  /* Prevent any live modal/card elements from leaking into print */
+  .flip-btn {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .print-card-sheet,
+  .print-card-sheet * {
+    visibility: visible;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-card-sheet {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 12mm 0;
+    background: #ffffff;
+  }
+
+  .print-card-copy {
+    width: 980px !important;
+    max-width: 980px !important;
+    margin: 0 auto 12mm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-card-copy .emergency-card-container {
+    margin: 0 auto;
+    padding: 0;
+    width: 980px !important;
+    max-width: 980px !important;
+    min-height: auto !important;
+  }
+
+  .print-card-copy .emergency-card-3d {
+    width: 980px !important;
+    max-width: 980px !important;
+    height: 532px !important;
+    transform: none !important;
+  }
+
+  .print-card-copy .card-face {
+    width: 980px !important;
+    height: 532px !important;
+  }
+
+  .print-card-copy .flip-btn {
+    display: none !important;
+  }
+
+  .print-card-copy .wave-img {
+    width: 100% !important;
+    height: 102px !important;
+    object-fit: cover !important;
+    object-position: center bottom !important;
+  }
+
+  .print-card-copy .icon-bar {
+    position: absolute !important;
+    top: 120px !important;
+    right: 65px !important;
+    bottom: auto !important;
+    width: 96px !important;
+    height: 344px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
+    z-index: 10 !important;
+    padding: 24px 16px !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+  }
+
+  .print-card-copy .bar-bg {
+    position: absolute !important;
+    top: -6px !important;
+    left: -6px !important;
+    right: -6px !important;
+    width: 96px !important;
+    height: 344px !important;
+    background: rgba(15, 23, 42, 0.98) !important;
+    border-radius: 48px !important;
+    z-index: -1 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    bottom: auto !important;
+  }
+
+  .print-card-copy .icon-item {
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  }
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+  .emergency-card-container {
+    max-width: 800px;
+  }
+  
+  .emergency-card-3d {
+    max-width: 800px;
+    height: 440px;
+    transform-origin: center center;
+  }
+  
+  .card-face {
+    transform-origin: center center;
+  }
+  
+  .flip-btn {
+    width: auto;
+    min-width: 250px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .emergency-card-container {
+    max-width: 100%;
+    padding: 10px;
+    min-height: 450px;
+  }
+  
+  .emergency-card-3d {
+    height: 350px;
+    transform-origin: center center;
+  }
+  
+  .card-face {
+    transform-origin: center center;
+  }
+  
+  .flip-btn {
+    width: 90%;
+    font-size: 16px;
+    padding: 12px 30px;
+    position: relative;
+    margin-top: 40px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .emergency-card-container {
+    min-height: 380px;
+  }
+  
+  .emergency-card-3d {
+    height: 290px;
+    transform-origin: center center;
+  }
+  
+  .card-face {
+    transform-origin: center center;
+  }
+  
+  .flip-btn {
+    width: 95%;
+    font-size: 14px;
+    padding: 10px 20px;
+    margin-top: 30px;
+  }
+  
+  .flip-btn span {
+    font-size: 16px;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .emergency-card-3d {
+    height: 450px;
+  }
+  
+  .card-gradient-bg {
+    padding: 30px 50px;
+  }
+  
+  .qr-code-container {
+    width: 220px;
+    height: 190px;
+    left: 50px;
+  }
+  
+  .info-stats {
+    right: 50px;
+  }
+  
+  .side-icons {
+    right: 15px;
+  }
+  
+  .alert-card {
+    left: 290px;
+    width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .emergency-card-container {
+    padding: 10px;
+  }
+  
+  .emergency-card-3d {
+    height: 600px;
+  }
+  
+  .card-gradient-bg {
+    padding: 20px 30px;
+  }
+  
+  .logo-text {
+    font-size: 24px;
+  }
+  
+  .patient-name {
+    font-size: 22px;
+  }
+  
+  .qr-code-container {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 180px;
+    height: 180px;
+    margin: 20px 0;
+  }
+  
+  .info-stats {
+    position: relative;
+    right: auto;
+    top: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 15px;
+  }
+  
+  .stat-item {
+    text-align: center;
+  }
+  
+  .side-icons {
+    position: relative;
+    right: auto;
+    top: auto;
+    flex-direction: row;
+    border-radius: 30px;
+    padding: 15px;
+    margin: 20px 0;
+  }
+  
+  .icon-circle {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .alert-card {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    border-radius: 10px;
+    border-right: 4px solid;
+    margin-bottom: 10px;
+  }
+  
+  .back-title {
+    font-size: 40px;
+  }
+  
+  .back-subtitle {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .emergency-card-3d {
+    height: auto;
+    min-height: 550px;
+  }
+  
+  .logo-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .patient-name-section {
+    position: relative;
+    right: auto;
+    margin: 15px 0;
+  }
+  
+  .id-section {
+    position: relative;
+    right: auto;
+    margin-bottom: 15px;
+  }
+  
+  .flip-button {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 16px;
+  }
+}

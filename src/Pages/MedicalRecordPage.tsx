@@ -27,15 +27,15 @@ export default function MedicalRecordPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0f172a]" >
+    <div className="flex flex-col min-h-screen theme-page" >
       <Navbar />
 
       {/* Main Content Area */}
       <main className="flex-grow relative overflow-x-hidden">
         
         {/* الخلفيات الديكورية - تم تعديل موقعها لتبدأ بعد الناف بار */}
-        <div className="fixed top-20 right-[-5%] w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
-        <div className="fixed bottom-20 left-[-5%] w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+        <div className="fixed top-20 right-[-5%] w-96 h-96 rounded-full blur-[120px] pointer-events-none z-0" style={{ background: 'var(--app-glow-a)' }} />
+        <div className="fixed bottom-20 left-[-5%] w-96 h-96 rounded-full blur-[120px] pointer-events-none z-0" style={{ background: 'var(--app-glow-b)' }} />
 
         {/* الحل هنا: 
             pt-28 (Padding Top) لضمان نزول المحتوى تحت الناف بار 
@@ -53,16 +53,16 @@ export default function MedicalRecordPage() {
             <div className="text-center space-y-5">
               <motion.div 
                 whileHover={{ scale: 1.05, rotate: 2 }}
-                className="mx-auto w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-[2.5rem] bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl"
+                className="mx-auto w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-[2.5rem] theme-surface backdrop-blur-2xl shadow-2xl"
               >
                 <Stethoscope size={40} className="text-blue-400" />
               </motion.div>
               
               <div className="space-y-2">
-                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight theme-title leading-tight">
                   سجلي الطبي <span className="text-blue-500">الذكي</span>
                 </h1>
-                <p className="text-slate-400 text-base md:text-lg max-w-md mx-auto">
+                <p className="theme-text-muted text-base md:text-lg max-w-md mx-auto">
                   ارفع مستنداتك الطبية الآن واحصل على كود QR يختصر تاريخك الصحي.
                 </p>
               </div>
@@ -72,16 +72,16 @@ export default function MedicalRecordPage() {
             <div className="group relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-[3rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
               
-              <div className="relative bg-[#1e293b]/50 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden">
+              <div className="relative theme-surface backdrop-blur-3xl rounded-[3rem] shadow-2xl overflow-hidden">
                 
                 {/* Tabs Selector */}
-                <div className="flex bg-black/30 p-2 gap-1 backdrop-blur-md">
+                <div className="flex p-2 gap-1 backdrop-blur-md" style={{ background: 'color-mix(in srgb, var(--app-bg) 80%, black)' }}>
                   {tabs.map(tab => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       className={`relative flex-1 py-4 rounded-[1.8rem] text-sm font-bold transition-all duration-500 flex flex-col items-center gap-1.5
-                        ${activeTab === tab.id ? "text-white" : "text-slate-500 hover:text-slate-300 hover:bg-white/5"}
+                        ${activeTab === tab.id ? "text-white" : "theme-text-muted hover:text-slate-300 hover:bg-white/5"}
                       `}
                     >
                       {activeTab === tab.id && (
@@ -112,10 +112,10 @@ export default function MedicalRecordPage() {
                           placeholder="اكتب ملاحظاتك الطبية هنا (الأدوية، الحساسية، تشخيص الطبيب...)"
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
-                          className="w-full min-h-[200px] p-6 rounded-[2rem] bg-black/20 border border-white/5 text-white placeholder:text-slate-600 focus:border-blue-500/50 focus:ring-0 outline-none text-lg transition-all resize-none"
+                          className="w-full min-h-[200px] p-6 rounded-[2rem] theme-input focus:ring-0 outline-none text-lg transition-all resize-none"
                         />
                       ) : (
-                        <div className="bg-black/20 rounded-[2.5rem] p-1 border border-white/5">
+                        <div className="rounded-[2.5rem] p-1 theme-surface">
                           <FileUploader
                             onUpload={(data) => addFile(data, activeTab)}
                             activeTab={activeTab}

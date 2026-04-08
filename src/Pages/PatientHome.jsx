@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Navbar from '../Components/Layout/Navbar';
 import Footer from '../Components/Layout/Footer';
 import HeroSlider from '../Components/HeroSlider';
@@ -14,29 +14,28 @@ import MedicationWidget from './MedicationWidget';
 
 const PatientHome = ({ allDoctors }) => {
   const { user } = useAuth();
-  
-  const [patientData] = useState({
-    name: user?.name || "أحمد محمد المنسي",
-    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
+
+  const patientData = {
+    name: user?.name || "زائر",
     role: "مريض محقق"
-  });
+  };
+
+  const firstName = (patientData.name || "زائر").trim().split(/\s+/)[0] || "زائر";
 
   useEffect(() => {
-    // نتحقق إذا المستخدم شاف رسالة الترحيب في الـ session الحالي
-    const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
+    if (!user?.id) return;
+
+    // نتحقق إذا المستخدم الحالي شاف رسالة الترحيب في الـ session الحالي
+    const welcomeKey = `hasSeenWelcome-${user.id}`;
+    const hasSeenWelcome = sessionStorage.getItem(welcomeKey);
     
     // نعرض الرسالة بس لو مشفهاش قبل كده
     if (!hasSeenWelcome) {
       Swal.fire({
         html: `
           <div class="glass-popup-content" style="direction: rtl; font-family: 'Segoe UI', sans-serif;">
-            <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 25px;">
-              <div class="avatar-glow"></div>
-              <img src="${patientData.avatar}" class="glass-avatar" />
-            </div>
-
             <h2 style="color: white; font-weight: 900; font-size: 24px; margin-bottom: 10px;">
-              أهلاً بك مجدداً، <span style="color: #60a5fa;">${patientData.name.split(' ')[0]}</span> 
+              أهلاً بك مجدداً، <span style="color: #60a5fa;">${firstName}</span>
             </h2>
 
             <p style="color: #cbd5e1; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
@@ -61,12 +60,12 @@ const PatientHome = ({ allDoctors }) => {
       });
       
       // نحفظ إن المستخدم شاف الرسالة
-      sessionStorage.setItem('hasSeenWelcome', 'true');
+      sessionStorage.setItem(welcomeKey, 'true');
     }
-  }, [patientData.name]);
+  }, [firstName, user?.id]);
 
   return (
-    <div className="min-h-screen "> {/* تغيير لون الخلفية ليتماشى مع الثيم الداكن الزجاجي */}
+    <div className="min-h-screen theme-page"> {/* تغيير لون الخلفية ليتماشى مع الثيم الداكن الزجاجي */}
       <ToastContainer rtl={true} />
       <Navbar patientData={patientData} />
       
@@ -80,24 +79,6 @@ const PatientHome = ({ allDoctors }) => {
           border-radius: 40px !important;
           padding: 40px !important;
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-        }
-
-        .glass-avatar {
-          width: 100%;
-          height: 100%;
-          border-radius: 30px;
-          border: 2px solid rgba(255, 255, 255, 0.2);
-          object-fit: cover;
-          position: relative;
-          z-index: 2;
-        }
-
-        .avatar-glow {
-          position: absolute;
-          inset: -10px;
-          background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
-          z-index: 1;
-          animation: pulse 2s infinite;
         }
 
         /* زر الأنيميشن الذي لا ينتهي */
@@ -136,11 +117,6 @@ const PatientHome = ({ allDoctors }) => {
           filter: brightness(1.1);
         }
 
-        @keyframes pulse {
-          0% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.1); }
-          100% { opacity: 0.5; transform: scale(1); }
-        }
       `}</style>
 
       <HeroSlider />

@@ -1,5 +1,6 @@
 import { Calendar, Clock, Video, MessageCircle, Phone } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTheme } from "../context/ThemeContext";
 
 interface AppointmentCardProps {
   id: string;
@@ -9,7 +10,6 @@ interface AppointmentCardProps {
   time: string;
   type: string;
   status: string;
-  statusColor: string;
   avatarUrl: string;
   index: number;
 }
@@ -21,10 +21,20 @@ export function AppointmentCard({
   time,
   type,
   status,
-  statusColor,
   avatarUrl,
   index,
 }: AppointmentCardProps) {
+  const { isDark } = useTheme();
+
+  const statusBadgeClass =
+    status === "مؤكد"
+      ? (isDark
+          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/30"
+          : "bg-emerald-100 text-emerald-700 border border-emerald-200")
+      : (isDark
+          ? "bg-amber-500/20 text-amber-300 border border-amber-400/30"
+          : "bg-amber-100 text-amber-700 border border-amber-200");
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -34,7 +44,7 @@ export function AppointmentCard({
       className="group relative"
     >
       {/* Glassmorphism Card */}
-      <div className="relative h-full overflow-hidden rounded-[20px] bg-white/40 p-6 shadow-[0_8px_32px_0_rgba(15,66,125,0.1)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_12px_48px_0_rgba(15,66,125,0.2)] border border-white/60">
+      <div className={`relative h-full overflow-hidden rounded-[20px] p-6 shadow-[0_8px_32px_0_rgba(15,66,125,0.1)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_12px_48px_0_rgba(15,66,125,0.2)] ${isDark ? 'bg-slate-900/75 border border-slate-700/60' : 'bg-white/70 border border-white/70'}`}>
         {/* Floating Animation */}
         <motion.div
           animate={{ y: [0, -3, 0] }}
@@ -49,7 +59,7 @@ export function AppointmentCard({
           {/* Status Badge */}
           <div className="mb-4 flex items-start justify-between">
             <div
-              className={`rounded-full px-4 py-1.5 text-sm ${statusColor} backdrop-blur-sm`}
+              className={`rounded-full px-4 py-1.5 text-sm ${statusBadgeClass} backdrop-blur-sm`}
             >
               {status}
             </div>
@@ -68,32 +78,32 @@ export function AppointmentCard({
 
           {/* Doctor Info */}
           <div className="mb-5 text-right">
-            <h3 className="mb-1 text-[#0F427D]">{doctorName}</h3>
-            <p className="text-sm text-gray-600">{specialty}</p>
+            <h3 className={`mb-1 ${isDark ? 'text-slate-100' : 'text-[#0F427D]'}`}>{doctorName}</h3>
+            <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>{specialty}</p>
           </div>
 
           {/* Appointment Details */}
           <div className="mb-6 space-y-3">
             {/* Date */}
             <div className="flex items-center justify-end gap-3">
-              <span className="text-sm text-gray-700">{date}</span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#0F427D]/10 to-[#008080]/10 transition-all group-hover:from-[#0F427D]/20 group-hover:to-[#008080]/20">
+              <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{date}</span>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-all ${isDark ? 'bg-cyan-500/10 group-hover:bg-cyan-500/20' : 'bg-gradient-to-br from-[#0F427D]/10 to-[#008080]/10 group-hover:from-[#0F427D]/20 group-hover:to-[#008080]/20'}`}>
                 <Calendar className="h-4 w-4 text-[#0F427D]" />
               </div>
             </div>
 
             {/* Time */}
             <div className="flex items-center justify-end gap-3">
-              <span className="text-sm text-gray-700">{time}</span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#0F427D]/10 to-[#008080]/10 transition-all group-hover:from-[#0F427D]/20 group-hover:to-[#008080]/20">
+              <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{time}</span>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-all ${isDark ? 'bg-cyan-500/10 group-hover:bg-cyan-500/20' : 'bg-gradient-to-br from-[#0F427D]/10 to-[#008080]/10 group-hover:from-[#0F427D]/20 group-hover:to-[#008080]/20'}`}>
                 <Clock className="h-4 w-4 text-[#008080]" />
               </div>
             </div>
 
             {/* Type */}
             <div className="flex items-center justify-end gap-3">
-              <span className="text-sm text-gray-700">{type}</span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#0F427D]/10 to-[#008080]/10 transition-all group-hover:from-[#0F427D]/20 group-hover:to-[#008080]/20">
+              <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{type}</span>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-all ${isDark ? 'bg-cyan-500/10 group-hover:bg-cyan-500/20' : 'bg-gradient-to-br from-[#0F427D]/10 to-[#008080]/10 group-hover:from-[#0F427D]/20 group-hover:to-[#008080]/20'}`}>
                 <Video className="h-4 w-4 text-[#008080]" />
               </div>
             </div>
@@ -105,7 +115,7 @@ export function AppointmentCard({
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#008080]/30 bg-white/60 backdrop-blur-sm transition-all hover:border-[#008080] hover:bg-[#008080]/10 hover:shadow-[0_0_15px_rgba(0,128,128,0.3)]"
+              className={`flex h-11 w-11 items-center justify-center rounded-xl backdrop-blur-sm transition-all hover:border-[#008080] hover:bg-[#008080]/10 hover:shadow-[0_0_15px_rgba(0,128,128,0.3)] ${isDark ? 'border border-cyan-400/30 bg-slate-800/80' : 'border border-[#008080]/30 bg-white/60'}`}
             >
               <MessageCircle className="h-5 w-5 text-[#008080]" />
             </motion.button>
@@ -113,7 +123,7 @@ export function AppointmentCard({
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#0F427D]/30 bg-white/60 backdrop-blur-sm transition-all hover:border-[#0F427D] hover:bg-[#0F427D]/10 hover:shadow-[0_0_15px_rgba(15,66,125,0.3)]"
+              className={`flex h-11 w-11 items-center justify-center rounded-xl backdrop-blur-sm transition-all hover:border-[#0F427D] hover:bg-[#0F427D]/10 hover:shadow-[0_0_15px_rgba(15,66,125,0.3)] ${isDark ? 'border border-blue-400/30 bg-slate-800/80' : 'border border-[#0F427D]/30 bg-white/60'}`}
             >
               <Phone className="h-5 w-5 text-[#0F427D]" />
             </motion.button>

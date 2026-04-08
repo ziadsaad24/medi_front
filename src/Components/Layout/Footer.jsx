@@ -22,7 +22,7 @@ const Footer = () => {
       </div>
 
       <div className="bg-[#081221] pt-12 pb-8">
-        <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative z-10">
+        <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative z-10" dir="ltr">
           
           {/* تواصل معنا */}
           <div className="order-4 lg:order-1 space-y-6">

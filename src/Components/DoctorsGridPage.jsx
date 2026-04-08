@@ -29,12 +29,12 @@ const DoctorsGridPage = ({ allDoctors }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] relative overflow-hidden">
+    <div className="min-h-screen theme-page relative overflow-hidden">
       <Navbar />
       
       {/* عناصر خلفية ديكورية لتعزيز تأثير الزجاج */}
-      <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none" style={{ background: 'var(--app-glow-a)' }} />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none" style={{ background: 'var(--app-glow-b)' }} />
 
       <div className="container mx-auto max-w-[1300px] px-6 pt-32 pb-20 relative z-10" dir="rtl">
         
@@ -43,7 +43,7 @@ const DoctorsGridPage = ({ allDoctors }) => {
           <motion.h1 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-black text-white"
+            className="text-4xl md:text-6xl font-black theme-title"
           >
             نخبة <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">أطبائنا</span>
           </motion.h1>
@@ -51,7 +51,7 @@ const DoctorsGridPage = ({ allDoctors }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-slate-400 text-lg max-w-xl mx-auto"
+            className="theme-text-muted text-lg max-w-xl mx-auto"
           >
             اختر من بين أفضل المتخصصين المعتمدين لرعاية صحتك وصحة عائلتك
           </motion.p>
@@ -74,7 +74,7 @@ const DoctorsGridPage = ({ allDoctors }) => {
               {/* التوهج الخلفي للكارت عند الـ Hover */}
               <div className="absolute -inset-0.5 bg-gradient-to-b from-blue-500 to-emerald-500 rounded-[2.5rem] blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
               
-              <div className="relative h-full bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 flex flex-col items-center text-center shadow-2xl overflow-hidden">
+              <div className="relative h-full theme-surface backdrop-blur-2xl rounded-[2.5rem] p-8 flex flex-col items-center text-center shadow-2xl overflow-hidden">
                 
                 {/* صورة الطبيب داخل إطار زجاجي */}
                 <div className="relative mb-6">
@@ -85,18 +85,18 @@ const DoctorsGridPage = ({ allDoctors }) => {
                     alt={doc.name} 
                   />
                   {/* شارة التقييم */}
-                  <div className="absolute -bottom-2 -right-2 bg-[#1e293b] border border-white/10 px-2 py-1 rounded-lg flex items-center gap-1 z-20 shadow-lg">
+                  <div className="absolute -bottom-2 -right-2 px-2 py-1 rounded-lg flex items-center gap-1 z-20 shadow-lg theme-surface">
                     <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                    <span className="text-white text-[10px] font-bold">4.9</span>
+                    <span className="theme-title text-[10px] font-bold">4.9</span>
                   </div>
                 </div>
 
                 <div className="flex-grow">
-                  <h4 className="font-black text-white text-xl mb-1 group-hover:text-blue-400 transition-colors">{doc.name}</h4>
+                  <h4 className="font-black theme-title text-xl mb-1 group-hover:text-blue-400 transition-colors">{doc.name}</h4>
                   <p className="text-emerald-400 font-bold text-sm mb-4 tracking-wide">{doc.specialty}</p>
                   
                   {/* تفاصيل الخبرة بشكل زجاجي مصغر */}
-                  <div className="flex items-center justify-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-2xl text-slate-300 text-xs mb-6 group-hover:bg-white/10 transition-colors">
+                  <div className="flex items-center justify-center gap-3 theme-surface px-4 py-2 rounded-2xl theme-text-muted text-xs mb-6 transition-colors">
                     <Clock size={16} className="text-blue-400" />
                     <span>خبرة {doc.exp} سنة</span>
                   </div>
