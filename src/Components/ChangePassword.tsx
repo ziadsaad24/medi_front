@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { Lock, Eye, EyeOff, Shield, Edit2, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import doctorApi from '../services/doctorApi';
 
-export function ChangePassword() {
+type ChangePasswordProps = {
+  popupMode?: boolean;
+};
+
+export function ChangePassword({ popupMode = false }: ChangePasswordProps) {
   const { isDark } = useTheme();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(popupMode);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -16,7 +21,9 @@ export function ChangePassword() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
@@ -35,10 +42,51 @@ export function ChangePassword() {
       return;
     }
 
-    setIsEditing(false);
-    setShowSuccess(true);
-    setPasswords({ current: '', new: '', confirm: '' });
-    setTimeout(() => setShowSuccess(false), 3000);
+    try {
+      setIsSubmitting(true);
+      await doctorApi.changeDoctorPassword({
+        current_password: passwords.current,
+        new_password: passwords.new,
+        new_password_confirmation: passwords.confirm,
+      });
+
+      if (!popupMode) {
+        setIsEditing(false);
+      }
+
+      setShowSuccess(true);
+      setPasswords({ current: '', new: '', confirm: '' });
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error: any) {
+      const responseErrors = error?.response?.data?.errors || {};
+      const mappedErrors: Record<string, string> = {};
+
+      if (responseErrors.current_password) {
+        mappedErrors.current = Array.isArray(responseErrors.current_password)
+          ? responseErrors.current_password[0]
+          : responseErrors.current_password;
+      }
+
+      if (responseErrors.new_password) {
+        mappedErrors.new = Array.isArray(responseErrors.new_password)
+          ? responseErrors.new_password[0]
+          : responseErrors.new_password;
+      }
+
+      if (responseErrors.new_password_confirmation) {
+        mappedErrors.confirm = Array.isArray(responseErrors.new_password_confirmation)
+          ? responseErrors.new_password_confirmation[0]
+          : responseErrors.new_password_confirmation;
+      }
+
+      if (Object.keys(mappedErrors).length === 0) {
+        mappedErrors.current = error?.response?.data?.message || 'تعذر تغيير كلمة المرور حالياً';
+      }
+
+      setErrors(mappedErrors);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -49,7 +97,14 @@ export function ChangePassword() {
   };
 
   return (
-    <div className={`backdrop-blur-xl border rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 lg:p-10 relative group max-w-full mx-auto ${isDark ? "bg-gradient-to-b from-blue-950/95 via-blue-900/90 to-cyan-800/85 border-white/30" : "bg-white border-[#0f427d]/16"}`}>
+    <div
+      dir="rtl"
+      className={`relative max-w-full mx-auto text-right ${
+        popupMode
+          ? 'p-0'
+          : `backdrop-blur-xl border rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 lg:p-10 ${isDark ? 'bg-gradient-to-b from-blue-950/95 via-blue-900/90 to-cyan-800/85 border-white/30' : 'bg-white border-[#0f427d]/16'}`
+      }`}
+    >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4 sm:gap-0">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700 flex items-center justify-center">
@@ -65,7 +120,7 @@ export function ChangePassword() {
           </div>
         </div>
 
-        {!isEditing ? (
+        {!isEditing && !popupMode ? (
           <button
             onClick={() => setIsEditing(true)}
             className="w-10 h-10 rounded-xl backdrop-blur-xl bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 text-white hover:shadow-lg transition-all flex items-center justify-center"
@@ -73,7 +128,7 @@ export function ChangePassword() {
           >
             <Edit2 className="w-5 h-5" />
           </button>
-        ) : (
+        ) : !popupMode ? (
           <button
             onClick={() => setIsEditing(false)}
             className={`w-10 h-10 rounded-xl backdrop-blur-xl border transition-all flex items-center justify-center ${isDark ? "bg-white/60 border-white/60 text-gray-600 hover:bg-white/80" : "bg-[#0f427d]/10 border-[#0f427d]/20 text-[#0f427d] hover:bg-[#0f427d]/18"}`}
@@ -81,7 +136,7 @@ export function ChangePassword() {
           >
             <X className="w-5 h-5" />
           </button>
-        )}
+        ) : null}
       </div>
 
       {/* رسالة النجاح */}
@@ -192,10 +247,11 @@ export function ChangePassword() {
         {isEditing && (
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full px-4 sm:px-6 py-2.5 sm:py-3 md:py-4 rounded-2xl bg-gradient-to-r from-blue-900/55 via-blue-800 to-cyan-700 text-sm sm:text-base md:text-lg font-semibold hover:shadow-xl transition-all flex items-center justify-center gap-2 sm:gap-3 shadow-lg"
           >
             <Shield className="w-5 h-5 text-white" />
-            <span className='text-white'>تغيير كلمة المرور</span>
+            <span className='text-white'>{isSubmitting ? 'جارٍ الحفظ...' : 'تغيير كلمة المرور'}</span>
           </button>
         )}
       </form>

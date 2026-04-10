@@ -36,14 +36,15 @@ const LoginForm = ({ role }) => {
       });
       
       if (result.success) {
-        // توجيه المستخدم حسب role
-        if (result.user.role === 'patient') {
-          navigate('/patient/home');
-        } else if (result.user.role === 'doctor') {
-          navigate('/doctor/dashboard');
-        } else if (result.user.role === 'admin') {
-          navigate('/admin/dashboard');
-        }
+        const userRole = result?.user?.role;
+        const destination =
+          userRole === 'doctor'
+            ? '/doctor/dashboard'
+            : userRole === 'admin'
+              ? '/admin/dashboard'
+              : '/home';
+
+        navigate(destination, { replace: true });
       } else {
         // التحقق من حاجة المستخدم لتفعيل الإيميل
         if (result.needsEmailVerification) {
@@ -68,9 +69,9 @@ const LoginForm = ({ role }) => {
         </div>
       )}
       
-      <form className="space-y-6 text-right" onSubmit={handleLogin}>
+      <form className="space-y-6 text-right text-gray-700" onSubmit={handleLogin}>
         <div>
-          <label className="block text-xs font-bold mb-2">البريد الإلكتروني *</label>
+          <label className="block text-xs font-bold mb-2 text-gray-700">البريد الإلكتروني *</label>
           <input 
             name="email" 
             type="email" 
@@ -78,12 +79,12 @@ const LoginForm = ({ role }) => {
             onChange={handleChange} 
             required 
             disabled={loading}
-            className="w-full p-3 border border-gray-100 rounded-2xl bg-gray-50 outline-none focus:border-[#008080] disabled:opacity-50" 
+            className="w-full p-3 border border-gray-100 rounded-2xl bg-gray-50 text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#008080] disabled:opacity-50" 
             placeholder="doctor@example.com" 
           />
         </div>
         <div>
-          <label className="block text-xs font-bold mb-2">كلمة المرور *</label>
+          <label className="block text-xs font-bold mb-2 text-gray-700">كلمة المرور *</label>
           <input 
             name="password" 
             type="password" 
@@ -91,7 +92,7 @@ const LoginForm = ({ role }) => {
             onChange={handleChange} 
             required 
             disabled={loading}
-            className="w-full p-3 border border-gray-100 rounded-2xl bg-gray-50 outline-none focus:border-[#008080] disabled:opacity-50" 
+            className="w-full p-3 border border-gray-100 rounded-2xl bg-gray-50 text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#008080] disabled:opacity-50" 
             placeholder="********" 
           />
         </div>

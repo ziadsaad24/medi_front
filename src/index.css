@@ -35,7 +35,11 @@ html[data-theme='dark'] {
   --hero-about-bg: radial-gradient(120% 120% at 20% 0%, #153b6d 0%, #0f213f 44%, #050b17 100%);
 }
 
+html,
 body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
   background-color: var(--app-bg);
   color: var(--app-text);
   overflow-x: hidden;
@@ -43,6 +47,11 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* Keep browser overscroll from revealing the default white canvas */
+html {
+  overscroll-behavior-y: none;
 }
 
 body,

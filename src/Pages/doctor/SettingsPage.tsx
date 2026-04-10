@@ -5,22 +5,12 @@ import { WorkingHours } from '../../Components/WorkingHours';
 import DocAppointmentCard from "../../Components/DocAppointmentCard";
 import { useLocation } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
-
-const dummyAppointments = [
-  { id: 1, patientName: "أحمد علي", time: "10:00 صباحاً", type: "جديد" },
-  { id: 2, patientName: "سارة أحمد", time: "09:00 صباحاً", type: "جديد" },
-  { id: 3, patientName: "محمد علي", time: "10:30 صباحاً", type: "مراجعة" },
-  { id: 4, patientName: "فاطمة حسن", time: "02:00 مساءً", type: "جديد" }, 
-  { id: 5, patientName: "يوسف إبراهيم", time: "03:30 مساءً", type: "مراجعة" },
-  { id: 6, patientName: "ليلى محمود", time: "04:15 مساءً", type: "جديد" },
-  { id: 7, patientName: "خالد سعيد", time: "05:00 مساءً", type: "مراجعة" }, 
-  { id: 8, patientName: "منى عبد الرحمن", time: "06:30 مساءً", type: "جديد" },
-  { id: 9, patientName: "عمر فاروق", time: "07:45 مساءً", type: "مراجعة" }
-];
+import { useDoctorWorkflow } from '../../context/DoctorWorkflowContext';
 
 export default function SettingsPage() {
   const location = useLocation();
   const { isDark } = useTheme();
+  const { actionableAppointments } = useDoctorWorkflow();
 
   useEffect(() => {
     if (location.hash === "#appointments") {
@@ -44,13 +34,23 @@ export default function SettingsPage() {
           <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold pr-2 sm:pr-4 border-r-4 border-[#144A89] ${isDark ? "text-white/80" : "text-[#0f427d]/80"}`}>
             المواعيد
           </h2>
+
+          <p className={`text-xs sm:text-sm mt-2 sm:mt-0 ${isDark ? 'text-white/60' : 'text-[#0f427d]/60'}`}>
+            يتم إخفاء الكشوفات المكتملة تلقائيًا ونقلها إلى سجلات المرضى.
+          </p>
         </div>
 
         {/* Appointments Grid */}
         <div id="appointments" className="space-y-4 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
-          {dummyAppointments.map((appointment) => (
+          {actionableAppointments.map((appointment) => (
             <DocAppointmentCard key={appointment.id} appointment={appointment} />
           ))}
+
+          {actionableAppointments.length === 0 && (
+            <div className={`rounded-2xl border p-6 text-center ${isDark ? 'bg-slate-900/60 border-white/15 text-white/70' : 'bg-white border-[#0f427d]/15 text-[#0f427d]/70'}`}>
+              لا توجد مواعيد نشطة حالياً.
+            </div>
+          )}
         </div>
       </div>
     </DoctorLayout>

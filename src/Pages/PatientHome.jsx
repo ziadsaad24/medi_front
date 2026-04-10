@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../Components/Layout/Navbar';
 import Footer from '../Components/Layout/Footer';
 import HeroSlider from '../Components/HeroSlider';
@@ -11,9 +11,38 @@ import 'react-toastify/dist/ReactToastify.css';
 import { MedicalRecordsBanner } from '../Components/MedicalRecordsBanner';
 import ScrollToTop from '../Components/Layout/ScrollToTop';
 import MedicationWidget from './MedicationWidget';
+import { patientAPI } from '../services/api';
+
+const API_BASE = String(import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+const PATIENT_HOME_DOCTORS_CACHE_KEY = 'patient-home-doctors-cache';
+const PATIENT_HOME_DOCTORS_CACHE_TTL = 2 * 60 * 1000;
+
+const resolveDoctorImage = (rawImage) => {
+  if (!rawImage) return '';
+
+  const value = String(rawImage).trim();
+  if (!value) return '';
+
+  if (value.startsWith('http://') || value.startsWith('https://')) return value;
+
+  return `${API_BASE}${value.startsWith('/') ? value : `/${value}`}`;
+};
+
+const normalizeDoctor = (doc = {}) => ({
+  id: doc.id,
+  name: doc.name || doc.full_name || 'دكتور',
+  specialty: doc.specialty || doc.specialization || 'بدون تخصص',
+  image: resolveDoctorImage(doc.image || doc.avatar_url || doc.avatar || doc.profile_image),
+  exp: String(doc.exp || doc.years_experience || doc.experience || '0'),
+  clinic: doc.clinic || doc.clinic_name || 'عيادة غير محددة',
+  canBookNow: Boolean(doc.canBookNow ?? doc.can_book_now ?? true),
+  unavailableReason: doc.unavailableReason || doc.unavailable_reason || '',
+});
 
 const PatientHome = ({ allDoctors }) => {
   const { user } = useAuth();
+  const [doctors, setDoctors] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(false);
 
   const patientData = {
     name: user?.name || "زائر",
@@ -63,6 +92,66 @@ const PatientHome = ({ allDoctors }) => {
       sessionStorage.setItem(welcomeKey, 'true');
     }
   }, [firstName, user?.id]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadDoctors = async () => {
+      let hasFreshCache = false;
+
+      try {
+        const cachedRaw = sessionStorage.getItem(PATIENT_HOME_DOCTORS_CACHE_KEY);
+        if (cachedRaw) {
+          const cached = JSON.parse(cachedRaw);
+          const isFresh = Date.now() - Number(cached?.timestamp || 0) < PATIENT_HOME_DOCTORS_CACHE_TTL;
+
+          if (isFresh && Array.isArray(cached?.data) && cached.data.length > 0) {
+            hasFreshCache = true;
+            setDoctors(cached.data);
+          }
+        }
+      } catch {
+        // Ignore cache parsing errors and continue with API.
+      }
+
+      setDoctorsLoading(!hasFreshCache);
+
+      try {
+        const response = await patientAPI.getDoctors({ page: 1, per_page: 12 });
+        const list = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.data?.data)
+            ? response.data.data
+            : Array.isArray(response)
+              ? response
+              : [];
+
+        if (!active) return;
+        const normalized = list.map(normalizeDoctor);
+        setDoctors(normalized);
+
+        try {
+          sessionStorage.setItem(
+            PATIENT_HOME_DOCTORS_CACHE_KEY,
+            JSON.stringify({ timestamp: Date.now(), data: normalized })
+          );
+        } catch {
+          // Ignore cache write issues.
+        }
+      } catch {
+        if (!active) return;
+        if (!hasFreshCache) setDoctors([]);
+      } finally {
+        if (active) setDoctorsLoading(false);
+      }
+    };
+
+    loadDoctors();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen theme-page"> {/* تغيير لون الخلفية ليتماشى مع الثيم الداكن الزجاجي */}
@@ -123,7 +212,7 @@ const PatientHome = ({ allDoctors }) => {
       <ServicesSection />
       <MedicalRecordsBanner/>
       <MedicationWidget/>
-      <DoctorsSection doctors={allDoctors} /> 
+      <DoctorsSection doctors={doctors} loading={doctorsLoading} /> 
       <ScrollToTop /> 
       <Footer />
     </div>

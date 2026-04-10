@@ -1,121 +1,310 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppointmentCard } from "../Components/AppointmentCard";
 import { motion } from "framer-motion";
 import Navbar from "../Components/Layout/Navbar";
 import Footer from "../Components/Layout/Footer";
-import AuthContext from "../context/AuthContext";
+import { patientAPI } from "../services/api";
 
 type Appointment = {
   id: string;
+  doctorId?: string;
   doctorName: string;
   specialty: string;
+  doctorPhone?: string;
+  clinicName?: string;
+  clinicAddress?: string;
   date: string;
-  time24: string;
   time: string;
   type: string;
+  rawStatus: string;
   status: string;
-  statusColor: string;
+  reason?: string;
+  consultationFee?: string;
+  doctorNote?: string;
+  rejectReason?: string;
   avatarUrl: string;
 };
 
-const getAppointmentsStorageKey = (userId?: string | number) => {
-  return userId ? `appointments-data-${userId}` : "appointments-data";
+type DoctorLookupItem = {
+  id: string;
+  name: string;
+  avatarUrl: string;
 };
 
-const defaultAppointments: Appointment[] = [
-  {
-    id: "1",
-    doctorName: "د. فاطمة خالد",
-    specialty: "أمراض الجلدية والتجميل",
-    date: "2025-11-22",
-    time24: "10:00",
-    time: "10:00 صباحاً",
-    type: "استشارة عبر الإنترنت",
-    status: "مؤكد",
-    statusColor: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1706565029539-d09af5896340?auto=format&fit=crop&w=1080&q=80",
-  },
-  {
-    id: "2",
-    doctorName: "د. أحمد العلي",
-    specialty: "أمراض القلب",
-    date: "2025-11-23",
-    time24: "14:30",
-    time: "02:30 مساءً",
-    type: "زيارة في العيادة",
-    status: "قيد الانتظار",
-    statusColor: "bg-amber-100 text-amber-700 border border-amber-200",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1659353885824-1199aeeebfc6?auto=format&fit=crop&w=1080&q=80",
-  },
-  {
-    id: "3",
-    doctorName: "د. سارة محمود",
-    specialty: "طب الأطفال",
-    date: "2025-11-24",
-    time24: "11:00",
-    time: "11:00 صباحاً",
-    type: "استشارة عبر الإنترنت",
-    status: "مؤكد",
-    statusColor: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1753487050317-919a2b26a6ed?auto=format&fit=crop&w=1080&q=80",
-  },
-  {
-    id: "4",
-    doctorName: "د. مريم حسن",
-    specialty: "طب العيون",
-    date: "2025-11-25",
-    time24: "09:00",
-    time: "09:00 صباحاً",
-    type: "فحص شامل",
-    status: "مؤكد",
-    statusColor: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1632053652571-a6a45052bbbd?auto=format&fit=crop&w=1080&q=80",
-  },
-  {
-    id: "5",
-    doctorName: "د. خالد سعيد",
-    specialty: "طب الأعصاب",
-    date: "2025-11-26",
-    time24: "15:00",
-    time: "03:00 مساءً",
-    type: "استشارة عبر الإنترنت",
-    status: "قيد الانتظار",
-    statusColor: "bg-amber-100 text-amber-700 border border-amber-200",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1642975967602-653d378f3b5b?auto=format&fit=crop&w=1080&q=80",
-  },
-  {
-    id: "6",
-    doctorName: "د. نور الدين",
-    specialty: "الطب العام",
-    date: "2025-11-27",
-    time24: "13:00",
-    time: "01:00 مساءً",
-    type: "زيارة في العيادة",
-    status: "مؤكد",
-    statusColor: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1632054224659-280be3239aff?auto=format&fit=crop&w=1080&q=80",
-  },
-];
+const toArabicStatus = (status: string) => {
+  const normalized = String(status || '').toLowerCase();
+  if (normalized === 'confirmed') return 'مؤكد';
+  if (normalized === 'in_progress') return 'جاري التنفيذ';
+  if (normalized === 'completed') return 'مكتمل';
+  if (normalized === 'cancelled' || normalized === 'canceled') return 'ملغي';
+  if (normalized === 'rejected') return 'مرفوض';
+  return 'قيد الانتظار';
+};
+
+const isCompletedStatus = (status: string) => {
+  const normalized = String(status || '').toLowerCase();
+  return [
+    'completed',
+    'complete',
+    'done',
+    'finished',
+    'closed',
+    'resolved',
+    'ended',
+    'cancelled',
+    'canceled',
+    'مكتمل',
+    'منتهي',
+  ].includes(normalized);
+};
+
+const hasMedicalRecordMarker = (item: any) => {
+  return Boolean(
+    item?.medical_record_id ||
+      item?.medicalRecordId ||
+      item?.record_id ||
+      item?.recordId ||
+      item?.linked_record_id ||
+      item?.linkedRecordId ||
+      item?.has_medical_record === true ||
+      item?.hasMedicalRecord === true ||
+      item?.completed_at ||
+      item?.completedAt ||
+      item?.consultation_completed === true ||
+      item?.consultationCompleted === true ||
+      item?.ended_at ||
+      item?.endedAt
+  );
+};
+
+const toArabicType = (type: string) => (String(type) === 'follow_up' ? 'مراجعة' : 'كشف');
+
+const API_BASE = String((import.meta as any)?.env?.VITE_API_BASE_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+
+const resolveAvatarUrl = (raw: any) => {
+  const candidate =
+    raw?.doctor_avatar_url ||
+    raw?.doctor_avatar ||
+    raw?.avatar_url ||
+    raw?.avatar ||
+    raw?.doctor_profile_image ||
+    raw?.profile_image ||
+    raw?.profileImage ||
+    raw?.doctor_image ||
+    raw?.image ||
+    raw?.doctor?.avatar ||
+    raw?.doctor?.avatar_url ||
+    raw?.doctor?.profile_image ||
+    raw?.doctor?.image ||
+    '';
+
+  if (!candidate) {
+    return 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80';
+  }
+
+  if (String(candidate).startsWith('http://') || String(candidate).startsWith('https://')) {
+    return candidate;
+  }
+
+  const normalizedPath = String(candidate).startsWith('/') ? candidate : `/${candidate}`;
+  return `${API_BASE}${normalizedPath}`;
+};
+
+const normalizeText = (value: string) => String(value || '').trim().toLowerCase();
+
+const toDoctorsArray = (response: any) => {
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  if (Array.isArray(response)) return response;
+  return [];
+};
+
+const toRecordsArray = (response: any) => {
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  if (Array.isArray(response?.records)) return response.records;
+  if (Array.isArray(response?.data?.records)) return response.data.records;
+  if (Array.isArray(response)) return response;
+  return [];
+};
+
+const extractLinkedAppointmentId = (record: any) => {
+  const value =
+    record?.appointment_id ||
+    record?.appointmentId ||
+    record?.linked_appointment_id ||
+    record?.linkedAppointmentId ||
+    null;
+
+  if (value === undefined || value === null || value === '') return null;
+  return String(value);
+};
+
+const buildDoctorLookup = (items: any[]): DoctorLookupItem[] => {
+  return items.map((doc) => ({
+    id: String(doc?.id ?? ''),
+    name: doc?.full_name || doc?.name || '',
+    avatarUrl: resolveAvatarUrl(doc),
+  }));
+};
+
+const pickAvatarFromLookup = (
+  appointmentItem: any,
+  doctorName: string,
+  doctorLookup: DoctorLookupItem[]
+) => {
+  const doctorId = String(appointmentItem?.doctor_id ?? appointmentItem?.doctorId ?? '');
+
+  if (doctorId) {
+    const byId = doctorLookup.find((item) => item.id === doctorId && item.avatarUrl);
+    if (byId) return byId.avatarUrl;
+  }
+
+  const normalizedName = normalizeText(doctorName);
+  if (normalizedName) {
+    const byName = doctorLookup.find((item) => normalizeText(item.name) === normalizedName && item.avatarUrl);
+    if (byName) return byName.avatarUrl;
+  }
+
+  return '';
+};
+
+const normalizeAppointment = (item: any, doctorLookup: DoctorLookupItem[] = []): Appointment => {
+  const rawStatus =
+    item.status ||
+    item.appointment_status ||
+    item.booking_status ||
+    item.request_status ||
+    'pending';
+  const date = item.confirmed_date || item.confirmedDate || item.requested_date || item.requestedDate || '-';
+  const time = item.confirmed_time || item.confirmedTime || item.requested_time || item.requestedTime || '-';
+  const doctorName = item.doctor_name || item.doctorName || 'غير معروف';
+  const avatarFromAppointment = resolveAvatarUrl(item);
+  const avatarFromDoctorsList = pickAvatarFromLookup(item, doctorName, doctorLookup);
+  const avatarUrl = avatarFromDoctorsList || avatarFromAppointment;
+
+  return {
+    id: String(item.id),
+    doctorId: String(item.doctor_id || item.doctorId || ''),
+    doctorName,
+    specialty: item.specialization || item.specialty || 'بدون تخصص',
+    doctorPhone: item.doctor_phone || item.doctorPhone || item.phone || '',
+    clinicName: item.clinic_name || item.clinicName || '',
+    clinicAddress: item.clinic_address || item.clinicAddress || '',
+    date,
+    time,
+    type: toArabicType(item.appointment_type || item.appointmentType || 'new'),
+    rawStatus,
+    status: toArabicStatus(rawStatus),
+    reason: item.reason || item.visit_reason || item.chief_complaint || '',
+    consultationFee: String(item.consultation_fee || item.consultationFee || item.fee || item.price || ''),
+    doctorNote: item.doctor_note || item.doctorNote || '',
+    rejectReason: item.reject_reason || item.rejectReason || '',
+    avatarUrl,
+  };
+};
+
+const parseAppointmentTimestamp = (item: any) => {
+  const datePart =
+    item?.confirmed_date ||
+    item?.confirmedDate ||
+    item?.requested_date ||
+    item?.requestedDate ||
+    '';
+
+  const timePart =
+    item?.confirmed_time ||
+    item?.confirmedTime ||
+    item?.requested_time ||
+    item?.requestedTime ||
+    '00:00';
+
+  if (!datePart) return Number.MAX_SAFE_INTEGER;
+
+  const isoValue = `${datePart}T${String(timePart).slice(0, 5)}:00`;
+  const parsed = new Date(isoValue).getTime();
+
+  return Number.isNaN(parsed) ? Number.MAX_SAFE_INTEGER : parsed;
+};
 
 export default function AppointmentsPage() {
-  const authContext = useContext(AuthContext) as any;
-  const userId = authContext?.user?.id;
-  const APPOINTMENTS_STORAGE_KEY = getAppointmentsStorageKey(userId);
-
-  const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    const stored = localStorage.getItem(APPOINTMENTS_STORAGE_KEY);
-    return stored ? (JSON.parse(stored) as Appointment[]) : defaultAppointments;
-  });
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
-  }, [appointments, APPOINTMENTS_STORAGE_KEY]);
+    let active = true;
+
+    const loadAppointments = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const [appointmentsResponse, doctorsResponse, recordsResponse] = await Promise.all([
+          patientAPI.getMyAppointments({ forceRefresh: true }),
+          patientAPI.getDoctors({ page: 1, per_page: 100 }),
+          patientAPI.getMedicalRecords({ page: 1, per_page: 100 }),
+        ]);
+
+        const list = Array.isArray(appointmentsResponse?.data)
+          ? appointmentsResponse.data
+          : Array.isArray(appointmentsResponse?.data?.data)
+            ? appointmentsResponse.data.data
+            : Array.isArray(appointmentsResponse)
+              ? appointmentsResponse
+              : [];
+
+        const doctorLookup = buildDoctorLookup(toDoctorsArray(doctorsResponse));
+        const recordsList = toRecordsArray(recordsResponse);
+
+        const linkedAppointmentIds = new Set(
+          recordsList
+            .map((record: any) => extractLinkedAppointmentId(record))
+            .filter(Boolean)
+        );
+
+        if (!active) return;
+        const sortedList = [...list].sort((a: any, b: any) => parseAppointmentTimestamp(a) - parseAppointmentTimestamp(b));
+        const upcomingOnly = sortedList.filter((item: any) => {
+          const status =
+            item?.status ||
+            item?.appointment_status ||
+            item?.booking_status ||
+            item?.request_status ||
+            '';
+
+          if (isCompletedStatus(status)) return false;
+          if (hasMedicalRecordMarker(item)) return false;
+          if (linkedAppointmentIds.has(String(item?.id || ''))) return false;
+
+          return true;
+        });
+
+        setAppointments(upcomingOnly.map((item: any) => normalizeAppointment(item, doctorLookup)));
+      } catch (err: any) {
+        if (!active) return;
+        setError(err?.response?.data?.message || 'تعذر تحميل المواعيد حالياً');
+        setAppointments([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    loadAppointments();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const confirmedCount = useMemo(
+    () => appointments.filter((a) => a.status === 'مؤكد').length,
+    [appointments]
+  );
+
+  const pendingCount = useMemo(
+    () => appointments.filter((a) => a.status === 'قيد الانتظار').length,
+    [appointments]
+  );
 
   return (
     <div className="flex flex-col min-h-screen theme-page">
@@ -148,7 +337,19 @@ export default function AppointmentsPage() {
             </motion.div>
 
             {/* Appointments Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" dir="rtl">
+
+              {loading && (
+                <div className="col-span-full text-center theme-text-muted py-10">جارٍ تحميل مواعيدك...</div>
+              )}
+
+              {!loading && error && (
+                <div className="col-span-full text-center text-rose-400 py-10">{error}</div>
+              )}
+
+              {!loading && !error && appointments.length === 0 && (
+                <div className="col-span-full text-center theme-text-muted py-10">لا توجد مواعيد حالياً.</div>
+              )}
 
               {appointments.map((appointment, index) => (
                 <AppointmentCard
@@ -180,7 +381,7 @@ export default function AppointmentsPage() {
 
                 <div>
                   <p className="text-3xl font-black text-emerald-400">
-                    {appointments.filter(a => a.status === "مؤكد").length}
+                    {confirmedCount}
                   </p>
                   <p className="theme-text-muted text-sm">
                     مؤكدة
@@ -189,7 +390,7 @@ export default function AppointmentsPage() {
 
                 <div>
                   <p className="text-3xl font-black text-amber-400">
-                    {appointments.filter(a => a.status === "قيد الانتظار").length}
+                    {pendingCount}
                   </p>
                   <p className="theme-text-muted text-sm">
                     قيد الانتظار

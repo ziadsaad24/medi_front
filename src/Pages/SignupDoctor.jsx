@@ -107,7 +107,7 @@ const SignupDoctor = () => {
     <div className="signup-container">
       {/* الهيدر مع تحديد دور الطبيب للإطار */}
 
-      <div className="signup-card max-w-2xl" dir="rtl">
+      <div className="signup-card signup-card-wide" dir="rtl">
         <div className="text-center mb-8">
           <h2 className="signup-title">إنشاء حساب طبيب</h2>
           <p className="signup-subtitle">انضم إلى نخبة أطباء MediCare</p>

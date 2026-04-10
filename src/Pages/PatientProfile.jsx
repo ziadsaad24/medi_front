@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../Components/Layout/Navbar';
 import Footer from '../Components/Layout/Footer';
 import EmergencyCard3D from '../Components/EmergencyCard3D';
+import { ChangePassword } from '../Components/ChangePassword';
 import { patientAPI } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 
@@ -13,8 +14,14 @@ const PatientProfile = () => {
   const { isDark } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [showMedicalCard, setShowMedicalCard] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [cardFlipped, setCardFlipped] = useState(false);
   const [medicalCardId, setMedicalCardId] = useState(user?.medical_card_id || '');
+  const [qrPublicUrl, setQrPublicUrl] = useState('');
+  const [profileStats, setProfileStats] = useState({
+    upcomingAppointments: 0,
+    followedDoctors: 0,
+  });
   const cardFrontRef = useRef(null);
   const cardBackRef = useRef(null);
 
@@ -46,6 +53,31 @@ const PatientProfile = () => {
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
+
+      const buildPublicRoute = (token) => `${window.location.origin}/recorded/public/${token}`;
+
+      const bootstrapQrToken = async () => {
+        const storedToken = localStorage.getItem('medical_records_share_token');
+        if (storedToken) {
+          setQrPublicUrl(buildPublicRoute(storedToken));
+          return;
+        }
+
+        try {
+          const rotateResponse = await patientAPI.rotateMedicalRecordsShareToken();
+          const rotatePayload = rotateResponse?.data || rotateResponse || {};
+          const token = rotatePayload?.token || null;
+
+          if (token) {
+            localStorage.setItem('medical_records_share_token', token);
+            setQrPublicUrl(buildPublicRoute(token));
+          }
+        } catch {
+          setQrPublicUrl(`${window.location.origin}/demo-emergency-card`);
+        }
+      };
+
+      await bootstrapQrToken();
 
       try {
         const response = await patientAPI.getProfile();
@@ -81,6 +113,127 @@ const PatientProfile = () => {
     };
 
     loadProfile();
+  }, [user]);
+
+  useEffect(() => {
+    const toList = (response) => {
+      if (Array.isArray(response?.data)) return response.data;
+      if (Array.isArray(response?.data?.data)) return response.data.data;
+      if (Array.isArray(response?.records)) return response.records;
+      if (Array.isArray(response?.data?.records)) return response.data.records;
+      if (Array.isArray(response)) return response;
+      return [];
+    };
+
+    const isFinishedStatus = (status) => {
+      const normalized = String(status || '').toLowerCase();
+      return [
+        'completed',
+        'complete',
+        'done',
+        'finished',
+        'closed',
+        'cancelled',
+        'canceled',
+        'rejected',
+        'مكتمل',
+        'منتهي',
+        'مرفوض',
+      ].includes(normalized);
+    };
+
+    const doctorKeyFromRecord = (record) => {
+      return (
+        record?.doctor_id ||
+        record?.doctorId ||
+        record?.doctor?.id ||
+        record?.doctor_name ||
+        record?.doctorName ||
+        record?.doctor?.name ||
+        null
+      );
+    };
+
+    const doctorKeyFromAppointment = (item) => {
+      return (
+        item?.doctor_id ||
+        item?.doctorId ||
+        item?.doctor_name ||
+        item?.doctorName ||
+        null
+      );
+    };
+
+    const loadStats = async () => {
+      if (!user) return;
+
+      try {
+        const [appointmentsResponse, recordsResponse] = await Promise.all([
+          patientAPI.getMyAppointments({ forceRefresh: true }),
+          patientAPI.getMedicalRecords({ page: 1, per_page: 100 }),
+        ]);
+
+        const appointments = toList(appointmentsResponse);
+        const records = toList(recordsResponse);
+
+        const linkedAppointmentIds = new Set(
+          records
+            .map((record) => String(record?.appointment_id || record?.appointmentId || ''))
+            .filter(Boolean)
+        );
+
+        const upcomingAppointments = appointments.filter((item) => {
+          const status =
+            item?.status ||
+            item?.appointment_status ||
+            item?.booking_status ||
+            item?.request_status ||
+            '';
+
+          if (isFinishedStatus(status)) return false;
+          if (linkedAppointmentIds.has(String(item?.id || ''))) return false;
+          return true;
+        }).length;
+
+        const followedDoctorsSet = new Set();
+
+        records.forEach((record) => {
+          const source = String(record?.source || record?.entry_source || '').toLowerCase();
+          const isDoctorSource = ['doctor', 'doctor_entry', 'doctor-entry', 'doctorentry'].includes(source);
+          if (!isDoctorSource) return;
+
+          const doctorKey = doctorKeyFromRecord(record);
+          if (doctorKey !== null && doctorKey !== undefined && String(doctorKey).trim() !== '') {
+            followedDoctorsSet.add(String(doctorKey));
+          }
+        });
+
+        appointments.forEach((item) => {
+          const status =
+            item?.status ||
+            item?.appointment_status ||
+            item?.booking_status ||
+            item?.request_status ||
+            '';
+
+          if (!isFinishedStatus(status)) return;
+
+          const doctorKey = doctorKeyFromAppointment(item);
+          if (doctorKey !== null && doctorKey !== undefined && String(doctorKey).trim() !== '') {
+            followedDoctorsSet.add(String(doctorKey));
+          }
+        });
+
+        setProfileStats({
+          upcomingAppointments,
+          followedDoctors: followedDoctorsSet.size,
+        });
+      } catch {
+        setProfileStats((prev) => prev);
+      }
+    };
+
+    loadStats();
   }, [user]);
 
   const handleChange = (e) => {
@@ -176,7 +329,7 @@ const PatientProfile = () => {
     height: formData.height ? `${formData.height} سم` : '--',
     weight: formData.weight ? `${formData.weight} كجم` : '--',
     allergies: getContactValue(formData.allergies),
-    qrValue: `https://medicare.com/patient/${currentUser?.id || 'unknown'}`,
+    qrValue: qrPublicUrl || `${window.location.origin}/demo-emergency-card`,
     emergencyContact: {
       name: getContactValue(formData.emergencyName),
       phone: getContactValue(formData.emergencyContact)
@@ -184,6 +337,12 @@ const PatientProfile = () => {
   };
 
   const fieldLabelClass = `flex items-center gap-2 text-sm font-bold ${isDark ? 'text-slate-300' : 'text-gray-600'}`;
+  const iconPrimaryClass = isDark ? 'text-cyan-300' : 'text-[#008080]';
+  const iconAccentClass = isDark ? 'text-blue-300' : 'text-[#0F427D]';
+  const iconDangerClass = isDark ? 'text-rose-300' : 'text-red-500';
+  const iconWarnClass = isDark ? 'text-amber-300' : 'text-orange-500';
+  const metricPrimaryClass = isDark ? 'text-blue-300' : 'text-[#0F427D]';
+  const metricAccentClass = isDark ? 'text-teal-300' : 'text-[#008080]';
   const fieldClass = `w-full px-4 py-3 border rounded-xl outline-none transition-all ${
     isDark
       ? 'border-slate-700 bg-slate-900/70 text-slate-100 placeholder:text-slate-400'
@@ -261,7 +420,7 @@ const PatientProfile = () => {
                 {/* الاسم */}
                 <div className="space-y-2">
                   <label className={fieldLabelClass}>
-                    <User size={16} className="text-[#008080]" />
+                    <User size={16} className={iconPrimaryClass} />
                     الاسم الكامل
                   </label>
                   <input
@@ -277,7 +436,7 @@ const PatientProfile = () => {
                 {/* البريد الإلكتروني */}
                 <div className="space-y-2">
                   <label className={fieldLabelClass}>
-                    <Mail size={16} className="text-[#008080]" />
+                    <Mail size={16} className={iconPrimaryClass} />
                     البريد الإلكتروني
                   </label>
                   <input
@@ -293,7 +452,7 @@ const PatientProfile = () => {
                 {/* رقم الهاتف */}
                 <div className="space-y-2">
                   <label className={fieldLabelClass}>
-                    <Phone size={16} className="text-[#008080]" />
+                    <Phone size={16} className={iconPrimaryClass} />
                     رقم الهاتف
                   </label>
                   <input
@@ -309,7 +468,7 @@ const PatientProfile = () => {
                 {/* تاريخ الميلاد */}
                 <div className="space-y-2">
                   <label className={fieldLabelClass}>
-                    <Calendar size={16} className="text-[#008080]" />
+                    <Calendar size={16} className={iconPrimaryClass} />
                     تاريخ الميلاد
                   </label>
                   <input
@@ -325,7 +484,7 @@ const PatientProfile = () => {
                 {/* العنوان */}
                 <div className="md:col-span-2 space-y-2">
                   <label className={fieldLabelClass}>
-                    <MapPin size={16} className="text-[#008080]" />
+                    <MapPin size={16} className={iconPrimaryClass} />
                     العنوان
                   </label>
                   <input
@@ -342,7 +501,7 @@ const PatientProfile = () => {
               {/* Medical Information Section */}
               <div className={`mt-8 pt-8 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
                 <h3 className="text-xl font-black theme-title mb-6 flex items-center gap-2">
-                  <Shield size={20} className="text-[#008080]" />
+                  <Shield size={20} className={iconPrimaryClass} />
                   المعلومات الطبية
                 </h3>
 
@@ -350,7 +509,7 @@ const PatientProfile = () => {
                   {/* فصيلة الدم */}
                   <div className="space-y-2">
                     <label className={fieldLabelClass}>
-                      <Droplet size={16} className="text-red-500" />
+                      <Droplet size={16} className={iconDangerClass} />
                       فصيلة الدم
                     </label>
                     <select
@@ -375,7 +534,7 @@ const PatientProfile = () => {
                   {/* الطول */}
                   <div className="space-y-2">
                     <label className={fieldLabelClass}>
-                      <User size={16} className="text-[#008080]" />
+                      <User size={16} className={iconPrimaryClass} />
                       الطول (سم)
                     </label>
                     <input
@@ -392,7 +551,7 @@ const PatientProfile = () => {
                   {/* الوزن */}
                   <div className="space-y-2">
                     <label className={fieldLabelClass}>
-                      <User size={16} className="text-[#008080]" />
+                      <User size={16} className={iconPrimaryClass} />
                       الوزن (كجم)
                     </label>
                     <input
@@ -409,7 +568,7 @@ const PatientProfile = () => {
                   {/* اسم جهة الاتصال للطوارئ */}
                   <div className="space-y-2">
                     <label className={fieldLabelClass}>
-                      <User size={16} className="text-orange-500" />
+                      <User size={16} className={iconWarnClass} />
                       اسم جهة الاتصال للطوارئ
                     </label>
                     <input
@@ -426,7 +585,7 @@ const PatientProfile = () => {
                   {/* رقم الطوارئ */}
                   <div className="space-y-2">
                     <label className={fieldLabelClass}>
-                      <Phone size={16} className="text-orange-500" />
+                      <Phone size={16} className={iconWarnClass} />
                       رقم الطوارئ
                     </label>
                     <input
@@ -443,7 +602,7 @@ const PatientProfile = () => {
                   {/* الحساسية */}
                   <div className="md:col-span-2 space-y-2">
                     <label className={fieldLabelClass}>
-                      <AlertCircle size={16} className="text-red-500" />
+                      <AlertCircle size={16} className={iconDangerClass} />
                       الحساسية (إن وجدت)
                     </label>
                     <textarea
@@ -460,7 +619,7 @@ const PatientProfile = () => {
                   {/* الأمراض المزمنة */}
                   <div className="md:col-span-2 space-y-2">
                     <label className={fieldLabelClass}>
-                      <FileText size={16} className="text-[#008080]" />
+                      <FileText size={16} className={iconPrimaryClass} />
                       الأمراض المزمنة (إن وجدت)
                     </label>
                     <textarea
@@ -486,11 +645,13 @@ const PatientProfile = () => {
                 className={`rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow ${isDark ? 'bg-slate-900/80 border border-slate-700' : 'bg-white'}`}
               >
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
-                  <Calendar size={28} className="text-[#0F427D]" />
+                  <Calendar size={28} className={iconAccentClass} />
                 </div>
                 <h3 className={`font-bold mb-1 ${isDark ? 'text-slate-100' : 'text-gray-800'}`}>المواعيد</h3>
-                <p className="text-3xl font-black text-[#0F427D]">12</p>
-                <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>موعد قادم</p>
+                <p className={`text-3xl font-black ${metricPrimaryClass}`}>{profileStats.upcomingAppointments}</p>
+                <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                  {profileStats.upcomingAppointments === 1 ? 'موعد حالي' : 'مواعيد حالية'}
+                </p>
               </motion.div>
 
               <motion.div
@@ -500,11 +661,13 @@ const PatientProfile = () => {
                 className={`rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow ${isDark ? 'bg-slate-900/80 border border-slate-700' : 'bg-white'}`}
               >
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-teal-500/20' : 'bg-teal-100'}`}>
-                  <User size={28} className="text-[#008080]" />
+                  <User size={28} className={iconPrimaryClass} />
                 </div>
                 <h3 className={`font-bold mb-1 ${isDark ? 'text-slate-100' : 'text-gray-800'}`}>الأطباء</h3>
-                <p className="text-3xl font-black text-[#008080]">5</p>
-                <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>طبيب متابع</p>
+                <p className={`text-3xl font-black ${metricAccentClass}`}>{profileStats.followedDoctors}</p>
+                <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                  {profileStats.followedDoctors === 1 ? 'طبيب متابع' : 'أطباء متابعين'}
+                </p>
               </motion.div>
 
               <motion.div
@@ -513,17 +676,61 @@ const PatientProfile = () => {
                 transition={{ delay: 0.4 }}
                 className={`rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow ${isDark ? 'bg-slate-900/80 border border-slate-700' : 'bg-white'}`}
               >
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-green-500/20' : 'bg-green-100'}`}>
-                  <Mail size={28} className="text-green-600" />
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDark ? 'bg-cyan-500/20' : 'bg-blue-100'}`}>
+                  <Shield size={28} className={iconAccentClass} />
                 </div>
-                <h3 className={`font-bold mb-1 ${isDark ? 'text-slate-100' : 'text-gray-800'}`}>الرسائل</h3>
-                <p className="text-3xl font-black text-green-600">8</p>
-                <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>رسالة جديدة</p>
+                <h3 className={`font-bold mb-2 ${isDark ? 'text-slate-100' : 'text-gray-800'}`}>الأمان</h3>
+                <p className={`text-sm mb-4 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>تحديث كلمة المرور لحماية حسابك</p>
+                <button
+                  onClick={() => setShowChangePasswordModal(true)}
+                  className="w-full py-2.5 rounded-xl font-bold text-white transition-all hover:brightness-110"
+                  style={{ backgroundColor: 'var(--app-primary)' }}
+                >
+                  تغيير كلمة السر
+                </button>
               </motion.div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      <AnimatePresence>
+        {showChangePasswordModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[320] flex items-center justify-center p-3 md:p-4"
+            onClick={() => setShowChangePasswordModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className={`rounded-3xl shadow-2xl max-w-[840px] w-[95vw] max-h-[88vh] overflow-y-auto ${isDark ? 'bg-slate-900 border border-slate-700' : 'bg-[#f8fafc] border border-gray-200'}`}
+              dir="rtl"
+            >
+              <div className={`sticky top-0 p-5 md:p-6 flex justify-between items-center rounded-t-3xl z-10 ${isDark ? 'bg-slate-900 border-b border-slate-700' : 'bg-white border-b border-gray-200'}`}>
+                <h2 className="text-2xl font-black theme-title">تغيير كلمة السر</h2>
+                <button
+                  onClick={() => setShowChangePasswordModal(false)}
+                  className="w-10 h-10 flex items-center justify-center bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className={`p-4 md:p-6 ${isDark ? 'bg-slate-900' : 'bg-[#f8fafc]'}`}>
+                <div className={`rounded-3xl p-5 md:p-6 border ${isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-white border-[#0f427d]/12'}`}>
+                  <ChangePassword popupMode />
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Medical Card Modal */}
       <AnimatePresence>
@@ -585,7 +792,7 @@ const PatientProfile = () => {
               <div className="px-8 pb-8">
                 <div className={`p-4 rounded-xl ${isDark ? 'bg-blue-500/10 border border-blue-400/20' : 'bg-blue-50 border border-blue-200'}`}>
                   <p className={`text-sm text-center ${isDark ? 'text-slate-200' : 'text-gray-700'}`}>
-                    <strong className="text-[#0F427D]">💡 نصيحة:</strong> عند الضغط على زر التحميل ستفتح نافذة الطباعة بترتيب مناسب: الوجه الأمامي بالأعلى والوجه الخلفي بالأسفل
+                    <strong className={isDark ? 'text-cyan-300' : 'text-[#0F427D]'}>💡 نصيحة:</strong> عند الضغط على زر التحميل ستفتح نافذة الطباعة بترتيب مناسب: الوجه الأمامي بالأعلى والوجه الخلفي بالأسفل
                   </p>
                 </div>
               </div>

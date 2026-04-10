@@ -1,12 +1,79 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../Components/Layout/Navbar';
 import Footer from '../Components/Layout/Footer';
 import { Clock, Star, CalendarCheck } from 'lucide-react'; 
 import { motion } from 'framer-motion';
 import ScrollToTop from '../Components/Layout/ScrollToTop';
+import AppointmentBookingModal from './AppointmentBookingModal';
+import { patientAPI } from '../services/api';
+
+const normalizeDoctor = (doc = {}) => ({
+  id: doc.id,
+  name: doc.name || doc.full_name || 'دكتور',
+  specialty: doc.specialty || doc.specialization || 'بدون تخصص',
+  image: doc.image || doc.avatar_url || '',
+  exp: String(doc.exp || doc.years_experience || doc.experience || '0'),
+  clinic: doc.clinic || doc.clinic_name || 'عيادة غير محددة',
+  clinicAddress: doc.clinicAddress || doc.clinic_address || 'العنوان غير متوفر',
+  canBookNow: Boolean(doc.canBookNow ?? doc.can_book_now ?? true),
+  unavailableReason: doc.unavailableReason || doc.unavailable_reason || '',
+});
 
 const DoctorsGridPage = ({ allDoctors }) => {
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [bookingToast, setBookingToast] = useState('');
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadDoctors = async () => {
+      setLoading(true);
+      try {
+        const response = await patientAPI.getDoctors({ page: 1, per_page: 50 });
+        const list = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.data?.data)
+            ? response.data.data
+            : Array.isArray(response)
+              ? response
+              : [];
+
+        if (!active) return;
+        setDoctors(list.map(normalizeDoctor));
+      } catch {
+        if (!active) return;
+        setDoctors([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    loadDoctors();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const openBooking = (doctor) => {
+    setSelectedDoctor(doctor);
+    setIsBookingOpen(true);
+  };
+
+  const handleBooked = (payload) => {
+    const typeLabel = payload.appointment_type === 'new' ? 'كشف' : 'مراجعة';
+    const sourceLabel = 'تم إرسال الطلب بنجاح';
+    setBookingToast(`${sourceLabel}: ${typeLabel} مع ${payload.doctorName} - ${payload.requested_date} ${payload.requested_time}`);
+
+    setTimeout(() => {
+      setBookingToast('');
+    }, 4500);
+  };
 
   // أنيميشن ظهور الحاوية (Stagger effect)
   const containerVariants = {
@@ -37,6 +104,12 @@ const DoctorsGridPage = ({ allDoctors }) => {
       <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none" style={{ background: 'var(--app-glow-b)' }} />
 
       <div className="container mx-auto max-w-[1300px] px-6 pt-32 pb-20 relative z-10" dir="rtl">
+
+        {bookingToast && (
+          <div className="mb-6 rounded-2xl border border-emerald-400/30 bg-emerald-500/15 text-emerald-100 px-4 py-3 text-sm font-semibold shadow-lg">
+            {bookingToast}
+          </div>
+        )}
         
         {/* Header Section */}
         <div className="text-center mb-16 space-y-4">
@@ -64,7 +137,7 @@ const DoctorsGridPage = ({ allDoctors }) => {
           animate="visible"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
         >
-          {allDoctors.map((doc) => (
+          {doctors.map((doc) => (
             <motion.div 
               key={doc.id} 
               variants={itemVariants}
@@ -80,7 +153,8 @@ const DoctorsGridPage = ({ allDoctors }) => {
                 <div className="relative mb-6">
                   <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full scale-0 group-hover:scale-125 transition-transform duration-500" />
                   <img 
-                    src={doc.image} 
+                    src={doc.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80'} 
+                    loading="lazy"
                     className="w-28 h-28 rounded-3xl mx-auto object-cover border-2 border-white/10 relative z-10 group-hover:border-blue-400/50 transition-colors duration-300 shadow-xl" 
                     alt={doc.name} 
                   />
@@ -94,6 +168,8 @@ const DoctorsGridPage = ({ allDoctors }) => {
                 <div className="flex-grow">
                   <h4 className="font-black theme-title text-xl mb-1 group-hover:text-blue-400 transition-colors">{doc.name}</h4>
                   <p className="text-emerald-400 font-bold text-sm mb-4 tracking-wide">{doc.specialty}</p>
+                  <p className="theme-text-muted text-xs mb-3">{doc.clinic}</p>
+                  <p className="theme-text-muted text-[11px] mb-4">{doc.clinicAddress}</p>
                   
                   {/* تفاصيل الخبرة بشكل زجاجي مصغر */}
                   <div className="flex items-center justify-center gap-3 theme-surface px-4 py-2 rounded-2xl theme-text-muted text-xs mb-6 transition-colors">
@@ -103,25 +179,53 @@ const DoctorsGridPage = ({ allDoctors }) => {
                 </div>
                 
                 {/* زر الحجز بالانيميشن المستمر */}
-                <button className="w-full relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-2xl font-bold transition-all hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] active:scale-95 group/btn">
+                <button
+                  onClick={() => openBooking(doc)}
+                  disabled={!doc.canBookNow}
+                  className="w-full relative overflow-hidden text-white py-4 rounded-2xl font-bold transition-all hover:brightness-110 active:scale-95 group/btn disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: 'var(--app-primary)',
+                    boxShadow: '0 12px 24px color-mix(in srgb, var(--app-primary) 30%, transparent)'
+                  }}
+                >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     <CalendarCheck size={18} />
-                    حجز موعد الآن
+                    {doc.canBookNow ? 'حجز موعد الآن' : 'غير متاح الآن'}
                   </span>
-                  <motion.div 
-                    animate={{ x: ['100%', '-100%'] }}
-                    transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  />
+                  {doc.canBookNow && (
+                    <motion.div 
+                      animate={{ x: ['100%', '-100%'] }}
+                      transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    />
+                  )}
                 </button>
+                {!doc.canBookNow && doc.unavailableReason && (
+                  <p className="mt-2 text-[11px] text-amber-400">{doc.unavailableReason}</p>
+                )}
               </div>
             </motion.div>
           ))}
         </motion.div>
+
+        {!loading && doctors.length === 0 && (
+          <div className="text-center mt-10 theme-text-muted">لا يوجد أطباء متاحون حالياً.</div>
+        )}
+
+        {loading && (
+          <div className="text-center mt-10 theme-text-muted">جارٍ تحميل الأطباء من قاعدة البيانات...</div>
+        )}
       </div>
 
       <ScrollToTop />
       <Footer />
+
+      <AppointmentBookingModal
+        isOpen={isBookingOpen}
+        doctor={selectedDoctor}
+        onClose={() => setIsBookingOpen(false)}
+        onBooked={handleBooked}
+      />
     </div>
   );
 };

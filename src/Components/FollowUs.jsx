@@ -106,7 +106,7 @@ export default function App() {
             className="space-y-6 text-right"
           >
             <h1 className="text-5xl lg:text-6xl font-black text-white leading-tight">
-              رعاية صحية <span className="text-teal-400">ذكية</span><br />
+              رعاية صحية <span className={isDark ? 'theme-primary' : 'text-teal-400'}>ذكية</span><br />
               تليق بك
             </h1>
 
@@ -115,16 +115,17 @@ export default function App() {
             </p>
 
             <button
-              className="
-                animate-gradient
-                bg-gradient-to-r from-teal-400 via-[#00bfa6] to-teal-400
+              className={`
                 px-12 py-4
                 rounded-2xl
                 font-black
                 text-white
                 shadow-xl
                 flex items-center gap-2
-              "
+                transition-all duration-300 hover:brightness-110
+                ${!isDark ? 'animate-gradient bg-gradient-to-r from-teal-400 via-[#00bfa6] to-teal-400' : ''}
+              `}
+              style={isDark ? { backgroundColor: 'var(--app-primary)' } : undefined}
             >
               ابدئي رحلتك الآن <ArrowRight size={20} />
             </button>
@@ -251,7 +252,10 @@ export default function App() {
             منصة واحدة، كل احتياجاتك الصحية في مكان آمن وسهل.
           </p>
 
-          <button className="mt-10 px-16 py-5 rounded-2xl font-black text-white bg-gradient-to-r from-teal-400 via-[#00bfa6] to-teal-400 animate-gradient shadow-xl">
+          <button
+            className={`mt-10 px-16 py-5 rounded-2xl font-black text-white shadow-xl transition-all duration-300 hover:brightness-110 ${!isDark ? 'bg-gradient-to-r from-teal-400 via-[#00bfa6] to-teal-400 animate-gradient' : ''}`}
+            style={isDark ? { backgroundColor: 'var(--app-primary)' } : undefined}
+          >
             سجلي الآن مجانًا
           </button>
         </div>

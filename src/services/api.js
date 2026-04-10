@@ -2,7 +2,11 @@ import axios from 'axios';
 
 // إنشاء instance من axios
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api', // تأكد من تطابق المنفذ مع Laravel
+  // Use same-origin /api in dev to avoid CORS preflight overhead.
+  baseURL:
+    (import.meta.env?.DEV
+      ? '/api'
+      : import.meta.env?.VITE_API_BASE_URL) || 'http://localhost:8000/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -10,10 +14,98 @@ const api = axios.create({
   withCredentials: false, // لأننا نستخدم token
 });
 
+const normalizeToken = (rawToken) => {
+  if (!rawToken || rawToken === 'undefined' || rawToken === 'null') return null;
+  return String(rawToken).replace(/^Bearer\s+/i, '').trim();
+};
+
+const requestCache = new Map();
+
+const CACHE_TTL = {
+  doctors: 60 * 1000,
+  availability: 45 * 1000,
+  appointments: 5 * 1000,
+  notifications: 20 * 1000,
+};
+
+const stableSerialize = (value) => {
+  if (value === null || value === undefined) return '';
+  if (typeof value !== 'object') return String(value);
+
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableSerialize(item)).join(',')}]`;
+  }
+
+  return `{${Object.keys(value)
+    .sort()
+    .map((key) => `${key}:${stableSerialize(value[key])}`)
+    .join('|')}}`;
+};
+
+const getCacheScope = () => {
+  const token = normalizeToken(localStorage.getItem('token')) || 'anon';
+  const userId = (() => {
+    try {
+      const rawUser = localStorage.getItem('user');
+      if (!rawUser) return 'anon';
+      return JSON.parse(rawUser)?.id || 'anon';
+    } catch {
+      return 'anon';
+    }
+  })();
+
+  return `${userId}:${token}`;
+};
+
+const buildCacheKey = (resource, params = {}) => {
+  return `${getCacheScope()}:${resource}:${stableSerialize(params)}`;
+};
+
+const getCachedValue = (key, ttlMs) => {
+  const cached = requestCache.get(key);
+  if (!cached) return null;
+
+  if (Date.now() - cached.timestamp > ttlMs) {
+    requestCache.delete(key);
+    return null;
+  }
+
+  return cached.value;
+};
+
+const setCachedValue = (key, value) => {
+  requestCache.set(key, {
+    value,
+    timestamp: Date.now(),
+  });
+};
+
+const invalidateScopedCache = (resourcePrefixes = []) => {
+  const scope = `${getCacheScope()}:`;
+
+  Array.from(requestCache.keys()).forEach((key) => {
+    if (!key.startsWith(scope)) return;
+
+    if (resourcePrefixes.length === 0) {
+      requestCache.delete(key);
+      return;
+    }
+
+    const resourceHit = resourcePrefixes.some((resource) => key.includes(`:${resource}:`));
+    if (resourceHit) {
+      requestCache.delete(key);
+    }
+  });
+};
+
+export const clearApiCache = () => {
+  requestCache.clear();
+};
+
 // إضافة token تلقائياً لكل request
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = normalizeToken(localStorage.getItem('token'));
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -34,17 +126,40 @@ api.interceptors.response.use(
     const isAuthEndpoint = error.config?.url?.includes('/login') || 
                            error.config?.url?.includes('/register');
     
-    // ⚠️ FRONTEND DEVELOPMENT MODE: No auto-redirect, just log errors
+    // عند انتهاء الجلسة/توكن غير صالح: نظّف الحالة المحلية وأبلغ الواجهة.
     if (error.response?.status === 401 && !isAuthEndpoint) {
-      console.warn('🚫 401 Unauthorized - Backend not available (FRONTEND DEV MODE)');
-      // DISABLED: localStorage.removeItem('token');
-      // DISABLED: localStorage.removeItem('user');
-      // DISABLED: window.location.href = '/auth';
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('doctor-profile')) {
+          localStorage.removeItem(key);
+        }
+      });
+      Object.keys(sessionStorage).forEach((key) => {
+        sessionStorage.removeItem(key);
+      });
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:unauthenticated', {
+          detail: error.response?.data,
+        }));
+      }
     }
+
+    const isDoctorEndpoint = error.config?.url?.includes('/doctor/');
+    const code = error.response?.data?.code;
+
+    if (isDoctorEndpoint && code === 'PROFILE_INCOMPLETE' && typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('doctor:profile-incomplete', {
+          detail: error.response?.data,
+        })
+      );
+    }
+
     return Promise.reject(error);
   }
 );
-
 // دوال الـ Authentication
 export const authAPI = {
   // تسجيل مستخدم جديد (Patient)
@@ -114,8 +229,26 @@ export const authAPI = {
 // دوال للمرضى (Patient Routes)
 export const patientAPI = {
   // احصل على قائمة الأطباء
-  getDoctors: async () => {
-    const response = await api.get('/patient/doctors');
+  getDoctors: async (params = {}) => {
+    const cacheKey = buildCacheKey('patient:doctors', params);
+    const cached = getCachedValue(cacheKey, CACHE_TTL.doctors);
+    if (cached) return cached;
+
+    const response = await api.get('/patient/doctors', { params });
+    setCachedValue(cacheKey, response.data);
+    return response.data;
+  },
+
+  // احصل على مواعيد الطبيب المتاحة في يوم محدد
+  getDoctorAvailability: async (doctorId, date) => {
+    const cacheKey = buildCacheKey('patient:availability', { doctorId, date });
+    const cached = getCachedValue(cacheKey, CACHE_TTL.availability);
+    if (cached) return cached;
+
+    const response = await api.get(`/patient/doctors/${doctorId}/availability`, {
+      params: { date },
+    });
+    setCachedValue(cacheKey, response.data);
     return response.data;
   },
 
@@ -178,9 +311,83 @@ export const patientAPI = {
     return response.data;
   },
 
+  // إنشاء طلب حجز (متوافق مع Dashboard الطبيب)
+  createBookingRequest: async (data) => {
+    const response = await api.post('/patient/booking-requests', data);
+    invalidateScopedCache([
+      'patient:appointments',
+      'patient:notifications',
+      'patient:notifications-upcoming',
+      'patient:availability',
+      'patient:doctors',
+    ]);
+    return response.data;
+  },
+
   // احصل على مواعيدي
-  getMyAppointments: async () => {
+  getMyAppointments: async (options = {}) => {
+    const { forceRefresh = false } = options;
+    const cacheKey = buildCacheKey('patient:appointments');
+    if (!forceRefresh) {
+      const cached = getCachedValue(cacheKey, CACHE_TTL.appointments);
+      if (cached) return cached;
+    }
+
     const response = await api.get('/patient/appointments');
+    setCachedValue(cacheKey, response.data);
+    return response.data;
+  },
+
+  // =========================
+  // Medical Records
+  // =========================
+
+  createMedicalRecord: async (payload) => {
+    const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
+    const response = await api.post('/patient/medical-records', payload, isFormData
+      ? { headers: { 'Content-Type': 'multipart/form-data' } }
+      : undefined);
+    return response.data;
+  },
+
+  getMedicalRecords: async (params = {}) => {
+    const response = await api.get('/patient/medical-records', { params });
+    return response.data;
+  },
+
+  getMedicalRecord: async (recordId) => {
+    const response = await api.get(`/patient/medical-records/${recordId}`);
+    return response.data;
+  },
+
+  deleteMedicalRecord: async (recordId) => {
+    const response = await api.delete(`/patient/medical-records/${recordId}`);
+    return response.data;
+  },
+
+  rotateMedicalRecordsShareToken: async (payload = {}) => {
+    const response = await api.post('/patient/medical-records/share-token/rotate', payload);
+    return response.data;
+  },
+
+  revokeMedicalRecordsShareToken: async () => {
+    const response = await api.delete('/patient/medical-records/share-token');
+    return response.data;
+  },
+
+  getPublicPatientRecordsByToken: async (token) => {
+    const response = await api.get(`/public/patients/${token}/medical-records`);
+    return response.data;
+  },
+
+  // إشعارات المريض
+  getPatientNotifications: async (params = {}) => {
+    const cacheKey = buildCacheKey('patient:notifications', params);
+    const cached = getCachedValue(cacheKey, CACHE_TTL.notifications);
+    if (cached) return cached;
+
+    const response = await api.get('/patient/notifications', { params });
+    setCachedValue(cacheKey, response.data);
     return response.data;
   },
 
@@ -260,9 +467,92 @@ export const patientAPI = {
   // Notifications
   // =========================
 
+  markPatientNotificationRead: async (id) => {
+    const runWithFallback = async (attempts) => {
+      let lastHttpError = null;
+
+      for (const attempt of attempts) {
+        try {
+          return await attempt();
+        } catch (error) {
+          const status = error?.response?.status;
+          if (status === 404 || status === 405) {
+            lastHttpError = error;
+            continue;
+          }
+          throw error;
+        }
+      }
+
+      if (lastHttpError) throw lastHttpError;
+      throw new Error('Unable to mark notification as read');
+    };
+
+    const response = await runWithFallback([
+      () => api.patch(`/patient/notifications/${id}/read`),
+      () => api.post(`/patient/notifications/${id}/read`),
+      () => api.patch(`/patient/notifications/read/${id}`),
+      () => api.post(`/patient/notifications/read/${id}`),
+      () => api.patch('/patient/notifications/read', { id }),
+      () => api.post('/patient/notifications/read', { id }),
+      () => api.patch('/patient/notifications/mark-read', { id }),
+      () => api.post('/patient/notifications/mark-read', { id }),
+      () => api.patch('/patient/notifications/mark-as-read', { id }),
+      () => api.post('/patient/notifications/mark-as-read', { id }),
+    ]);
+
+    invalidateScopedCache([
+      'patient:notifications',
+      'patient:notifications-upcoming',
+    ]);
+    return response.data;
+  },
+
+  markAllPatientNotificationsRead: async () => {
+    const runWithFallback = async (attempts) => {
+      let lastHttpError = null;
+
+      for (const attempt of attempts) {
+        try {
+          return await attempt();
+        } catch (error) {
+          const status = error?.response?.status;
+          if (status === 404 || status === 405) {
+            lastHttpError = error;
+            continue;
+          }
+          throw error;
+        }
+      }
+
+      if (lastHttpError) throw lastHttpError;
+      throw new Error('Unable to mark all notifications as read');
+    };
+
+    const response = await runWithFallback([
+      () => api.patch('/patient/notifications/read-all'),
+      () => api.post('/patient/notifications/read-all'),
+      () => api.patch('/patient/notifications/mark-all-read'),
+      () => api.post('/patient/notifications/mark-all-read'),
+      () => api.patch('/patient/notifications/read-all', { all: true }),
+      () => api.post('/patient/notifications/read-all', { all: true }),
+    ]);
+
+    invalidateScopedCache([
+      'patient:notifications',
+      'patient:notifications-upcoming',
+    ]);
+    return response.data;
+  },
+
   // التنبيهات القادمة (دواء/موعد)
   getUpcomingNotifications: async () => {
+    const cacheKey = buildCacheKey('patient:notifications-upcoming');
+    const cached = getCachedValue(cacheKey, CACHE_TTL.notifications);
+    if (cached) return cached;
+
     const response = await api.get('/patient/notifications/upcoming');
+    setCachedValue(cacheKey, response.data);
     return response.data;
   },
 

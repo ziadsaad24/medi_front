@@ -1,6 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import 'animate.css';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './Components/ProtectedRoute';
 import Login from './Pages/Login';
 import RoleSelection from './Pages/RoleSelection';
@@ -42,10 +43,29 @@ import Settings  from './Pages/doctor/SettingsPage';
 import RequestsPage from "./Pages/doctor/RequestsPage";
 import ProfilePage from "./Pages/doctor/ProfilePage";
 import { ProfileProvider } from "./context/ProfileContext";
+import { DoctorWorkflowProvider } from './context/DoctorWorkflowContext';
+import NewMedicalRecordPage from './Pages/doctor/NewMedicalRecordPage';
+
+function HomeRedirect() {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  const homeRoutes = {
+    patient: '/patient/home',
+    doctor: '/doctor/dashboard',
+    admin: '/admin/dashboard',
+  };
+
+  return <Navigate to={homeRoutes[user.role] || '/'} replace />;
+}
 
 // Component للتحكم في ظهور الشات بوت
 function ChatBotWrapper() {
   const location = useLocation();
+  const pathname = location.pathname;
   
   // المسارات اللي الشات بوت مش هيظهر فيها
   const hiddenRoutes = [
@@ -59,12 +79,14 @@ function ChatBotWrapper() {
     '/reset-password'
   ];
   
-  // إخفاء الشات بوت من صفحات الأدمن
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  const isHiddenRoute = hiddenRoutes.includes(location.pathname);
+  // إخفاء الشات بوت من الصفحات غير المناسبة
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isDoctorRoute = pathname.startsWith('/doctor');
+  const isRecordsRoute = pathname.startsWith('/recorded') || pathname === '/demo-emergency-card';
+  const isHiddenRoute = hiddenRoutes.includes(pathname);
   
   // إظهار الشات بوت فقط في صفحات المرضى والأطباء
-  if (isHiddenRoute || isAdminRoute) {
+  if (isHiddenRoute || isAdminRoute || isDoctorRoute || isRecordsRoute) {
     return null;
   }
   
@@ -85,6 +107,7 @@ function App() {
   return (
     <AuthProvider>
       <ProfileProvider>
+      <DoctorWorkflowProvider>
       <Router>
         <Routes>
           {/* Public Routes - الصفحات المتاحة للجميع */}
@@ -98,16 +121,20 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/recorded" element={<MedicalRecordPage />} />
         <Route path="/recorded/view/:recordId" element={<ViewRecordPage />} />
+        <Route path="/recorded/public/:token" element={<EmergencyCardDemo />} />
         <Route path="/meds" element={<MedicationsPage />} />
         <Route path="/appointments" element={< AppointmentsPage  />} />
         <Route path="/contact" element={< Contact  />} />
 
-
-        
-
           
-          {/* DEMO PAGE - مؤقت للتوضيح فقط */}
-          <Route path="/demo-emergency-card" element={<EmergencyCardDemo />} />
+          <Route
+            path="/demo-emergency-card"
+            element={
+              <ProtectedRoute allowedRoles="patient">
+                <EmergencyCardDemo />
+              </ProtectedRoute>
+            }
+          />
           
           {/* Emergency Card 3D - بطاقة الطوارئ الطبية ثلاثية الأبعاد */}
           <Route path="/emergency-card-3d" element={<EmergencyCard3DPage />} />
@@ -196,6 +223,15 @@ function App() {
     } 
   />
 
+  <Route 
+    path="/doctor/medical-records/new" 
+    element={
+      <ProtectedRoute allowedRoles="doctor">
+        <NewMedicalRecordPage />
+      </ProtectedRoute>
+    } 
+  />
+
           {/* Protected Routes for Admin - صفحات المسؤول المحمية */}
           <Route 
             path="/admin/dashboard" 
@@ -277,7 +313,7 @@ function App() {
             path="/home" 
             element={
               <ProtectedRoute>
-                <PatientHome allDoctors={allDoctors} />
+                <HomeRedirect />
               </ProtectedRoute>
             } 
           />
@@ -303,6 +339,7 @@ function App() {
         </Routes>
         <ChatBotWrapper />
       </Router>
+      </DoctorWorkflowProvider>
       </ProfileProvider>
     </AuthProvider>
   );

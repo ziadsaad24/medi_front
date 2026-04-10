@@ -130,7 +130,14 @@ export default function HeroSlider() {
                   exit="exit"
                   transition={{ delay: 0.2, duration: 0.6 }}
                 >
-                  <span className="inline-block px-4 py-2 mb-6 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 rounded-full text-blue-300 text-sm font-medium">
+                  <span
+                    className="inline-block px-4 py-2 mb-6 backdrop-blur-sm border rounded-full text-sm font-medium"
+                    style={{
+                      backgroundColor: 'color-mix(in srgb, var(--app-primary) 22%, transparent)',
+                      borderColor: 'color-mix(in srgb, var(--app-primary) 45%, transparent)',
+                      color: 'var(--app-primary)'
+                    }}
+                  >
                     {slides[currentSlide].subtitle}
                   </span>
                 </motion.div>
@@ -149,9 +156,13 @@ export default function HeroSlider() {
                         initial={{ scale: 0, rotate: -180 }}
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{ delay: 0.5, duration: 0.6, type: 'spring' }}
-                        className="p-4 bg-blue-500/30 backdrop-blur-sm rounded-2xl border-2 border-blue-400/50"
+                        className="p-4 backdrop-blur-sm rounded-2xl border-2"
+                        style={{
+                          backgroundColor: 'color-mix(in srgb, var(--app-primary) 30%, transparent)',
+                          borderColor: 'color-mix(in srgb, var(--app-primary) 55%, transparent)'
+                        }}
                       >
-                        <QrCode className="w-12 h-12 md:w-16 md:h-16 text-blue-300" />
+                        <QrCode className="w-12 h-12 md:w-16 md:h-16" style={{ color: 'var(--app-primary)' }} />
                       </motion.div>
                     </div>
                   )}
@@ -177,9 +188,13 @@ export default function HeroSlider() {
                   transition={{ delay: 0.5, duration: 0.6 }}
                   className="flex flex-wrap gap-4"
                 >
-                  <button 
+                  <button
                     onClick={() => navigate(slides[currentSlide].link)}
-                    className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-105"
+                    className="px-8 py-4 text-white rounded-lg font-medium transition-all duration-300 hover:brightness-110 hover:scale-105"
+                    style={{
+                      backgroundColor: 'var(--app-primary)',
+                      boxShadow: '0 12px 24px color-mix(in srgb, var(--app-primary) 30%, transparent)'
+                    }}
                   >
                     {slides[currentSlide].cta}
                   </button>
@@ -206,14 +221,16 @@ export default function HeroSlider() {
               <Circle
                 className={`w-3 h-3 transition-all duration-300 ${
                   currentSlide === index
-                    ? 'fill-blue-500 text-blue-500 scale-125'
+                    ? 'scale-125'
                     : 'fill-white/50 text-white/50 hover:fill-white hover:text-white'
                 }`}
+                style={currentSlide === index ? { fill: 'var(--app-primary)', color: 'var(--app-primary)' } : undefined}
               />
               {currentSlide === index && (
                 <motion.div
                   layoutId="activeSlide"
-                  className="absolute -inset-2 bg-blue-500/20 rounded-full"
+                  className="absolute -inset-2 rounded-full"
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--app-primary) 25%, transparent)' }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
@@ -249,7 +266,8 @@ export default function HeroSlider() {
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-20">
         <motion.div
           key={currentSlide}
-          className="h-full bg-gradient-to-r from-blue-500 to-blue-600"
+          className="h-full"
+          style={{ backgroundColor: 'var(--app-primary)' }}
           initial={{ width: '0%' }}
           animate={{ width: isAutoPlaying ? '100%' : '0%' }}
           transition={{ duration: 5, ease: 'linear' }}

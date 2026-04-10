@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { Clock, User, Calendar, Phone, Check, X } from 'lucide-react';
+import { Clock, User, Calendar, Phone, Check, X, FilePlus2, ArrowLeft } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useDoctorWorkflow } from '../context/DoctorWorkflowContext';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 interface BookingRequest {
   id: string;
@@ -12,24 +14,58 @@ interface BookingRequest {
   reason: string;
   status: 'pending' | 'approved' | 'rejected';
   avatar: string;
+  linkedAppointmentId?: string | null;
 }
-
-const mockBookingRequests: BookingRequest[] = [
-  { id: '1', patientName: 'سارة أحمد محمد', patientId: 'P-2001', phone: '0501234567', requestedDate: '2026-03-22', requestedTime: '10:00', reason: 'فحص دوري', status: 'pending', avatar: 'سأ' },
-  { id: '2', patientName: 'محمد عبدالله', patientId: 'P-2002', phone: '0502345678', requestedDate: '2026-03-22', requestedTime: '11:30', reason: 'استشارة طبية', status: 'pending', avatar: 'مع' },
-  { id: '3', patientName: 'فاطمة حسن', patientId: 'P-2003', phone: '0503456789', requestedDate: '2026-03-23', requestedTime: '09:00', reason: 'متابعة حالة', status: 'pending', avatar: 'فح' },
-  { id: '4', patientName: 'خالد عمر', patientId: 'P-2004', phone: '0504567890', requestedDate: '2026-03-23', requestedTime: '14:00', reason: 'فحص شامل', status: 'pending', avatar: 'خع' },
-  { id: '5', patientName: 'نورة سعد', patientId: 'P-2005', phone: '0505678901', requestedDate: '2026-03-24', requestedTime: '10:30', reason: 'كشف مبدئي', status: 'pending', avatar: 'نس' },
-];
 
 export function BookingRequests() {
   const { isDark } = useTheme();
-  const [requests, setRequests] = useState<BookingRequest[]>(mockBookingRequests);
+  const navigate = useNavigate();
+  const { requests, approveRequest, rejectRequest, setCurrentConsultationContext, loading } = useDoctorWorkflow();
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const handleApprove = (id: string) =>
-    setRequests(requests.map(r => r.id === id ? { ...r, status: 'approved' } : r));
-  const handleReject = (id: string) =>
-    setRequests(requests.map(r => r.id === id ? { ...r, status: 'rejected' } : r));
+  const handleCreateMedicalRecord = (req: BookingRequest) => {
+    if (!req.linkedAppointmentId) {
+      window.alert('لا يمكن بدء الكشف حالياً لأن الموعد لم يُربط بعد. حاول تحديث الصفحة أو انتقل إلى لوحة التحكم.');
+      return;
+    }
+
+    const contextPayload = {
+      appointmentId: req.linkedAppointmentId,
+      patientId: req.patientId,
+      patientName: req.patientName,
+      patientPhone: req.phone,
+      requestedDate: req.requestedDate,
+      requestedTime: req.requestedTime,
+      reason: req.reason,
+    };
+
+    setCurrentConsultationContext(contextPayload);
+
+    navigate('/doctor/medical-records/new', {
+      state: {
+        appointmentContext: contextPayload,
+      },
+    });
+  };
+
+  const handleApprove = async (req: BookingRequest) => {
+    try {
+      setProcessingId(req.id);
+      await approveRequest(req.id);
+      navigate('/doctor/dashboard');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleReject = async (req: BookingRequest) => {
+    try {
+      setProcessingId(req.id);
+      await rejectRequest(req.id);
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   const getStatusBadge = (status: BookingRequest['status']) => {
     switch (status) {
@@ -115,17 +151,39 @@ export function BookingRequests() {
               {req.status === 'pending' && (
                 <div className="flex flex-col sm:flex-row gap-2 mt-2">
                   <button
-                    onClick={() => handleApprove(req.id)}
+                    onClick={() => handleApprove(req)}
+                    disabled={processingId === req.id}
                     className="flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-[#22c55e]/90 text-white shadow-lg hover:bg-[#22c55e] transition-all text-xs sm:text-sm font-medium"
                   >
                     <Check className="w-3 h-3 sm:w-4 sm:h-4" />قبول
                   </button>
                   <button
-                    onClick={() => handleReject(req.id)}
+                    onClick={() => handleReject(req)}
+                    disabled={processingId === req.id}
                     className="flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-[#ef4444]/90 text-white shadow-lg hover:bg-[#ef4444] transition-all text-xs sm:text-sm font-medium"
                   >
                     <X className="w-3 h-3 sm:w-4 sm:h-4" />رفض
                   </button>
+                </div>
+              )}
+
+              {req.status === 'approved' && (
+                <div className={`mt-2 rounded-2xl border p-3 sm:p-4 ${isDark ? 'bg-emerald-500/10 border-emerald-400/30' : 'bg-emerald-50 border-emerald-200'}`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-emerald-200' : 'text-emerald-800'}`}>
+                      تم قبول الحجز ويمكنك الآن بدء الكشف وإضافة سجل طبي.
+                    </p>
+
+                    <button
+                      onClick={() => handleCreateMedicalRecord(req)}
+                      disabled={!req.linkedAppointmentId}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 text-white shadow-lg hover:brightness-110 transition-all text-xs sm:text-sm font-bold"
+                    >
+                      <FilePlus2 className="w-4 h-4" />
+                      {req.linkedAppointmentId ? 'ابدأ الكشف' : 'بانتظار ربط الموعد'}
+                      <ArrowLeft className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -134,7 +192,7 @@ export function BookingRequests() {
       </div>
 
       {/* Empty State */}
-      {requests.filter(r => r.status === 'pending').length === 0 && (
+      {!loading && requests.filter(r => r.status === 'pending').length === 0 && (
         <div className="text-center py-12">
           <div className="w-14 h-14 sm:w-20 sm:h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center mx-auto mb-4">
             <Calendar className={`w-6 h-6 sm:w-8 sm:h-8 ${isDark ? "text-white" : "text-[#0f427d]"}`} />

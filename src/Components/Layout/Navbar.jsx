@@ -153,9 +153,20 @@ const Navbar = (props = {}) => {
                     <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-l from-cyan-50 to-blue-50">
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-black text-[#004060]">التنبيهات</h3>
-                        <span className="text-[11px] font-bold text-[#008080] bg-white border border-teal-100 rounded-full px-2 py-0.5">
-                          {unreadCount} جديد
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {unreadCount > 0 && (
+                            <button
+                              type="button"
+                              onClick={markAllAsRead}
+                              className="text-[11px] font-bold text-[#0F427D] bg-white border border-blue-100 rounded-full px-2 py-0.5 hover:bg-blue-50 transition-colors"
+                            >
+                              قراءة الكل
+                            </button>
+                          )}
+                          <span className="text-[11px] font-bold text-[#008080] bg-white border border-teal-100 rounded-full px-2 py-0.5">
+                            {unreadCount} جديد
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -170,8 +181,7 @@ const Navbar = (props = {}) => {
                             key={item.id}
                             onClick={() => {
                               markAsRead(item.id);
-                              markAllAsRead();
-                              navigate('/medications');
+                              navigate(item.route || '/medications');
                               setIsNotificationsOpen(false);
                             }}
                             className={`w-full text-right px-4 py-3 border-b last:border-b-0 border-slate-100 hover:bg-slate-50 transition-colors ${item.isRead ? 'opacity-70' : ''}`}

@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Clock, Plus, Trash2, Edit3 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useEffect } from 'react';
+import doctorApi from '../services/doctorApi';
 
 interface TimeSlot { start: string; end: string; }
 interface WorkingDay { day: string; enabled: boolean; slots: TimeSlot[]; }
 
 export function WorkingHours() {
   const { isDark } = useTheme();
+  const daysMap = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
   const [workingDays, setWorkingDays] = useState<WorkingDay[]>([
     { day: 'السبت', enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
     { day: 'الأحد', enabled: true, slots: [{ start: '09:00', end: '17:00' }] },
@@ -18,6 +21,36 @@ export function WorkingHours() {
   ]);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const response = await doctorApi.getWorkingHours();
+        const data = response?.data || response || {};
+        const incomingDays = Array.isArray(data.days) ? data.days : [];
+
+        if (incomingDays.length === 0) return;
+
+        const mapped = incomingDays
+          .sort((a: any, b: any) => a.dayOfWeek - b.dayOfWeek)
+          .map((d: any) => ({
+            day: daysMap[Number(d.dayOfWeek) % 7] || 'غير معروف',
+            enabled: Boolean(d.enabled),
+            slots: (d.slots || []).map((s: any) => ({
+              start: s.start,
+              end: s.end,
+            })),
+          }));
+
+        setWorkingDays(mapped);
+      } catch {
+        // Keep current local fallback
+      }
+    };
+
+    load();
+  }, []);
 
   const toggleDay = (index: number) => {
     const updated = [...workingDays];
@@ -45,7 +78,23 @@ export function WorkingHours() {
     }
   };
 
-  const saveChanges = () => setIsEditing(false);
+  const saveChanges = async () => {
+    try {
+      setIsSaving(true);
+      const payload = {
+        days: workingDays.map((d) => ({
+          dayOfWeek: daysMap.indexOf(d.day),
+          enabled: d.enabled,
+          slots: d.slots,
+        })),
+      };
+
+      await doctorApi.updateWorkingHours(payload);
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="theme-card backdrop-blur-md rounded-3xl shadow-2xl 
@@ -172,9 +221,10 @@ export function WorkingHours() {
         <div className="mt-4 sm:mt-6 flex justify-end">
           <button
             onClick={saveChanges}
+            disabled={isSaving}
             className={`px-5 sm:px-6 py-2 sm:py-3 rounded-xl border shadow-lg transition-all font-medium text-sm sm:text-base ${isDark ? "bg-white/20 border-white/30 text-white hover:bg-white/30" : "bg-[#0f427d]/10 border-[#0f427d]/25 text-[#0f427d] hover:bg-[#0f427d]/15"}`}
           >
-            حفظ التغييرات
+            {isSaving ? 'جارٍ الحفظ...' : 'حفظ التغييرات'}
           </button>
         </div>
       )}

@@ -65,7 +65,7 @@ const ForgetPassword = () => {
         </div>
 
         {!success ? (
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6 text-gray-700" onSubmit={handleSubmit}>
             {/* عرض رسالة الخطأ */}
             {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-sm text-center">
@@ -84,7 +84,7 @@ const ForgetPassword = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
-                className="w-full pr-12 pl-4 py-4 border border-gray-200 rounded-2xl bg-gray-50 outline-none focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100 transition-all disabled:opacity-50"
+                className="w-full pr-12 pl-4 py-4 border border-gray-200 rounded-2xl bg-gray-50 text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#0F427D] focus:ring-2 focus:ring-blue-100 transition-all disabled:opacity-50"
                 placeholder="البريد الإلكتروني"
               />
             </div>

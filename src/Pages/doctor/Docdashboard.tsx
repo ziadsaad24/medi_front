@@ -1,36 +1,123 @@
-import React from "react";
+import React, { useEffect } from "react";
 import DoctorLayout from "../../Components/DoctorLayout";
 import StatCard from "../../Components/StatCard";
 import AppointmentCard from "../../Components/DocAppointmentCard";
 import { CalendarDays, CalendarCheck, UserCheck, ClipboardCheck } from "lucide-react";
 import { useProfile } from "../../context/ProfileContext";
-import { Link } from "react-router-dom";
-
-
-const appointments = [
-  { id: 1, patientName: "سارة أحمد", time: "09:00 صباحاً", type: "جديد" },
-  { id: 2, patientName: "محمد علي", time: "10:30 صباحاً", type: "مراجعة" },
-  { id: 3, patientName: "فاطمة حسن", time: "02:00 مساءً", type: "جديد" },
-  { id: 4, patientName: "يوسف إبراهيم", time: "03:30 مساءً", type: "مراجعة" },
-  { id: 5, patientName: "ليلى محمود", time: "04:15 مساءً", type: "جديد" },
-  { id: 6, patientName: "خالد سعيد", time: "05:00 مساءً", type: "مراجعة" },
-  { id: 7, patientName: "منى عبد الرحمن", time: "06:30 مساءً", type: "جديد" },
-  { id: 8, patientName: "عمر فاروق", time: "07:45 مساءً", type: "مراجعة" }
-];
+import { useTheme } from "../../context/ThemeContext";
+import { Link, useNavigate } from "react-router-dom";
+import { useDoctorWorkflow } from '../../context/DoctorWorkflowContext';
+import doctorApi from '../../services/doctorApi';
+import Swal from 'sweetalert2';
 
 export default function Dashboard() {
   const { profile } = useProfile(); // جلب اسم الدكتور من الـ context
+  const { isDark } = useTheme();
+  const workflow = useDoctorWorkflow() as any;
+  const { actionableAppointments, dashboardStats, loading, error } = workflow;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkCompletion = async () => {
+      try {
+        const response = await doctorApi.getDoctorCompletionStatus();
+        const data = response?.data || response || {};
+        const isComplete = Boolean(data.isProfileComplete ?? data.is_profile_complete);
+        const completionPercent = Number(data.completionPercent ?? data.completion_percent ?? 0);
+        const missingFields = data.missingFields || data.missing_fields || [];
+
+        if (isMounted && !isComplete) {
+          const firstName = profile?.fullName?.trim().split(/\s+/)[0] || 'الدكتور';
+
+          await Swal.fire({
+            html: `
+              <div style="direction: rtl; text-align: center; font-family: 'Segoe UI', sans-serif;">
+                <div style="font-size: 60px; margin-bottom: 25px;">ℹ️</div>
+                
+                <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 30px; color: ${isDark ? '#ffffff' : '#0f427d'};">
+                  مرحباً بك في Medicare<br/><span style="font-size: 20px;">د. ${firstName}</span>
+                </h2>
+
+                <div style="background: ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15, 67, 125, 0.08)'}; border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15, 67, 125, 0.2)'};">
+                  <p style="margin: 0; font-size: 14px; line-height: 1.8; color: ${isDark ? '#cbd5e1' : '#0f427d'};">
+                    أهلاً بك معنا! نتمنى لك تجربة مميزة في إدارة عيادتك
+                  </p>
+                </div>
+
+                <div style="background: ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15, 67, 125, 0.08)'}; border-radius: 20px; padding: 18px; margin-bottom: 30px; border: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15, 67, 125, 0.2)'};">
+                  <p style="margin: 0; font-size: 14px; line-height: 1.8; color: ${isDark ? '#cbd5e1' : '#0f427d'};">
+                    قبل استخدام لوحة التحكم بشكل كامل، يرجى استكمال جميع بيانات البروفايل<br/>
+                    <strong>مهم:</strong> رفع صورة شخصية مناسبة وواضحة للحساب
+                  </p>
+                </div>
+
+                <div style="font-size: 12px; color: ${isDark ? '#94a3b8' : '#0f427d'}; margin-bottom: 10px;">
+                  نسبة الإكمال: <strong style="font-size: 18px; color: ${isDark ? '#60a5fa' : '#0f427d'};">${completionPercent}%</strong>
+                </div>
+              </div>
+            `,
+            confirmButtonText: 'الانتقال إلى البروفايل الآن',
+            confirmButtonColor: '#0f427d',
+            allowOutsideClick: false,
+            background: isDark ? '#1e293b' : '#ffffff',
+            didOpen: (modal) => {
+              const confirmButton = modal.querySelector('.swal2-confirm') as HTMLButtonElement | null;
+              if (confirmButton) {
+                confirmButton.style.borderRadius = '15px';
+                confirmButton.style.padding = '12px 30px';
+                confirmButton.style.fontWeight = 'bold';
+                confirmButton.style.boxShadow = '0 4px 12px rgba(15, 67, 125, 0.3)';
+              }
+            }
+          });
+
+          navigate('/doctor/profile', {
+            replace: true,
+            state: {
+              forceComplete: true,
+              completionError: {
+                missingFields,
+                completionPercent,
+              },
+            },
+          });
+        }
+      } catch {
+        // Ignore here; global endpoint guard handles PROFILE_INCOMPLETE and routing.
+      }
+    };
+
+    checkCompletion();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate, isDark, profile?.fullName]);
 
   const stats = [
-    { title: "مواعيد اليوم", value: "6", icon: CalendarCheck, color: "from-blue-900 via-blue-800 to-cyan-700" },
-    { title: "المواعيد القادمة", value: "18", icon: CalendarDays, color: "from-blue-900 via-blue-800 to-cyan-700" },
-    { title: "المرضى النشطين", value: "42", icon: UserCheck, color: "from-blue-900 via-blue-800 to-cyan-700"},
-    { title: "إجمالي المواعيد", value: "156", icon: ClipboardCheck, color: "from-blue-900 via-blue-800 to-cyan-700" }
+    { title: "مواعيد اليوم", value: String(dashboardStats.todayAppointmentsCount), icon: CalendarCheck, color: "from-blue-900 via-blue-800 to-cyan-700" },
+    { title: "المواعيد القادمة", value: String(dashboardStats.upcomingAppointmentsCount), icon: CalendarDays, color: "from-blue-900 via-blue-800 to-cyan-700" },
+    { title: "المرضى النشطين", value: String(dashboardStats.activePatientsCount), icon: UserCheck, color: "from-blue-900 via-blue-800 to-cyan-700"},
+    { title: "إجمالي المواعيد", value: String(dashboardStats.totalAppointmentsCount), icon: ClipboardCheck, color: "from-blue-900 via-blue-800 to-cyan-700" }
   ];
 
   return (
     <DoctorLayout>
       <div className="min-h-screen p-4 sm:p-6 md:p-8 lg:p-12 overflow-x-hidden theme-page">
+
+    {loading && (
+      <div className={`rounded-2xl border p-4 mb-4 text-center ${isDark ? 'bg-slate-900/60 border-white/15 text-white/80' : 'bg-white border-[#0f427d]/15 text-[#0f427d]/80'}`}>
+        جارٍ تحميل بيانات لوحة التحكم...
+      </div>
+    )}
+
+    {error && (
+      <div className={`rounded-2xl border p-4 mb-4 text-center ${isDark ? 'bg-rose-900/30 border-rose-400/30 text-rose-200' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
+        {error}
+      </div>
+    )}
 
     {/* Header */}
     <div className="mb-6 md:mb-10 mt-5 overflow-hidden rounded-3xl 
@@ -87,9 +174,15 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:gap-4">
-        {appointments.map((appointment) => (
+        {actionableAppointments.slice(0, 6).map((appointment: any) => (
           <AppointmentCard key={appointment.id} appointment={appointment} />
         ))}
+
+        {actionableAppointments.length === 0 && (
+          <div className={`rounded-2xl border p-6 text-center ${isDark ? 'bg-slate-900/60 border-white/15 text-white/70' : 'bg-white border-[#0f427d]/15 text-[#0f427d]/70'}`}>
+            لا توجد مواعيد جارية حالياً. المواعيد المكتملة انتقلت إلى سجلات المرضى.
+          </div>
+        )}
       </div>
     </div>
 

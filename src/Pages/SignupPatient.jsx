@@ -80,7 +80,7 @@ const SignupPatient = () => {
     <motion.div 
   initial={{ opacity: 0, y: 20 }}
   animate={{ opacity: 1, y: 0 }}
-  className="signup-card max-w-3xl" // كبرنا العرض هنا لـ 3xl (حوالي 768px)
+      className="signup-card signup-card-wide"
   dir="rtl"
 >
   <div className="text-center mb-10">

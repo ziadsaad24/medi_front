@@ -1,8 +1,10 @@
-import { useState } from "react"; 
+import { useEffect, useMemo, useState } from "react"; 
 import DoctorLayout from "../../Components/DoctorLayout";
 import PatientsTable from "../../Components/PatientsTable";
 import PatientsToolbar from "../../Components/PatientsToolbar";
 import { useTheme } from "../../context/ThemeContext";
+import { useLocation } from "react-router-dom";
+import doctorApi from "../../services/doctorApi";
 
 export interface Patient {
   id: string;
@@ -15,26 +17,82 @@ export interface Patient {
   avatar: string;
 }
 
-const mockPatients: Patient[] = [
-  { id: "1", name: "أحمد محمد علي", patientId: "P-1001", age: 45, phone: "0501234567", lastVisit: "2026-03-10", status: "نشط", avatar: "أ.م" },
-  { id: "2", name: "سارة محمود حسن", patientId: "P-1002", age: 32, phone: "0507654321", lastVisit: "2026-03-12", status: "يحتاج متابعة", avatar: "س.م" },
-  { id: "3", name: "محمود إبراهيم خليل", patientId: "P-1003", age: 58, phone: "0559876543", lastVisit: "2026-03-14", status: "نشط", avatar: "م.ا" },
-  { id: "4", name: "ليلى عبد الرحمن", patientId: "P-1004", age: 27, phone: "0541122334", lastVisit: "2026-03-15", status: "نشط", avatar: "ل.ع" },
-  { id: "5", name: "عمر خالد الصاوي", patientId: "P-1005", age: 50, phone: "0565544332", lastVisit: "2026-03-09", status: "يحتاج متابعة", avatar: "ع.خ" },
-  { id: "6", name: "فاطمة الزهراء", patientId: "P-1006", age: 63, phone: "0529988776", lastVisit: "2026-03-16", status: "نشط", avatar: "ف.ز" },
-  { id: "7", name: "يوسف منصور", patientId: "P-1007", age: 19, phone: "0590011223", lastVisit: "2026-03-11", status: "نشط", avatar: "ي.م" },
-  { id: "8", name: "منى عبد الله رجب", patientId: "P-1008", age: 41, phone: "0534455667", lastVisit: "2026-03-13", status: "يحتاج متابعة", avatar: "م.ع" },
-  { id: "9", name: "كريم يحيى فؤاد", patientId: "P-1009", age: 36, phone: "0511122233", lastVisit: "2026-03-08", status: "نشط", avatar: "ك.ي" },
-  { id: "10", name: "هند سعيد مبارك", patientId: "P-1010", age: 29, phone: "0577788899", lastVisit: "2026-03-15", status: "يحتاج متابعة", avatar: "ه.س" }
-];
-
 export default function PatientsPage() {
+  const location = useLocation();
   const { isDark } = useTheme();
+  const initialTab = new URLSearchParams(location.search).get('tab') === 'records' ? 'records' : 'patients';
+
+  const [activeTab, setActiveTab] = useState<'patients' | 'records'>(initialTab);
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
   const [searchTerm, setSearchTerm] = useState(""); 
   const [filterStatus, setFilterStatus] = useState("الكل");
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [records, setRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const filteredPatients = mockPatients.filter((patient) => {
+  const mapPatient = (item: any): Patient => ({
+    id: String(item.id),
+    name: item.name || item.fullName || 'غير معروف',
+    patientId: item.patientId || item.patient_id || '',
+    age: Number(item.age || 0),
+    phone: item.phone || '',
+    lastVisit: item.lastVisit || item.last_visit || '-',
+    status: (item.status === 'needs_follow_up' || item.status === 'يحتاج متابعة') ? 'يحتاج متابعة' : 'نشط',
+    avatar: item.avatarInitials || item.avatar_initials || (item.name || 'م').slice(0, 2),
+  });
+
+  const mapRecord = (item: any) => ({
+    id: String(item.id),
+    patientName: item.patientName || item.patient_name || 'غير معروف',
+    patientId: item.patientId || item.patient_id || '',
+    visitDate: item.visitDate || item.visit_date || '-',
+    diagnosis: item.diagnosis || '-',
+    notes: item.notes || item.summary || '-',
+    medicationsCount: Number(item.medicationsCount || item.medications_count || 0),
+  });
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        if (activeTab === 'patients') {
+          const statusMap: Record<string, string | undefined> = {
+            'الكل': undefined,
+            'نشط': 'active',
+            'يحتاج متابعة': 'needs_follow_up',
+          };
+
+          const response = await doctorApi.getDoctorPatients({
+            search: searchTerm || undefined,
+            status: statusMap[filterStatus],
+            page: 1,
+            per_page: 50,
+          });
+
+          const list = (Array.isArray(response?.data) ? response.data : response?.data?.data || response?.items || []).map(mapPatient);
+          setPatients(list);
+        } else {
+          const response = await doctorApi.getDoctorMedicalRecordsArchive({
+            search: searchTerm || undefined,
+            page: 1,
+            per_page: 50,
+          });
+
+          const list = (Array.isArray(response?.data) ? response.data : response?.data?.data || response?.items || []).map(mapRecord);
+          setRecords(list);
+        }
+      } catch {
+        if (activeTab === 'patients') setPatients([]);
+        else setRecords([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [activeTab, filterStatus, searchTerm]);
+
+  const filteredPatients = patients.filter((patient) => {
     const matchesSearch = 
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.patientId.toLowerCase().includes(searchTerm.toLowerCase());
@@ -44,26 +102,71 @@ export default function PatientsPage() {
     return matchesSearch && matchesStatus;
   });
 
+  const filteredRecords = useMemo(
+    () =>
+      records.filter((record) => {
+        const q = searchTerm.toLowerCase();
+        return (
+          record.patientName.toLowerCase().includes(q) ||
+          record.patientId.toLowerCase().includes(q) ||
+          record.diagnosis.toLowerCase().includes(q)
+        );
+      }),
+    [records, searchTerm]
+  );
+
   return (
     <DoctorLayout>
       <div className="p-4 sm:p-6 md:p-8 min-h-full theme-page">
 
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setActiveTab('patients')}
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${activeTab === 'patients' ? 'bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 text-white border-transparent shadow-lg' : isDark ? 'bg-white/10 border-white/20 text-white/80 hover:bg-white/20' : 'bg-white border-[#0f427d]/20 text-[#0f427d] hover:bg-[#0f427d]/10'}`}
+          >
+            المرضى الحاليون
+          </button>
+
+          <button
+            onClick={() => setActiveTab('records')}
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${activeTab === 'records' ? 'bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 text-white border-transparent shadow-lg' : isDark ? 'bg-white/10 border-white/20 text-white/80 hover:bg-white/20' : 'bg-white border-[#0f427d]/20 text-[#0f427d] hover:bg-[#0f427d]/10'}`}
+          >
+            سجلات الكشوفات السابقة
+          </button>
+        </div>
+
         {/* Toolbar */}
-        <PatientsToolbar 
-          viewMode={viewMode} 
-          setViewMode={setViewMode}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          filterStatus={filterStatus}
-          setFilterStatus={setFilterStatus}
-        />
+        {activeTab === 'patients' ? (
+          <PatientsToolbar 
+            viewMode={viewMode} 
+            setViewMode={setViewMode}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+          />
+        ) : (
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="ابحث في الأرشيف باسم المريض أو التشخيص..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:max-w-lg rounded-2xl px-4 py-3 theme-input"
+            />
+          </div>
+        )}
 
         {/* Content */}
-        {viewMode === "list" ? (
+        {loading ? (
+          <div className={`text-center py-16 md:py-20 text-sm md:text-base ${isDark ? "text-white/50" : "text-[#0f427d]/60"}`}>
+            جارٍ تحميل البيانات...
+          </div>
+        ) : activeTab === 'patients' && viewMode === "list" ? (
           <div className="overflow-x-auto">
             <PatientsTable patients={filteredPatients} />
           </div>
-        ) : (
+        ) : activeTab === 'patients' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 md:gap-6">
             {filteredPatients.map((patient) => (
               <div 
@@ -74,7 +177,7 @@ export default function PatientsPage() {
                 <div className="flex items-center gap-3 sm:gap-4 mb-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl 
                     bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 
-                    flex items-center justify-center font-bold text-sm sm:text-lg shadow-inner">
+                    flex items-center justify-center font-bold text-sm sm:text-lg text-white shadow-inner">
                     {patient.avatar}
                   </div>
                   <div className="min-w-0">
@@ -111,12 +214,48 @@ export default function PatientsPage() {
               </div>
             ))}
           </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredRecords.map((record) => (
+              <div key={record.id} className={`rounded-2xl border p-4 sm:p-5 ${isDark ? 'bg-slate-900/60 border-white/15 text-white' : 'bg-white border-[#0f427d]/15 text-[#0f427d]'}`}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                  <h3 className="font-black text-base sm:text-lg">{record.patientName}</h3>
+                  <span className={`text-xs px-3 py-1 rounded-lg ${isDark ? 'bg-white/10 text-white/80' : 'bg-[#0f427d]/10 text-[#0f427d]/80'}`}>
+                    {record.visitDate}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <p className={`${isDark ? 'text-white/50' : 'text-[#0f427d]/55'} text-xs mb-1`}>رقم المريض</p>
+                    <p className="font-semibold">{record.patientId}</p>
+                  </div>
+                  <div>
+                    <p className={`${isDark ? 'text-white/50' : 'text-[#0f427d]/55'} text-xs mb-1`}>التشخيص</p>
+                    <p className="font-semibold">{record.diagnosis}</p>
+                  </div>
+                  <div>
+                    <p className={`${isDark ? 'text-white/50' : 'text-[#0f427d]/55'} text-xs mb-1`}>عدد أدوية الروشتة</p>
+                    <p className="font-semibold">{record.medicationsCount}</p>
+                  </div>
+                </div>
+
+                <p className={`mt-3 text-sm ${isDark ? 'text-white/70' : 'text-[#0f427d]/70'}`}>{record.notes}</p>
+              </div>
+            ))}
+          </div>
         )}
 
         {/* Empty State */}
-        {filteredPatients.length === 0 && (
+        {activeTab === 'patients' && filteredPatients.length === 0 && (
           <div className={`text-center py-16 md:py-20 text-sm md:text-base ${isDark ? "text-white/50" : "text-[#0f427d]/60"}`}>
             لا توجد سجلات تطابق بحثك الحالي..
+          </div>
+        )}
+
+        {activeTab === 'records' && filteredRecords.length === 0 && (
+          <div className={`text-center py-16 md:py-20 text-sm md:text-base ${isDark ? "text-white/50" : "text-[#0f427d]/60"}`}>
+            لا توجد كشوفات سابقة مطابقة لبحثك.
           </div>
         )}
 

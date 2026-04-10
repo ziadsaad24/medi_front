@@ -56,18 +56,117 @@ const getMinutesUntilDueAt = (item) => {
   return minutes;
 };
 
-const normalizeNotification = (item, index) => {
-  const minutesUntilDue = getMinutesUntilDueAt(item);
+const pickFirstText = (...values) => {
+  for (const value of values) {
+    if (value === null || value === undefined) continue;
+    const text = String(value).trim();
+    if (text) return text;
+  }
+  return '';
+};
+
+const includesArabicOrEnglishKeyword = (text, keywords) => {
+  const normalized = String(text || '').toLowerCase();
+  return keywords.some((keyword) => normalized.includes(keyword.toLowerCase()));
+};
+
+const buildAppointmentNotificationContent = (item) => {
+  const doctorName = pickFirstText(item?.doctor_name, item?.doctorName, item?.doctor, item?.provider_name);
+  const confirmedDate = pickFirstText(item?.confirmed_date, item?.confirmedDate);
+  const requestedDate = pickFirstText(item?.requested_date, item?.requestedDate, item?.date);
+  const confirmedTime = pickFirstText(item?.confirmed_time, item?.confirmedTime);
+  const requestedTime = pickFirstText(item?.requested_time, item?.requestedTime, item?.time);
+  const appointmentDate = confirmedDate || requestedDate;
+  const appointmentTime = confirmedTime || requestedTime;
+  const rejectReason = pickFirstText(item?.reject_reason, item?.rejectReason, item?.reason);
+  const rawStatus = pickFirstText(item?.status, item?.booking_status, item?.appointment_status, item?.type);
+
+  const isRejected = includesArabicOrEnglishKeyword(rawStatus, ['rejected', 'رفض', 'rejected_request']) ||
+    includesArabicOrEnglishKeyword(item?.title, ['رفض']) ||
+    includesArabicOrEnglishKeyword(item?.message, ['رفض']) ||
+    includesArabicOrEnglishKeyword(item?.body, ['رفض']);
+
+  const title = isRejected ? 'تم رفض طلب الحجز' : 'تم تحديث حالة الحجز';
+
+  const parts = [];
+  if (doctorName) parts.push(`مع د. ${doctorName}`);
+  if (appointmentDate) parts.push(`بتاريخ ${appointmentDate}`);
+  if (appointmentTime) parts.push(`الساعة ${appointmentTime}`);
+
+  let message =
+    parts.length > 0
+      ? `حالة موعدك ${isRejected ? 'اتغيرت إلى مرفوض' : 'اتأكدت بنجاح'} ${parts.join(' - ')}.`
+      : `حالة موعدك ${isRejected ? 'اتغيرت إلى مرفوض' : 'اتأكدت بنجاح'}.`;
+
+  if (isRejected && rejectReason) {
+    message += ` السبب: ${rejectReason}.`;
+  }
+
+  const metaSegments = [];
+  if (doctorName) metaSegments.push(`الطبيب: ${doctorName}`);
+  if (appointmentDate) metaSegments.push(`التاريخ: ${appointmentDate}`);
+  if (appointmentTime) metaSegments.push(`الوقت: ${appointmentTime}`);
+  if (isRejected && rejectReason) metaSegments.push(`السبب: ${rejectReason}`);
 
   return {
-    id: String(item?.id ?? `notification-${index}`),
-    type: item?.type ?? 'general',
-    priority: item?.priority ?? 'normal',
-    title: item?.title ?? 'تنبيه',
-    message: item?.message ?? '',
-    meta: minutesUntilDue !== null ? formatRelativeMinutes(minutesUntilDue) : formatNotificationMeta(item?.meta),
-    route: '/medications',
+    title,
+    message,
+    meta: metaSegments.join(' | '),
   };
+};
+
+const normalizeNotification = (item, index) => {
+  const minutesUntilDue = getMinutesUntilDueAt(item);
+  const type = item?.type ?? item?.notification_type ?? 'general';
+  const content = `${item?.title || ''} ${item?.message || ''}`.toLowerCase();
+  const looksLikeAppointment =
+    /appointment|booking|confirm|schedule|موعد|حجز|تاكيد|تأكيد/.test(type.toLowerCase()) ||
+    /appointment|booking|confirm|schedule|موعد|حجز|تاكيد|تأكيد/.test(content);
+
+  const route = looksLikeAppointment ? '/appointments' : '/medications';
+  const fallbackMessage = pickFirstText(item?.message, item?.body, item?.description);
+  const appointmentContent = looksLikeAppointment ? buildAppointmentNotificationContent(item) : null;
+
+  const title = pickFirstText(item?.title, appointmentContent?.title, 'تنبيه');
+  const baseMessage = pickFirstText(fallbackMessage, appointmentContent?.message, 'لديك تحديث جديد');
+  const shouldAppendDetails =
+    looksLikeAppointment &&
+    appointmentContent?.meta &&
+    !String(baseMessage).includes('التفاصيل:');
+  const message = shouldAppendDetails
+    ? `${baseMessage} التفاصيل: ${appointmentContent.meta}`
+    : baseMessage;
+
+  const metaFromDueAt = minutesUntilDue !== null ? formatRelativeMinutes(minutesUntilDue) : '';
+  const metaFromApi = formatNotificationMeta(item?.meta);
+  const meta = pickFirstText(metaFromDueAt, metaFromApi, appointmentContent?.meta);
+
+  const fallbackIdSeed = [
+    type,
+    pickFirstText(item?.title),
+    pickFirstText(item?.message, item?.body, item?.description),
+    pickFirstText(item?.due_at, item?.created_at, item?.timestamp),
+    String(index),
+  ].join('|');
+
+  return {
+    id: String(item?.id ?? fallbackIdSeed),
+    type,
+    priority: item?.priority ?? 'normal',
+    title,
+    message,
+    meta,
+    route,
+    serverRead: Boolean(item?.is_read || item?.read || item?.seen || item?.read_at),
+  };
+};
+
+const toItemsArray = (response) => {
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  if (Array.isArray(response?.notifications)) return response.notifications;
+  if (Array.isArray(response)) return response;
+  return [];
 };
 
 export const useNotifications = () => {
@@ -78,7 +177,7 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [readNotificationIds, setReadNotificationIds] = useState(() => {
     try {
-      const stored = sessionStorage.getItem(readStorageKey);
+      const stored = localStorage.getItem(readStorageKey);
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -87,7 +186,7 @@ export const useNotifications = () => {
 
   useEffect(() => {
     try {
-      const stored = sessionStorage.getItem(readStorageKey);
+      const stored = localStorage.getItem(readStorageKey);
       setReadNotificationIds(stored ? JSON.parse(stored) : []);
     } catch {
       setReadNotificationIds([]);
@@ -95,22 +194,23 @@ export const useNotifications = () => {
   }, [readStorageKey]);
 
   useEffect(() => {
-    sessionStorage.setItem(readStorageKey, JSON.stringify(readNotificationIds));
+    localStorage.setItem(readStorageKey, JSON.stringify(readNotificationIds));
   }, [readNotificationIds, readStorageKey]);
 
   useEffect(() => {
     const loadNotifications = async () => {
       try {
-        const response = await patientAPI.getUpcomingNotifications();
-        const items = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response?.notifications)
-            ? response.notifications
-            : Array.isArray(response)
-              ? response
-              : [];
+        const [upcomingResponse, patientResponse] = await Promise.all([
+          patientAPI.getUpcomingNotifications(),
+          patientAPI.getPatientNotifications({ page: 1, per_page: 20 }),
+        ]);
 
-        setNotifications(items.map((item, index) => normalizeNotification(item, index)).slice(0, 8));
+        const merged = [...toItemsArray(patientResponse), ...toItemsArray(upcomingResponse)];
+        const deduped = Array.from(
+          new Map(merged.map((item, index) => [String(item?.id ?? `notification-${index}`), item])).values()
+        );
+
+        setNotifications(deduped.map((item, index) => normalizeNotification(item, index)).slice(0, 8));
       } catch (error) {
         console.warn('Unable to load notifications from API:', error);
         setNotifications([]);
@@ -121,10 +221,25 @@ export const useNotifications = () => {
 
     const interval = window.setInterval(() => {
       loadNotifications();
-    }, 60000);
+    }, 30000);
+
+    const handleFocus = () => {
+      loadNotifications();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadNotifications();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -132,18 +247,34 @@ export const useNotifications = () => {
     const readSet = new Set(readNotificationIds);
     return notifications.map((item) => ({
       ...item,
-      isRead: readSet.has(item.id),
+      isRead: item.serverRead || readSet.has(item.id),
     }));
   }, [notifications, readNotificationIds]);
 
-  const markAsRead = (notificationId) => {
+  const markAsRead = async (notificationId) => {
+    const normalizedId = String(notificationId);
+
+    try {
+      await patientAPI.markPatientNotificationRead(normalizedId);
+    } catch (error) {
+      // Keep local fallback for environments where read endpoints are not yet deployed.
+      console.warn('Unable to sync notification read state with backend:', error);
+    }
+
     setReadNotificationIds((prev) => {
-      if (prev.includes(notificationId)) return prev;
-      return [...prev, notificationId];
+      if (prev.includes(normalizedId)) return prev;
+      return [...prev, normalizedId];
     });
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    try {
+      await patientAPI.markAllPatientNotificationsRead();
+    } catch (error) {
+      // Keep local fallback for environments where read endpoints are not yet deployed.
+      console.warn('Unable to sync mark-all notifications read state with backend:', error);
+    }
+
     setReadNotificationIds(notifications.map((item) => item.id));
   };
 

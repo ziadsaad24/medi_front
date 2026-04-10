@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { QrCode, Stethoscope, FileText, Camera, Paperclip, MessageSquare } from "lucide-react";
+import { QrCode, Stethoscope, FileText, Camera, Paperclip, MessageSquare, CheckCircle2, FolderOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { FileUploader } from "../Components/medical/FileUploader";  
 import { FileCard } from "../Components/medical/FileCard";
 import { QRDialog } from "../Components/medical/QRDialog";
@@ -13,6 +14,9 @@ export default function MedicalRecordPage() {
   const { files, notes, setNotes, addFile, removeFile, saveRecord } = useMedicalRecords();
   const [activeTab, setActiveTab] = useState("prescription");
   const [qrState, setQrState] = useState({ isOpen: false, url: "" });
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
 
   const tabs = [
     { id: "prescription", label: "روشتة", color: "bg-rose-500", icon: <Camera size={18} /> },
@@ -21,9 +25,22 @@ export default function MedicalRecordPage() {
     { id: "notes", label: "ملاحظات", color: "bg-emerald-500", icon: <MessageSquare size={18} /> }
   ];
 
-  const handleGenerate = () => {
-    const id = saveRecord();
-    setQrState({ isOpen: true, url: `${window.location.origin}/view/${id}` });
+  const handleGenerate = async () => {
+    try {
+      setSaving(true);
+      const result = await saveRecord();
+      const fallbackViewUrl = `${window.location.origin}/recorded/view/${result?.id}`;
+      setQrState({ isOpen: true, url: result?.qrUrl || fallbackViewUrl });
+      setSaveSuccess(true);
+    } catch (error) {
+      window.alert(error?.response?.data?.message || 'تعذر إنشاء السجل الطبي حالياً.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleOpenRecordsManager = () => {
+    navigate('/demo-emergency-card');
   };
 
   return (
@@ -37,11 +54,11 @@ export default function MedicalRecordPage() {
         <div className="fixed top-20 right-[-5%] w-96 h-96 rounded-full blur-[120px] pointer-events-none z-0" style={{ background: 'var(--app-glow-a)' }} />
         <div className="fixed bottom-20 left-[-5%] w-96 h-96 rounded-full blur-[120px] pointer-events-none z-0" style={{ background: 'var(--app-glow-b)' }} />
 
-        {/* الحل هنا: 
-            pt-28 (Padding Top) لضمان نزول المحتوى تحت الناف بار 
-            pb-44 لضمان عدم اختفاء المحتوى خلف زر "إنشاء السجل" الثابت
+        {/* الحل هنا:
+          pt-28 لضمان نزول المحتوى تحت الناف بار
+          pb-24 لأن زر الإنشاء أصبح ضمن تدفق الصفحة (sticky) وليس fixed
         */}
-        <div className="relative z-10 px-4 pt-28 pb-44">
+        <div className="relative z-10 px-4 pt-28 pb-24">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -65,6 +82,14 @@ export default function MedicalRecordPage() {
                 <p className="theme-text-muted text-base md:text-lg max-w-md mx-auto">
                   ارفع مستنداتك الطبية الآن واحصل على كود QR يختصر تاريخك الصحي.
                 </p>
+                <button
+                  type="button"
+                  onClick={handleOpenRecordsManager}
+                  className="mx-auto mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-cyan-300 bg-cyan-50 text-cyan-800 text-sm md:text-base font-bold hover:bg-cyan-100 hover:border-cyan-400 transition-colors shadow-sm"
+                >
+                  <FolderOpen size={18} />
+                  إدارة سجلاتي الطبية
+                </button>
               </div>
             </div>
 
@@ -108,14 +133,25 @@ export default function MedicalRecordPage() {
                       transition={{ duration: 0.2 }}
                     >
                       {activeTab === "notes" ? (
-                        <textarea
-                          placeholder="اكتب ملاحظاتك الطبية هنا (الأدوية، الحساسية، تشخيص الطبيب...)"
-                          value={notes}
-                          onChange={(e) => setNotes(e.target.value)}
-                          className="w-full min-h-[200px] p-6 rounded-[2rem] theme-input focus:ring-0 outline-none text-lg transition-all resize-none"
-                        />
+                        <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-3 md:p-4 shadow-sm">
+                          <label className="block text-sm font-bold text-slate-700 mb-2 text-right">
+                            ملاحظاتك الطبية
+                          </label>
+                          <textarea
+                            placeholder="اكتب ملاحظاتك الطبية هنا (الأدوية، الحساسية، تشخيص الطبيب...)"
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            className="w-full min-h-[200px] p-5 rounded-[1.5rem] border border-slate-200 bg-white text-slate-900 placeholder:text-slate-500 focus:border-blue-400 focus:bg-white outline-none text-base md:text-lg transition-all resize-none shadow-inner"
+                          />
+                          <p className="mt-2 text-xs text-slate-600 text-right">
+                            الملاحظات ستظهر في صفحة العرض فقط ولا يمكن تعديلها من رابط الـ QR.
+                          </p>
+                        </div>
                       ) : (
-                        <div className="rounded-[2.5rem] p-1 theme-surface">
+                        <div className="rounded-[2.5rem] p-1 theme-surface space-y-3">
+                          <div className="mx-2 mt-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-center text-xs md:text-sm text-blue-800 font-bold shadow-sm">
+                            يسمح برفع ملف واحد فقط لكل سجل. أي رفع جديد سيستبدل الملف الحالي تلقائيًا.
+                          </div>
                           <FileUploader
                             onUpload={(data) => addFile(data, activeTab)}
                             activeTab={activeTab}
@@ -129,7 +165,7 @@ export default function MedicalRecordPage() {
             </div>
 
             {/* Displaying Uploaded Files */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <AnimatePresence>
                 {files.map((file, index) => (
                   <motion.div 
@@ -144,23 +180,45 @@ export default function MedicalRecordPage() {
                 ))}
               </AnimatePresence>
             </div>
+
+            {saveSuccess && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-[1.6rem] border border-emerald-300/30 bg-emerald-500/10 px-4 py-3 text-emerald-200 flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={18} className="text-emerald-300" />
+                  <p className="text-sm md:text-base font-bold">تم رفع السجل بنجاح وإضافته إلى سجلاتك الطبية.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenRecordsManager}
+                  className="shrink-0 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-300/40 text-xs md:text-sm font-bold hover:bg-emerald-500/30 transition-colors"
+                >
+                  عرض السجلات
+                </button>
+              </motion.div>
+            )}
           </motion.div>
         </div>
 
-        {/* Floating Action Button (Fixed) */}
-        <div className="fixed bottom-10 left-0 right-0 px-6 max-w-2xl mx-auto z-[60]">
-          <motion.button
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            disabled={files.length === 0 && !notes}
-            onClick={handleGenerate}
-            className="w-full h-16 md:h-20 rounded-[2.5rem] bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-lg md:text-xl font-black shadow-[0_20px_50px_rgba(37,99,235,0.3)] flex items-center justify-center gap-4 transition-all disabled:opacity-30 disabled:grayscale"
-          >
-            <div className="bg-white/20 p-2 rounded-xl">
-              <QrCode size={24} />
-            </div>
-            إنشاء السجل الرقمي
-          </motion.button>
+        {/* Sticky Action Bar: يتحرك مع السكرول ويقف أعلى الصفحة السفلية بمسافة واضحة */}
+        <div className="sticky bottom-20 md:bottom-24 px-6 max-w-2xl mx-auto z-20 mt-6">
+          <div className="space-y-3">
+            <motion.button
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={(files.length === 0 && !notes) || saving}
+              onClick={handleGenerate}
+              className="w-full h-16 md:h-20 rounded-[2.5rem] bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-lg md:text-xl font-black shadow-[0_20px_50px_rgba(37,99,235,0.3)] flex items-center justify-center gap-4 transition-all disabled:opacity-30 disabled:grayscale"
+            >
+              <div className="bg-white/20 p-2 rounded-xl">
+                <QrCode size={24} />
+              </div>
+              {saving ? 'جارٍ إنشاء السجل...' : 'إنشاء السجل الرقمي'}
+            </motion.button>
+          </div>
         </div>
 
         <ScrollToTop />

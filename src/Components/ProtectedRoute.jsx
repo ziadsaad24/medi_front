@@ -17,6 +17,39 @@ const ProtectedRoute = ({
 }) => {
   const { user, loading } = useAuth();
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-blue-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">جارٍ التحميل...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  if (user.role === 'patient' && !user.email_verified_at) {
+    return <Navigate to="/pending-verification" replace />;
+  }
+
+  if (allowedRoles) {
+    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+
+    if (!roles.includes(user.role)) {
+      const roleRedirects = {
+        patient: '/patient/home',
+        doctor: '/doctor/dashboard',
+        admin: '/admin/dashboard',
+      };
+
+      return <Navigate to={roleRedirects[user.role] || '/'} replace />;
+    }
+  }
+
   // 🚫 TEMPORARILY DISABLED FOR FRONTEND DEVELOPMENT - RESTORE: See RESTORE_INSTRUCTIONS.md
   // إظهار loader أثناء التحميل
   // if (loading) {
@@ -59,8 +92,6 @@ const ProtectedRoute = ({
   //   }
   // }
 
-  // ⚠️ FRONTEND DEVELOPMENT MODE: Allow all access
-  // إذا كل شيء OK، اعرض المحتوى
   return <>{children}</>;
 };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Mousewheel, Autoplay } from 'swiper/modules';
 import { ArrowLeft } from 'lucide-react';
@@ -6,11 +6,45 @@ import { Link } from 'react-router-dom';
 import 'swiper/css';
 import { useTheme } from '../context/ThemeContext';
 
-const DoctorsSection = ({ doctors = [] }) => {
+const DoctorsSection = ({ doctors = [], loading = false }) => {
   const { isDark } = useTheme();
+  const swiperRef = useRef(null);
   const displayDoctors = doctors?.slice(0, 6) || [];
+  const sliderDoctors = useMemo(() => {
+    if (!displayDoctors.length) return [];
 
-  if (displayDoctors.length === 0) return null;
+    // Swiper loop gets unstable with very small datasets.
+    // Repeat items so vertical autoplay remains truly infinite.
+    const minSlidesForLoop = 8;
+    const total = Math.max(displayDoctors.length, minSlidesForLoop);
+
+    return Array.from({ length: total }, (_, index) => {
+      const base = displayDoctors[index % displayDoctors.length];
+      return {
+        ...base,
+        __slideKey: `${base.id}-${index}`,
+      };
+    });
+  }, [displayDoctors]);
+
+  useEffect(() => {
+    if (!swiperRef.current || sliderDoctors.length === 0) return;
+
+    const swiper = swiperRef.current;
+    const frame = window.requestAnimationFrame(() => {
+      if (swiper.destroyed) return;
+      if (swiper.autoplay) {
+        swiper.autoplay.stop();
+        swiper.autoplay.start();
+      }
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [sliderDoctors.length]);
+
+  if (!loading && displayDoctors.length === 0) return null;
 
   return (
     <section className={`py-20 relative overflow-hidden ${isDark ? 'bg-gradient-to-b from-[#06142f] to-[#020617]' : 'bg-gradient-to-b from-white to-[#f0fafa]'}`} dir="rtl">
@@ -27,7 +61,9 @@ const DoctorsSection = ({ doctors = [] }) => {
           {/* زيادة h-[500px] تعطي مساحة أكبر للكروت لتطول */}
           <div className="md:w-[45%] h-[500px] w-full relative flex items-center justify-center">
             <div className="w-full h-full overflow-hidden py-4"> 
+              {sliderDoctors.length > 0 ? (
                 <Swiper
+                key={`doctors-slider-${sliderDoctors.length}`}
                 direction={'vertical'}
                 // تقليل الرقم هنا (مثلاً 2.2 بدل 3) يجعل الكارت الواحد يأخذ مساحة طولية أكبر
                 slidesPerView={2.2} 
@@ -39,11 +75,14 @@ const DoctorsSection = ({ doctors = [] }) => {
                     delay: 2500, 
                     disableOnInteraction: false 
                 }}
+                onSwiper={(swiper) => {
+                  swiperRef.current = swiper;
+                }}
                 modules={[Mousewheel, Autoplay]}
                 className="h-full w-full"
                 >
-                {displayDoctors.map((doc) => (
-                    <SwiperSlide key={doc.id} className="flex items-center justify-center">
+                {sliderDoctors.map((doc) => (
+                  <SwiperSlide key={doc.__slideKey} className="flex items-center justify-center">
                     {({ isActive }) => (
                         <div className={`
                         relative flex flex-row items-center gap-6 p-6 rounded-[2rem] border transition-all duration-500 w-[90%] mx-auto
@@ -63,9 +102,14 @@ const DoctorsSection = ({ doctors = [] }) => {
 
                         <div className={`w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-2xl overflow-hidden border-2 shadow-sm transition-transform duration-500 group ${isDark ? 'border-slate-700' : 'border-slate-50'}`}>
                             <img 
-                            src={doc.image} 
+                          src={doc.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80'} 
                             alt={doc.name} 
-                            className="w-full h-full object-cover object-top" 
+                            loading="lazy"
+                            className="w-full h-full object-cover object-top"
+                            onError={(event) => {
+                              event.currentTarget.onerror = null;
+                              event.currentTarget.src = 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80';
+                            }}
                             />
                         </div>
                         </div>
@@ -73,6 +117,17 @@ const DoctorsSection = ({ doctors = [] }) => {
                     </SwiperSlide>
                 ))}
                 </Swiper>
+              ) : (
+                <div className={`absolute inset-0 flex items-center justify-center text-sm ${isDark ? 'text-slate-300' : 'text-[#0f427d]/70'}`}>
+                  جارٍ تحميل الأطباء...
+                </div>
+              )}
+
+                {loading && (
+                  <div className={`absolute inset-0 flex items-center justify-center text-sm ${isDark ? 'text-slate-300' : 'text-[#0f427d]/70'}`}>
+                    جارٍ تحميل الأطباء...
+                  </div>
+                )}
             </div>
           </div>
 

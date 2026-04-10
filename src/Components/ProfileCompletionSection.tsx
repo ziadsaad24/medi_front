@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Briefcase, FileText, DollarSign } from 'lucide-react';
+import { MapPin, Briefcase, FileText, DollarSign, Building2, BadgeCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 interface ProfileCompletionSectionProps {
@@ -13,17 +13,20 @@ export function ProfileCompletionSection({ formData, setFormData, tempData, setT
   const { isDark } = useTheme();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setTempData({ ...tempData, [field]: value });
     if (errors[field]) setErrors({ ...errors, [field]: '' });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
     if (!tempData.address) newErrors.address = 'العنوان مطلوب';
+    if (!tempData.clinicName) newErrors.clinicName = 'اسم العيادة مطلوب';
+    if (!tempData.licenseNumber) newErrors.licenseNumber = 'رقم الترخيص مطلوب';
     if (!tempData.experience) newErrors.experience = 'سنوات الخبرة مطلوبة';
     if (!tempData.about) newErrors.about = 'نبذة مطلوبة';
     if (!tempData.consultationFee) newErrors.consultationFee = 'سعر الكشف مطلوب';
@@ -33,10 +36,31 @@ export function ProfileCompletionSection({ formData, setFormData, tempData, setT
       return;
     }
 
-    // الحفظ النهائي
-    setFormData(tempData);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    try {
+      setIsSaving(true);
+      await Promise.resolve(setFormData(tempData));
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error: any) {
+      const responseErrors = error?.response?.data?.errors || {};
+      const mapped: Record<string, string> = {};
+
+      Object.entries(responseErrors).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          mapped[key] = value[0] as string;
+        } else if (typeof value === 'string') {
+          mapped[key] = value;
+        }
+      });
+
+      if (Object.keys(mapped).length === 0) {
+        mapped.address = error?.response?.data?.message || 'تعذر حفظ البيانات حالياً';
+      }
+
+      setErrors(mapped);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -60,6 +84,34 @@ export function ProfileCompletionSection({ formData, setFormData, tempData, setT
             className="w-full p-3 rounded-xl theme-input"
           />
           {errors.address && <p className="text-red-400 text-sm">{errors.address}</p>}
+        </div>
+
+        {/* Clinic Name */}
+        <div>
+          <div className={`flex items-center gap-2 mb-1 text-sm ${isDark ? "text-white/70" : "text-[#0f427d]/70"}`}>
+            <Building2 className="w-4 h-4" />
+            اسم العيادة / المركز
+          </div>
+          <input
+            value={tempData.clinicName}
+            onChange={(e) => handleChange('clinicName', e.target.value)}
+            className="w-full p-3 rounded-xl theme-input"
+          />
+          {errors.clinicName && <p className="text-red-400 text-sm">{errors.clinicName}</p>}
+        </div>
+
+        {/* License Number */}
+        <div>
+          <div className={`flex items-center gap-2 mb-1 text-sm ${isDark ? "text-white/70" : "text-[#0f427d]/70"}`}>
+            <BadgeCheck className="w-4 h-4" />
+            رقم الترخيص المهني
+          </div>
+          <input
+            value={tempData.licenseNumber}
+            onChange={(e) => handleChange('licenseNumber', e.target.value)}
+            className="w-full p-3 rounded-xl theme-input"
+          />
+          {errors.licenseNumber && <p className="text-red-400 text-sm">{errors.licenseNumber}</p>}
         </div>
 
         {/* Experience */}
@@ -108,9 +160,10 @@ export function ProfileCompletionSection({ formData, setFormData, tempData, setT
 
         <button
           type="submit"
+          disabled={isSaving}
           className="w-full p-3 rounded-xl bg-gradient-to-r from-blue-800 to-cyan-700 text-white"
         >
-          حفظ البيانات
+          {isSaving ? 'جارٍ الحفظ...' : 'حفظ البيانات'}
         </button>
       </form>
     </div>
