@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const ScrollToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const toggleVisibility = () => {
@@ -16,6 +17,13 @@ const ScrollToTop = () => {
 
     window.addEventListener("scroll", toggleVisibility);
     return () => window.removeEventListener("scroll", toggleVisibility);
+  }, []);
+
+  useEffect(() => {
+    const updateViewport = () => setIsMobile(window.innerWidth <= 768);
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
   }, []);
 
   const scrollToTop = () => {
@@ -39,14 +47,16 @@ const ScrollToTop = () => {
           whileTap={{ scale: 0.9 }}
           onClick={scrollToTop}
           // تم إضافة bg-slate-900/10 لضمان وجود ظل خفيف خلف السهم دائماً
-          className="fixed bottom-32 right-8 z-[1050] w-14 h-14 flex items-center justify-center rounded-2xl bg-white/20 backdrop-blur-2xl border border-blue-500/30 shadow-2xl transition-all group overflow-hidden"
+          className={`fixed z-[1050] flex items-center justify-center rounded-2xl bg-white/20 backdrop-blur-2xl border border-blue-500/30 shadow-2xl transition-all group overflow-hidden ${
+            isMobile ? "bottom-[92px] right-6 w-12 h-12" : "bottom-32 right-8 w-14 h-14"
+          }`}
         >
           {/* طبقة سواد خفيفة جداً في الخلفية لزيادة التباين */}
           <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-blue-600/10 transition-colors" />
           
           {/* السهم بلون أزرق متدرج ليكون واضحاً جداً */}
           <ChevronUp 
-            size={32} 
+            size={isMobile ? 26 : 32} 
             className="relative z-10 text-[#0f427d] group-hover:text-blue-700 transition-transform duration-300 stroke-[3.5px] drop-shadow-sm" 
           />
           

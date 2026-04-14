@@ -82,9 +82,9 @@ export default function ContactPage() {
                 className="lg:col-span-4 space-y-6"
               >
                 {[
-                  { icon: <Phone size={24} />, label: "مركز الاتصال", value: "+20 123 456 789", desc: "متاحون على مدار الساعة" },
+                  { icon: <Phone size={24} />, label: "مركز الاتصال", value: "+201208596604", desc: "متاحون على مدار الساعة" },
                   { icon: <Mail size={24} />, label: "الدعم الفني", value: "support@medicare.com", desc: "رد سريع خلال 24 ساعة" },
-                  { icon: <MapPin size={24} />, label: "الموقع الرئيسي", value: "القاهرة، مدينة نصر", desc: "تفضل بزيارتنا في مقرنا" }
+                  { icon: <MapPin size={24} />, label: "الموقع الرئيسي", value: "المنصوره", desc: "تفضل بزيارتنا في مقرنا" }
                 ].map((item, idx) => (
                   <div key={idx} className="p-8 rounded-[2.5rem] theme-surface hover:border-blue-500/20 transition-all group relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 blur-2xl rounded-full translate-x-10 -translate-y-10" />

@@ -37,6 +37,7 @@ import EmergencyCardDemo from './Pages/EmergencyCardDemo';
 import DoctorDashboard from './Pages/doctor/Docdashboard'
 
 import EmergencyCard3DPage from './Pages/EmergencyCard3DPage';
+import PrivacyPolicy from './Pages/PrivacyPolicy';
 
 import PatientsPage from './Pages/doctor/PatientsPage';
 import Settings  from './Pages/doctor/SettingsPage';
@@ -125,6 +126,7 @@ function App() {
         <Route path="/meds" element={<MedicationsPage />} />
         <Route path="/appointments" element={< AppointmentsPage  />} />
         <Route path="/contact" element={< Contact  />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
           
           <Route

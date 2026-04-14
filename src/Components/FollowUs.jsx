@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion, useInView } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import Navbar from "./Layout/Navbar";
 import Footer from "./Layout/Footer";
 import { useTheme } from "../context/ThemeContext";
@@ -64,6 +65,7 @@ const Counter = ({ end, suffix = "" }) => {
 
 export default function App() {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
 
   const features = [
     {
@@ -115,6 +117,7 @@ export default function App() {
             </p>
 
             <button
+              onClick={() => navigate('/home')}
               className={`
                 px-12 py-4
                 rounded-2xl
@@ -127,7 +130,7 @@ export default function App() {
               `}
               style={isDark ? { backgroundColor: 'var(--app-primary)' } : undefined}
             >
-              ابدئي رحلتك الآن <ArrowRight size={20} />
+              ابدء رحلتك الآن <ArrowRight size={20} />
             </button>
           </motion.div>
 
@@ -245,7 +248,7 @@ export default function App() {
 
         <div className="relative z-10 max-w-4xl mx-auto rounded-[3rem] bg-[#004060]/80 backdrop-blur-2xl border border-white/20 p-16 text-center shadow-[0_40px_90px_rgba(0,64,96,0.45)]">
           <h2 className="text-4xl lg:text-5xl font-black text-white">
-            ابدئي رحلتك الصحية اليوم
+            ابدء رحلتك الصحية اليوم
           </h2>
 
           <p className="mt-6 text-lg text-blue-100/80">
@@ -253,10 +256,11 @@ export default function App() {
           </p>
 
           <button
+            onClick={() => navigate('/home')}
             className={`mt-10 px-16 py-5 rounded-2xl font-black text-white shadow-xl transition-all duration-300 hover:brightness-110 ${!isDark ? 'bg-gradient-to-r from-teal-400 via-[#00bfa6] to-teal-400 animate-gradient' : ''}`}
             style={isDark ? { backgroundColor: 'var(--app-primary)' } : undefined}
           >
-            سجلي الآن مجانًا
+            ابدء الآن مجانًا
           </button>
         </div>
       </motion.section>

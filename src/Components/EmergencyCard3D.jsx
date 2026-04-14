@@ -28,6 +28,24 @@ const getContactValue = (value) => {
   return text ? text : 'لا يوجد';
 };
 
+const getIntegerDisplayValue = (value, fallback = '--') => {
+  const text = getDisplayValue(value, fallback);
+  if (text === fallback) return fallback;
+
+  const normalized = text.replace(/,/g, '.');
+  const numericValue = Number(normalized);
+  if (!Number.isNaN(numericValue)) {
+    return String(Math.trunc(numericValue));
+  }
+
+  const decimalTextMatch = normalized.match(/^(-?\d+)(\.\d+)$/);
+  if (decimalTextMatch) {
+    return decimalTextMatch[1];
+  }
+
+  return text;
+};
+
 const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, onFlip, hideFlipButton = false, staticSide = null }) => {
   // Use external flip control if provided, otherwise use internal state
   const [internalFlipped, setInternalFlipped] = useState(false);
@@ -42,8 +60,8 @@ const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, on
     id: getDisplayValue(data.medical_card_id),
     age: getDisplayValue(data.age),
     bloodType: getDisplayValue(data.bloodType),
-    height: getDisplayValue(data.height),
-    weight: getDisplayValue(data.weight),
+    height: getIntegerDisplayValue(data.height),
+    weight: getIntegerDisplayValue(data.weight),
     allergies: getContactValue(data.allergies),
     qrValue: data.qrValue || `https://medicare.com/patient/${getDisplayValue(data.id, 'unknown')}`,
     emergencyContact: {

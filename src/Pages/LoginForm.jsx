@@ -80,7 +80,7 @@ const LoginForm = ({ role }) => {
             required 
             disabled={loading}
             className="w-full p-3 border border-gray-100 rounded-2xl bg-gray-50 text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#008080] disabled:opacity-50" 
-            placeholder="doctor@example.com" 
+            placeholder="email@email.com" 
           />
         </div>
         <div>

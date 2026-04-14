@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+
 import './ChatBot.css';
+import { geminiChatAPI } from '../../services/api';
 
 function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,25 +43,28 @@ function ChatBot() {
     setInputValue('');
     setIsTyping(true);
 
-    // Simulate bot response (استبدل ده بالـ API بتاعك)
-    setTimeout(() => {
-      const responses = [
-        'شكراً لتواصلك معنا. فريقنا الطبي سيساعدك قريباً.',
-        'يمكنك حجز موعد من خلال صفحة الأطباء أو التواصل معنا مباشرة.',
-        'نحن هنا لمساعدتك في أي استفسار صحي.',
-        'سأقوم بتوصيلك مع أحد أطبائنا المتخصصين.',
-      ];
 
+    // Call Gemini AI backend
+    try {
+      const reply = await geminiChatAPI.sendMessage(questionText);
       const botMessage = {
         id: Date.now() + 1,
         type: 'bot',
-        text: responses[Math.floor(Math.random() * responses.length)],
+        text: reply,
         timestamp: new Date()
       };
-      
       setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        text: 'عذراً، لا يمكن الاتصال بخدمة الذكاء الاصطناعي حالياً.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
 
     // Call FastAPI backend (اتركه معطل للآن)
     /*
@@ -186,7 +191,17 @@ function ChatBot() {
               )}
               <div className="message-content">
                 <div className="message-bubble">
-                  <p className="message-text">{message.text}</p>
+                  {/* دعم تنسيق الأسطر الجديدة */}
+                  <p className="message-text">
+                    {String(message.text)
+                      .split(/\r?\n/)
+                      .map((line, idx, arr) => (
+                        <React.Fragment key={idx}>
+                          {line}
+                          {idx < arr.length - 1 && <br />}
+                        </React.Fragment>
+                      ))}
+                  </p>
                 </div>
                 <span className="message-time">
                   {message.timestamp.toLocaleTimeString('ar-EG', { 

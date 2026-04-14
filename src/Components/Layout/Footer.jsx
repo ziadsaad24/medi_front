@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 const Footer = () => {
@@ -29,15 +30,15 @@ const Footer = () => {
             <h3 className="text-[##f0fdfa] font-black text-lg border-b border-white/5 pb-2 inline-block">تواصل معنا</h3>
             <ul className="space-y-4 text-gray-400 text-sm">
               <li className="flex items-center justify-end gap-3 hover:text-white transition-colors">
-                <span>الرياض، السعودية</span>
+                <span>المنصوره</span>
                 <MapPin size={16} className="text-[#f0fdfa]" />
               </li>
               <li className="flex items-center justify-end gap-3 hover:text-white transition-colors" dir="ltr">
-                <span>+966 50 123 4567</span>
+                <span>+201208596604</span>
                 <Phone size={16} className="text-[#f0fdfa]" />
               </li>
               <li className="flex items-center justify-end gap-3 hover:text-white transition-colors">
-                <span>info@medicare.sa</span>
+                <span>support@medicare.com</span>
                 <Mail size={16} className="text-[#f0fdfa]" />
               </li>
             </ul>
@@ -47,9 +48,13 @@ const Footer = () => {
           <div className="order-3 lg:order-2 space-y-6">
             <h3 className="text-[#f0fdfa] font-black text-lg border-b border-white/5 pb-2 inline-block">الدعم والمساعدة</h3>
             <ul className="space-y-3 text-gray-400 text-sm">
-              {['مركز المساعدة', 'الأسئلة الشائعة', 'سياسة الخصوصية'].map(i => (
-                <li key={i} className="hover:text-white cursor-pointer transition-colors hover:translate-x-[-5px] transform duration-300">{i}</li>
-              ))}
+              <li>
+                <Link to="/contact" className="hover:text-white cursor-pointer transition-colors hover:translate-x-[-5px] transform duration-300 inline-block">مركز المساعدة</Link>
+              </li>
+              <li className="hover:text-white cursor-pointer transition-colors hover:translate-x-[-5px] transform duration-300">الأسئلة الشائعة</li>
+              <li>
+                <Link to="/privacy-policy" className="hover:text-white cursor-pointer transition-colors hover:translate-x-[-5px] transform duration-300 inline-block">سياسة الخصوصية</Link>
+              </li>
             </ul>
           </div>
 
@@ -57,9 +62,15 @@ const Footer = () => {
           <div className="order-2 lg:order-3 space-y-6">
             <h3 className="text-[#f0fdfa] font-black text-lg border-b border-white/5 pb-2 inline-block">عن MediCare</h3>
             <ul className="space-y-3 text-gray-400 text-sm">
-              {['من نحن', 'فريقنا الطبي', 'الخدمات الطبية'].map(i => (
-                <li key={i} className="hover:text-white cursor-pointer transition-colors hover:translate-x-[-5px] transform duration-300">{i}</li>
-              ))}
+              <li>
+                <Link to="/about" className="hover:text-white cursor-pointer transition-colors hover:translate-x-[-5px] transform duration-300 inline-block">من نحن</Link>
+              </li>
+              <li>
+                <Link to="/doctors" className="hover:text-white cursor-pointer transition-colors hover:translate-x-[-5px] transform duration-300 inline-block">فريقنا الطبي</Link>
+              </li>
+              <li>
+                <Link to="/doctors" className="hover:text-white cursor-pointer transition-colors hover:translate-x-[-5px] transform duration-300 inline-block">الخدمات الطبية</Link>
+              </li>
             </ul>
           </div>
 
@@ -76,22 +87,43 @@ const Footer = () => {
             </p>
             
           <div className="flex gap-3">
-  {[
-    { Icon: Facebook, class: 'fb-h', name: 'Facebook' },
-    { Icon: Twitter, class: 'tw-h', name: 'Twitter' },
-    { Icon: Instagram, class: 'ig-h', name: 'Instagram' },
-    { Icon: Linkedin, class: 'ln-h', name: 'Linkedin' }
-  ].map((social, idx) => (
-    <a 
-      key={idx} 
-      href="#" 
-      className={`social-icon-circle ${social.class} group`}
-      title={social.name}
-    >
-      <social.Icon size={18} className="text-gray-400 transition-all duration-300" />
-    </a>
-  ))}
-</div>
+            <a
+              href="https://www.facebook.com/profile.php?id=61570868786441&sk=photos"
+              className="social-icon-circle fb-h group"
+              title="Facebook"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Facebook size={18} className="text-gray-400 transition-all duration-300" />
+            </a>
+            <a
+              href="https://x.com/CareMedi96249"
+              className="social-icon-circle tw-h group"
+              title="Twitter"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Twitter size={18} className="text-gray-400 transition-all duration-300" />
+            </a>
+            <a
+              href="https://www.instagram.com/medicare2244/"
+              className="social-icon-circle ig-h group"
+              title="Instagram"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Instagram size={18} className="text-gray-400 transition-all duration-300" />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/medi-care-316255403"
+              className="social-icon-circle ln-h group"
+              title="LinkedIn"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Linkedin size={18} className="text-gray-400 transition-all duration-300" />
+            </a>
+          </div>
           </div>
         </div>
 
@@ -99,7 +131,7 @@ const Footer = () => {
         <div className="max-w-[1400px] mx-auto px-6 mt-12 pt-6 border-t border-white/5 flex flex-col md:flex-row-reverse justify-between items-center gap-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
           <p>© 2026 MediCare. جميع الحقوق محفوظة.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-[#008080] transition-colors">Privacy Policy</a>
+            <Link to="/privacy-policy" className="hover:text-[#008080] transition-colors">Privacy Policy</Link>
             <a href="#" className="hover:text-[#008080] transition-colors">Terms of Service</a>
           </div>
         </div>

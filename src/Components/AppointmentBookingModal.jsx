@@ -21,6 +21,8 @@ const APPOINTMENT_TYPES = [
 
 const ARABIC_WEEK_DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 const ARABIC_MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+const TOTAL_LOOKAHEAD_DAYS = 14;
+const FAST_BATCH_DAYS = 4;
 
 function formatDateLabel(date) {
   const dayName = ARABIC_WEEK_DAYS[date.getDay()];
@@ -110,6 +112,7 @@ export default function AppointmentBookingModal({ isOpen, doctor, onClose, onBoo
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState('');
   const [availableSlots, setAvailableSlots] = useState([]);
+  const [datesBackgroundLoading, setDatesBackgroundLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -127,6 +130,7 @@ export default function AppointmentBookingModal({ isOpen, doctor, onClose, onBoo
     setSlotsLoading(false);
     setSlotsError('');
     setAvailableSlots([]);
+    setDatesBackgroundLoading(false);
   }, [isOpen, doctor?.id]);
 
   useEffect(() => {
@@ -137,30 +141,73 @@ export default function AppointmentBookingModal({ isOpen, doctor, onClose, onBoo
     const preloadAvailableDates = async () => {
       setDatesLoading(true);
 
-      const candidates = generateCandidateDates(14);
-      const firstBatch = candidates.slice(0, 7);
-      const secondBatch = candidates.slice(7);
+      const candidates = generateCandidateDates(TOTAL_LOOKAHEAD_DAYS);
+      const orderIndex = new Map(candidates.map((item, index) => [item.key, index]));
+
+      const mergeAvailableDate = (item, slots) => {
+        if (!slots.some((slot) => slot.available)) return;
+
+        setAvailableDates((prev) => {
+          const merged = [...prev, item];
+          const unique = Array.from(new Map(merged.map((entry) => [entry.key, entry])).values());
+
+          unique.sort((a, b) => (orderIndex.get(a.key) || 0) - (orderIndex.get(b.key) || 0));
+          return unique;
+        });
+      };
 
       try {
-        const first = await fetchDatesBatch(doctor.id, firstBatch);
+        const fastBatch = candidates.slice(0, FAST_BATCH_DAYS);
+        const restBatch = candidates.slice(FAST_BATCH_DAYS);
 
+        const fastRequests = fastBatch.map(async (item) => {
+          try {
+            const slots = await fetchAvailabilityForDate(doctor.id, item.key);
+            return { item, slots };
+          } catch {
+            return { item, slots: [] };
+          }
+        });
+
+        const fastResults = await Promise.allSettled(fastRequests);
         if (!active) return;
-        setAvailabilityMap(first.map);
-        setAvailableDates(first.dates);
+
+        fastResults.forEach((result) => {
+          if (result.status !== 'fulfilled') return;
+          const { item, slots } = result.value;
+          setAvailabilityMap((prev) => ({ ...prev, [item.key]: slots }));
+          mergeAvailableDate(item, slots);
+        });
+
         setDatesLoading(false);
 
-        if (secondBatch.length === 0) return;
+        if (restBatch.length === 0) return;
 
-        const second = await fetchDatesBatch(doctor.id, secondBatch);
-        if (!active) return;
+        setDatesBackgroundLoading(true);
 
-        setAvailabilityMap((prev) => ({ ...prev, ...second.map }));
-        setAvailableDates((prev) => {
-          const merged = [...prev, ...second.dates];
-          return Array.from(new Map(merged.map((item) => [item.key, item])).values());
+        const restRequests = restBatch.map(async (item) => {
+          try {
+            const slots = await fetchAvailabilityForDate(doctor.id, item.key);
+            return { item, slots };
+          } catch {
+            return { item, slots: [] };
+          }
         });
+
+        restRequests.forEach((promise) => {
+          promise.then(({ item, slots }) => {
+            if (!active) return;
+            setAvailabilityMap((prev) => ({ ...prev, [item.key]: slots }));
+            mergeAvailableDate(item, slots);
+          });
+        });
+
+        await Promise.allSettled(restRequests);
       } finally {
-        if (active) setDatesLoading(false);
+        if (active) {
+          setDatesLoading(false);
+          setDatesBackgroundLoading(false);
+        }
       }
     };
 
@@ -177,8 +224,8 @@ export default function AppointmentBookingModal({ isOpen, doctor, onClose, onBoo
       return;
     }
 
-    if (Array.isArray(availabilityMap[dateKey]) && availabilityMap[dateKey].length > 0) {
-      setAvailableSlots(availabilityMap[dateKey]);
+    if (Object.prototype.hasOwnProperty.call(availabilityMap, dateKey)) {
+      setAvailableSlots(Array.isArray(availabilityMap[dateKey]) ? availabilityMap[dateKey] : []);
       return;
     }
 
@@ -358,6 +405,12 @@ export default function AppointmentBookingModal({ isOpen, doctor, onClose, onBoo
                   {!datesLoading && availableDates.length === 0 && (
                     <div className={`text-sm ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>
                       لا توجد أيام متاحة حالياً لهذا الطبيب.
+                    </div>
+                  )}
+
+                  {!datesLoading && datesBackgroundLoading && (
+                    <div className={`text-xs ${isDark ? 'text-white/50' : 'text-[#0f427d]/50'}`}>
+                      جارٍ استكمال تحميل باقي الأيام...
                     </div>
                   )}
                 </div>

@@ -249,7 +249,7 @@ export default function HeroSlider() {
 
       <button
         onClick={prevSlide}
-        className="absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-full transition-all duration-300 border border-white/20 hover:scale-110 z-20 group"
+        className="hidden md:block absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-full transition-all duration-300 border border-white/20 hover:scale-110 z-20 group"
         aria-label="الشريحة السابقة"
       >
         <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
@@ -257,7 +257,7 @@ export default function HeroSlider() {
 
       <button
         onClick={nextSlide}
-        className="absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-full transition-all duration-300 border border-white/20 hover:scale-110 z-20 group"
+        className="hidden md:block absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-full transition-all duration-300 border border-white/20 hover:scale-110 z-20 group"
         aria-label="الشريحة التالية"
       >
         <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />

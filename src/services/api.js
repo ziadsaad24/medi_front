@@ -1,3 +1,19 @@
+// Gemini Chat API
+export const geminiChatAPI = {
+  sendMessage: async (message) => {
+    try {
+      const response = await api.post('/gemini-chat', { message });
+      // Expecting { reply: "..." }
+      return response.data?.reply || 'لم يتم الحصول على رد من الذكاء الاصطناعي.';
+    } catch (error) {
+      return (
+        error?.response?.data?.reply ||
+        error?.response?.data?.message ||
+        'تعذر الاتصال بخدمة الذكاء الاصطناعي حالياً.'
+      );
+    }
+  },
+};
 import axios from 'axios';
 
 // إنشاء instance من axios

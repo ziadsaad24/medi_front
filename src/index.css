@@ -139,6 +139,21 @@ select {
   100% { stroke-dashoffset: -100; }
 }
 
+/* Login logo timing helpers used by navbar and auth headers */
+.pulse-line {
+  animation-delay: 0.4s;
+}
+
+.drawing-svg {
+  animation: logoPulse 4s ease-in-out infinite 2.5s;
+  transform-origin: center;
+}
+
+@keyframes logoPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
 /* 2. ستايل الأزرار الموحد بـ Hover Effect احترافي */
 .custom-btn {
     transition-property: all;
