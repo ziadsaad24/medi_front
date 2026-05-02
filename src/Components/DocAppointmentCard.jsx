@@ -3,7 +3,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useNavigate } from 'react-router-dom';
 import { useDoctorWorkflow } from '../context/DoctorWorkflowContext';
 
-const AppointmentCard = ({ appointment }) => {
+const AppointmentCard = ({ appointment, onCancelRequest, isCancelling }) => {
   const isNew = appointment.type === "جديد";
   const { isDark } = useTheme();
   const navigate = useNavigate();
@@ -35,6 +35,7 @@ const AppointmentCard = ({ appointment }) => {
       }
     });
   };
+
 
   return (
     <div
@@ -86,16 +87,26 @@ const AppointmentCard = ({ appointment }) => {
       </div>
 
       {(isApproved || isInProgress) && (
-        <button
-          onClick={handleOpenConsultation}
-          className="px-3 py-2 rounded-xl text-[10px] md:text-xs font-bold text-white bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 hover:brightness-110 transition-all"
-        >
-          {isInProgress ? 'استكمال الكشف' : 'ابدأ الكشف'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleOpenConsultation}
+            className="px-3 py-2 rounded-xl text-[10px] md:text-xs font-bold text-white bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 hover:brightness-110 transition-all"
+          >
+            {isInProgress ? 'استكمال الكشف' : 'ابدأ الكشف'}
+          </button>
+          <button
+            onClick={() => onCancelRequest?.(appointment)}
+            disabled={isCancelling}
+            className="px-3 py-2 rounded-xl text-[10px] md:text-xs font-bold text-white bg-gradient-to-r from-rose-600 to-red-600 hover:brightness-110 transition-all disabled:opacity-60"
+          >
+            {isCancelling ? 'جارٍ الإلغاء...' : 'إلغاء الحجز'}
+          </button>
+        </div>
       )}
 
       {/* 📅 أيقونة */}
       <CalendarCheck className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? "text-white" : "text-[#0f427d]"} group-hover:text-[#00a9a9] transition-colors`} />
+
     </div>
   );
 };

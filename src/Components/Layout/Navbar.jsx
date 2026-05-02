@@ -13,7 +13,7 @@ const Navbar = (props = {}) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { user, logout } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNotifications();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   
@@ -172,6 +172,15 @@ const Navbar = (props = {}) => {
                               className="text-[11px] font-bold text-[#0F427D] bg-white border border-blue-100 rounded-full px-2 py-0.5 hover:bg-blue-50 transition-colors"
                             >
                               قراءة الكل
+                            </button>
+                          )}
+                          {notifications.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={clearAll}
+                              className="text-[11px] font-bold text-rose-600 bg-white border border-rose-100 rounded-full px-2 py-0.5 hover:bg-rose-50 transition-colors"
+                            >
+                              حذف الكل
                             </button>
                           )}
                           <span className="text-[11px] font-bold text-[#008080] bg-white border border-teal-100 rounded-full px-2 py-0.5">

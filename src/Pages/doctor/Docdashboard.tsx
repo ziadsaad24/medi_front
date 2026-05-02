@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import DoctorLayout from "../../Components/DoctorLayout";
 import StatCard from "../../Components/StatCard";
 import AppointmentCard from "../../Components/DocAppointmentCard";
+import CancelReasonModal from "../../Components/CancelReasonModal";
 import { CalendarDays, CalendarCheck, UserCheck, ClipboardCheck } from "lucide-react";
 import { useProfile } from "../../context/ProfileContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -14,7 +15,26 @@ export default function Dashboard() {
   const { profile } = useProfile(); // جلب اسم الدكتور من الـ context
   const { isDark } = useTheme();
   const workflow = useDoctorWorkflow() as any;
-  const { actionableAppointments, dashboardStats, loading, error } = workflow;
+  const { actionableAppointments, dashboardStats, loading, error, cancelAppointment } = workflow;
+  const [cancelTarget, setCancelTarget] = useState<{ id: string } | null>(null);
+  const [isCancellingOne, setIsCancellingOne] = useState(false);
+
+  const handleCancelRequest = (appointment: { id: string }) => {
+    setCancelTarget({ id: appointment.id });
+  };
+
+  const handleConfirmCancel = async (reason: string) => {
+    if (!cancelTarget) return;
+    setIsCancellingOne(true);
+    try {
+      await cancelAppointment(cancelTarget.id, reason);
+      setCancelTarget(null);
+    } catch (error: any) {
+      window.alert(error?.response?.data?.message || 'تعذر إلغاء الموعد حالياً.');
+    } finally {
+      setIsCancellingOne(false);
+    }
+  };
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -163,19 +183,26 @@ export default function Dashboard() {
           مواعيد اليوم
         </h2>
 
-        <Link to="/doctor/settings#appointments">
-          <button className="px-4 sm:px-6 py-2 rounded-xl 
-            bg-gradient-to-b from-blue-900 via-blue-800 to-cyan-700 
-            text-white hover:brightness-110 transition-all shadow-lg text-sm sm:text-base">
-            عرض الكل
-          </button>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link to="/doctor/settings#appointments">
+            <button className="px-4 sm:px-6 py-2 rounded-xl 
+              bg-gradient-to-b from-blue-900 via-blue-800 to-cyan-700 
+              text-white hover:brightness-110 transition-all shadow-lg text-sm sm:text-base">
+              عرض الكل
+            </button>
+          </Link>
+        </div>
 
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:gap-4">
         {actionableAppointments.slice(0, 6).map((appointment: any) => (
-          <AppointmentCard key={appointment.id} appointment={appointment} />
+          <AppointmentCard
+            key={appointment.id}
+            appointment={appointment}
+            onCancelRequest={handleCancelRequest}
+            isCancelling={isCancellingOne && cancelTarget?.id === appointment.id}
+          />
         ))}
 
         {actionableAppointments.length === 0 && (
@@ -187,6 +214,16 @@ export default function Dashboard() {
     </div>
 
   </div>
+
+  <CancelReasonModal
+    isOpen={Boolean(cancelTarget)}
+    title="تأكيد إلغاء الحجز"
+    description="هل أنت متأكد من إلغاء هذا الحجز؟ سيتم إرسال إشعار للمريض بسبب الإلغاء."
+    confirmLabel={isCancellingOne ? 'جارٍ الإلغاء...' : 'تأكيد الإلغاء'}
+    requireReason
+    onClose={() => !isCancellingOne && setCancelTarget(null)}
+    onConfirm={handleConfirmCancel}
+  />
 </DoctorLayout>
   );
 }

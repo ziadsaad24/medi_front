@@ -50,48 +50,6 @@ const ProtectedRoute = ({
     }
   }
 
-  // 🚫 TEMPORARILY DISABLED FOR FRONTEND DEVELOPMENT - RESTORE: See RESTORE_INSTRUCTIONS.md
-  // إظهار loader أثناء التحميل
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center bg-blue-50">
-  //       <div className="text-center">
-  //         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-  //         <p className="text-gray-600">جارٍ التحميل...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // 🚫 TEMPORARILY DISABLED - RESTORE: See RESTORE_INSTRUCTIONS.md
-  // إذا لم يكن مسجل دخول، وجّهه لصفحة Auth
-  // if (!user) {
-  //   return <Navigate to={redirectTo} replace />;
-  // }
-
-  // 🚫 TEMPORARILY DISABLED - RESTORE: See RESTORE_INSTRUCTIONS.md
-  // تحقق من تفعيل الإيميل للمرضى
-  // if (user.role === 'patient' && !user.email_verified_at) {
-  //   return <Navigate to="/pending-verification" replace />;
-  // }
-
-  // 🚫 TEMPORARILY DISABLED - RESTORE: See RESTORE_INSTRUCTIONS.md
-  // إذا كان هناك أدوار محددة، تحقق منها
-  // if (allowedRoles) {
-  //   const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-  //   
-  //   if (!roles.includes(user.role)) {
-  //     // إذا لم يكن له صلاحية، وجهه للصفحة الرئيسية الخاصة به
-  //     const roleRedirects = {
-  //       patient: '/patient/home',
-  //       doctor: '/doctor/dashboard',
-  //       admin: '/admin/dashboard',
-  //     };
-  //     
-  //     return <Navigate to={roleRedirects[user.role] || '/'} replace />;
-  //   }
-  // }
-
   return <>{children}</>;
 };
 

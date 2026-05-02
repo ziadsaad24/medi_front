@@ -371,7 +371,34 @@
   text-align: right;
 }
 
-.chat-message-user .message-text {
+.message-text p {
+  margin: 0;
+}
+
+.message-text ul {
+  margin: 0;
+  padding: 0 18px 0 0;
+}
+
+.message-text li {
+  margin: 6px 0;
+}
+
+.message-text strong {
+  font-weight: 700;
+}
+
+.message-text em {
+  font-style: italic;
+}
+
+.message-text .message-spacer {
+  height: 8px;
+}
+
+.chat-message-user .message-text,
+.chat-message-user .message-text p,
+.chat-message-user .message-text li {
   color: white;
 }
 

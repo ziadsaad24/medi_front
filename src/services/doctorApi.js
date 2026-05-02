@@ -62,8 +62,19 @@ const doctorApi = {
   // Appointments
   getDoctorAppointments: async (query = {}) => (await api.get('/doctor/appointments', buildQuery(query))).data,
 
-  updateAppointmentStatus: async (id, payload) =>
-    (await api.patch(`/doctor/appointments/${id}/status`, payload)).data,
+  updateAppointmentStatus: async (id, payload) => {
+    try {
+      return (await api.patch(`/doctor/appointments/${id}/status`, payload)).data;
+    } catch {
+      return (await api.patch(`/doctor/appointments/${id}`, payload)).data;
+    }
+  },
+
+  cancelAppointment: async (id, payload) =>
+    (await api.patch(`/doctor/appointments/${id}/cancel`, payload)).data,
+
+  cancelTodayAppointments: async (payload = {}) =>
+    (await api.post('/doctor/appointments/cancel-today', payload)).data,
 
   // Booking Requests
   getBookingRequests: async (query = {}) =>

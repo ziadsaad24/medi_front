@@ -237,8 +237,8 @@
 .icon-bar {
   position: absolute;
   top: 120px;
-  bottom: 90px;
-  right: 50px;
+  bottom: 20px;
+  right: 70px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -270,6 +270,7 @@
   justify-content: center;
   flex-shrink: 0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translate(-3px, -2px);
 }
 
 .purple-bg {
@@ -535,6 +536,71 @@
   display: none;
 }
 
+.medical-card-stage {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+
+.medical-card-stage .emergency-card-container {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+}
+
+.medical-card-stage .emergency-card-3d {
+  transform-origin: top center;
+}
+
+.medical-card-stage .emergency-card-3d.flipped {
+  transform: rotateY(180deg);
+}
+
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .medical-card-stage {
+    align-items: center;
+    min-height: calc(532px * var(--card-scale, 1));
+    margin-bottom: 14px;
+  }
+
+  .medical-card-stage .emergency-card-container {
+    --card-scale: min(0.92, calc((100% - 32px) / 980));
+    width: calc(980px * var(--card-scale));
+    max-width: 100%;
+    height: calc(532px * var(--card-scale));
+  }
+
+  .medical-card-stage .emergency-card-3d {
+    transform: scale(var(--card-scale));
+  }
+
+  .medical-card-stage .emergency-card-3d.flipped {
+    transform: scale(var(--card-scale)) rotateY(180deg);
+  }
+}
+
+@media screen and (width: 768px) {
+  .medical-card-stage .emergency-card-container {
+    --card-scale: 0.74;
+  }
+}
+
+@media screen and (width: 820px) {
+  .medical-card-stage .emergency-card-container {
+    --card-scale: 0.8;
+  }
+}
+
+@media screen and (width: 1024px) {
+  .medical-card-stage .emergency-card-container {
+    --card-scale: 0.9;
+  }
+}
+
 .static-side-front,
 .static-side-back {
   perspective: none;
@@ -702,6 +768,36 @@
   .flip-btn {
     width: auto;
     min-width: 250px;
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .emergency-card-container {
+    --card-scale: clamp(0.72, calc((100vw - 140px) / 980), 0.92);
+    width: min(100%, calc(980px * var(--card-scale)));
+    margin: 16px auto 10px;
+    padding: 0;
+  }
+
+  .emergency-card-3d {
+    width: 980px;
+    max-width: 980px;
+    height: 532px;
+    transform: scale(var(--card-scale));
+    transform-origin: top center;
+  }
+
+  .emergency-card-3d.flipped {
+    transform: scale(var(--card-scale)) rotateY(180deg);
+  }
+
+  .card-face {
+    width: 980px;
+    height: 532px;
+  }
+
+  .flip-btn {
+    margin-top: 16px;
   }
 }
 

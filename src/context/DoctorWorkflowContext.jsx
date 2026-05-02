@@ -18,6 +18,21 @@ const mapAppointmentType = (value) => {
   return 'مراجعة';
 };
 
+const normalizeDateValue = (value) => {
+  const text = String(value || '').trim();
+  if (!text) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+    return text.slice(0, 10);
+  }
+
+  const parsed = new Date(text);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toISOString().slice(0, 10);
+};
+
+const getTodayKey = () => new Date().toISOString().slice(0, 10);
+
 const mapAppointment = (item) => ({
   id: String(item.id),
   requestId: item.requestId || item.request_id || null,
@@ -185,6 +200,28 @@ export function DoctorWorkflowProvider({ children }) {
     );
   };
 
+  const cancelAppointment = async (appointmentId, reason) => {
+    await doctorApi.cancelAppointment(appointmentId, { reason });
+    setAppointments((prev) =>
+      prev.map((a) => (String(a.id) === String(appointmentId) ? { ...a, status: 'cancelled' } : a))
+    );
+    await fetchAppointments();
+  };
+
+  const cancelTodayAppointments = async (reason) => {
+    await doctorApi.cancelTodayAppointments(reason ? { reason } : {});
+    const todayKey = getTodayKey();
+    setAppointments((prev) =>
+      prev.map((appointment) => {
+        const isSameDay = normalizeDateValue(appointment.date) === todayKey;
+        const isActive = ['pending', 'approved', 'in_progress'].includes(appointment.status);
+        if (!isSameDay || !isActive) return appointment;
+        return { ...appointment, status: 'cancelled' };
+      })
+    );
+    await fetchAppointments();
+  };
+
   const completeConsultation = async ({
     appointmentId,
     patientId,
@@ -275,6 +312,8 @@ export function DoctorWorkflowProvider({ children }) {
     approveRequest,
     rejectRequest,
     startConsultation,
+    cancelAppointment,
+    cancelTodayAppointments,
     completeConsultation,
     setCurrentConsultationContext,
   };

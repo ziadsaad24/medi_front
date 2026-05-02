@@ -755,7 +755,7 @@ const PatientProfile = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownloadCard}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#008080] text-white rounded-xl font-bold hover:brightness-110 transition-all"
+                    className="hidden xl:flex items-center gap-2 px-4 py-2 bg-[#008080] text-white rounded-xl font-bold hover:brightness-110 transition-all"
                   >
                     <Download size={18} />
                     تحميل
@@ -771,18 +771,21 @@ const PatientProfile = () => {
 
               {/* 3D Emergency Medical Card */}
               <div className="p-5 md:p-6 flex flex-col items-center gap-4">
-                <div className="w-full max-w-[980px]">
-                <EmergencyCard3D 
-                  patientData={patientCardData}
-                  cardFrontRef={cardFrontRef}
-                  cardBackRef={cardBackRef}
-                  isFlipped={cardFlipped}
-                  onFlip={() => setCardFlipped(!cardFlipped)}
-                />
+                <div className={`w-full max-w-[980px] xl:hidden ${isDark ? 'bg-amber-500/10 border border-amber-400/30 text-amber-100' : 'bg-amber-50 border border-amber-200 text-amber-900'} rounded-2xl px-4 py-3 text-sm text-center`}>
+                  ملاحظة: عرض وتحميل البطاقة الطبية يعمل بشكل افضل على اللابتوب او الكمبيوتر. لو محتاج تشوفها او تحملها، افتحها من جهاز اكبر.
+                </div>
+                <div className="medical-card-stage !hidden xl:!flex">
+                  <EmergencyCard3D 
+                    patientData={patientCardData}
+                    cardFrontRef={cardFrontRef}
+                    cardBackRef={cardBackRef}
+                    isFlipped={cardFlipped}
+                    onFlip={() => setCardFlipped(!cardFlipped)}
+                  />
                 </div>
                 
                 {/* Flip Hint */}
-                <div className={`flex items-center gap-2 ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
+                <div className={`hidden xl:flex items-center gap-2 ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
                   <RotateCcw size={18} className="animate-spin" style={{ animationDuration: '3s' }} />
                   <p className="text-sm">اضغط على زر التقليب لرؤية الوجه الآخر من البطاقة</p>
                 </div>

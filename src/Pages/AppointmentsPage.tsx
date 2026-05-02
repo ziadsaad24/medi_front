@@ -31,18 +31,26 @@ type DoctorLookupItem = {
   avatarUrl: string;
 };
 
+const normalizeStatusValue = (status: string) => String(status || '').trim().toLowerCase();
+
 const toArabicStatus = (status: string) => {
-  const normalized = String(status || '').toLowerCase();
+  const normalized = normalizeStatusValue(status);
   if (normalized === 'confirmed') return 'مؤكد';
   if (normalized === 'in_progress') return 'جاري التنفيذ';
-  if (normalized === 'completed') return 'مكتمل';
+  if (normalized === 'completed' || normalized.includes('complete')) return 'مكتمل';
   if (normalized === 'cancelled' || normalized === 'canceled') return 'ملغي';
   if (normalized === 'rejected') return 'مرفوض';
   return 'قيد الانتظار';
 };
 
 const isCompletedStatus = (status: string) => {
-  const normalized = String(status || '').toLowerCase();
+  const normalized = normalizeStatusValue(status);
+  if (!normalized) return false;
+
+  if (normalized.includes('complete') || normalized.includes('finish') || normalized.includes('closed') || normalized.includes('ended') || normalized.includes('resolved')) {
+    return true;
+  }
+
   return [
     'completed',
     'complete',
@@ -55,7 +63,14 @@ const isCompletedStatus = (status: string) => {
     'canceled',
     'مكتمل',
     'منتهي',
+    'انتهى',
   ].includes(normalized);
+};
+
+const isRejectedStatus = (status: string) => {
+  const normalized = normalizeStatusValue(status);
+  if (!normalized) return false;
+  return normalized === 'rejected' || normalized.includes('reject') || normalized === 'مرفوض';
 };
 
 const hasMedicalRecordMarker = (item: any) => {
@@ -273,6 +288,7 @@ export default function AppointmentsPage() {
             '';
 
           if (isCompletedStatus(status)) return false;
+          if (isRejectedStatus(status)) return false;
           if (hasMedicalRecordMarker(item)) return false;
           if (linkedAppointmentIds.has(String(item?.id || ''))) return false;
 

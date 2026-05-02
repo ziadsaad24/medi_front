@@ -1,19 +1,3 @@
-// Gemini Chat API
-export const geminiChatAPI = {
-  sendMessage: async (message) => {
-    try {
-      const response = await api.post('/gemini-chat', { message });
-      // Expecting { reply: "..." }
-      return response.data?.reply || 'لم يتم الحصول على رد من الذكاء الاصطناعي.';
-    } catch (error) {
-      return (
-        error?.response?.data?.reply ||
-        error?.response?.data?.message ||
-        'تعذر الاتصال بخدمة الذكاء الاصطناعي حالياً.'
-      );
-    }
-  },
-};
 import axios from 'axios';
 
 // إنشاء instance من axios
@@ -22,7 +6,7 @@ const api = axios.create({
   baseURL:
     (import.meta.env?.DEV
       ? '/api'
-      : import.meta.env?.VITE_API_BASE_URL) || 'http://localhost:8000/api',
+      : import.meta.env?.VITE_API_BASE_URL) || 'https://medicareback-production.up.railway.app/',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -507,16 +491,18 @@ export const patientAPI = {
     const response = await runWithFallback([
       () => api.patch(`/patient/notifications/${id}/read`),
       () => api.post(`/patient/notifications/${id}/read`),
-      () => api.patch(`/patient/notifications/read/${id}`),
-      () => api.post(`/patient/notifications/read/${id}`),
       () => api.patch('/patient/notifications/read', { id }),
-      () => api.post('/patient/notifications/read', { id }),
-      () => api.patch('/patient/notifications/mark-read', { id }),
-      () => api.post('/patient/notifications/mark-read', { id }),
-      () => api.patch('/patient/notifications/mark-as-read', { id }),
-      () => api.post('/patient/notifications/mark-as-read', { id }),
     ]);
 
+    invalidateScopedCache([
+      'patient:notifications',
+      'patient:notifications-upcoming',
+    ]);
+    return response.data;
+  },
+
+  deleteAllPatientNotifications: async () => {
+    const response = await api.delete('/patient/notifications');
     invalidateScopedCache([
       'patient:notifications',
       'patient:notifications-upcoming',
@@ -548,10 +534,6 @@ export const patientAPI = {
     const response = await runWithFallback([
       () => api.patch('/patient/notifications/read-all'),
       () => api.post('/patient/notifications/read-all'),
-      () => api.patch('/patient/notifications/mark-all-read'),
-      () => api.post('/patient/notifications/mark-all-read'),
-      () => api.patch('/patient/notifications/read-all', { all: true }),
-      () => api.post('/patient/notifications/read-all', { all: true }),
     ]);
 
     invalidateScopedCache([
@@ -741,6 +723,22 @@ export const complaintAPI = {
   deleteComplaint: async (id) => {
     const response = await api.delete(`/complaints/${id}`);
     return response.data;
+  },
+};
+
+// Gemini Chat API
+export const geminiChatAPI = {
+  sendMessage: async (message) => {
+    try {
+      const response = await api.post('/gemini-chat', { message });
+      return response.data?.reply || 'لم يتم الحصول على رد من الذكاء الاصطناعي.';
+    } catch (error) {
+      return (
+        error?.response?.data?.reply ||
+        error?.response?.data?.message ||
+        'تعذر الاتصال بخدمة الذكاء الاصطناعي حالياً.'
+      );
+    }
   },
 };
 

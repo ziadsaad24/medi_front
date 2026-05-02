@@ -12,6 +12,7 @@ import { MedicalRecordsBanner } from '../Components/MedicalRecordsBanner';
 import ScrollToTop from '../Components/Layout/ScrollToTop';
 import MedicationWidget from './MedicationWidget';
 import { patientAPI } from '../services/api';
+import '../Styles/PatientHome.css';
 
 const API_BASE = String(import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
 const PATIENT_HOME_DOCTORS_CACHE_KEY = 'patient-home-doctors-cache';
@@ -159,54 +160,7 @@ const PatientHome = ({ allDoctors }) => {
       <Navbar patientData={patientData} />
       
       {/* ستايل إضافي للـ CSS الخاص بالبوب أب */}
-      <style>{`
-        .glass-swal-container {
-          background: rgba(255, 255, 255, 0.05) !important;
-          backdrop-filter: blur(20px) !important;
-          -webkit-backdrop-filter: blur(20px) !important;
-          border: 1px solid rgba(255, 255, 255, 0.1) !important;
-          border-radius: 40px !important;
-          padding: 40px !important;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-        }
-
-        /* زر الأنيميشن الذي لا ينتهي */
-        .infinite-pulse-btn {
-          background: linear-gradient(135deg, #2563eb, #0891b2) !important;
-          color: white !important;
-          padding: 16px 40px !important;
-          border-radius: 20px !important;
-          font-weight: bold !important;
-          font-size: 16px !important;
-          border: none !important;
-          cursor: pointer !important;
-          transition: all 0.3s !important;
-          box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3) !important;
-          position: relative;
-          animation: infinitePulse 2s infinite !important;
-        }
-
-        @keyframes infinitePulse {
-          0% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
-          }
-          70% {
-            transform: scale(1.05);
-            box-shadow: 0 0 0 15px rgba(37, 99, 235, 0);
-          }
-          100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
-          }
-        }
-
-        .infinite-pulse-btn:hover {
-          transform: scale(1.1) !important;
-          filter: brightness(1.1);
-        }
-
-      `}</style>
+      <style>{`/* Styles moved to /src/Styles/PatientHome.css */`}</style>
 
       <HeroSlider />
       <ServicesSection />

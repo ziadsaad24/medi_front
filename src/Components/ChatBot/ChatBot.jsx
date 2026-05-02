@@ -17,6 +17,77 @@ function ChatBot() {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
+  const renderInline = (text) => {
+    const parts = [];
+    const regex = /(\*\*[^*]+\*\*|\*[^*]+\*)/g;
+    let lastIndex = 0;
+    let match;
+    let keyIndex = 0;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+
+      const token = match[0];
+      if (token.startsWith('**')) {
+        parts.push(<strong key={`b-${keyIndex++}`}>{token.slice(2, -2)}</strong>);
+      } else {
+        parts.push(<em key={`i-${keyIndex++}`}>{token.slice(1, -1)}</em>);
+      }
+
+      lastIndex = match.index + token.length;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    return parts;
+  };
+
+  const renderMessageText = (text) => {
+    const lines = String(text).split(/\r?\n/);
+    const nodes = [];
+    let listBuffer = [];
+    let keyIndex = 0;
+
+    const flushList = () => {
+      if (!listBuffer.length) return;
+
+      nodes.push(
+        <ul key={`ul-${keyIndex++}`}>
+          {listBuffer.map((item, idx) => (
+            <li key={`li-${keyIndex++}-${idx}`}>{renderInline(item)}</li>
+          ))}
+        </ul>
+      );
+      listBuffer = [];
+    };
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      const listMatch = /^[-*]\s+(.+)/.exec(trimmed);
+
+      if (listMatch) {
+        listBuffer.push(listMatch[1]);
+        return;
+      }
+
+      flushList();
+
+      if (!trimmed) {
+        nodes.push(<div key={`sp-${keyIndex++}`} className="message-spacer" />);
+        return;
+      }
+
+      nodes.push(<p key={`p-${keyIndex++}`}>{renderInline(line)}</p>);
+    });
+
+    flushList();
+    return nodes;
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -66,40 +137,7 @@ function ChatBot() {
       setIsTyping(false);
     }
 
-    // Call FastAPI backend (اتركه معطل للآن)
-    /*
-    try {
-      const response = await fetch('http://127.0.0.1:5000/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ question: questionText })
-      });
-
-      const data = await response.json();
-      
-      const botMessage = {
-        id: Date.now() + 1,
-        type: 'bot',
-        text: data.success ? data.answer : 'عذراً، حدث خطأ. حاول مرة أخرى.',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
-    } catch (error) {
-      console.error('Chatbot API Error:', error);
-      const errorMessage = {
-        id: Date.now() + 1,
-        type: 'bot',
-        text: 'عذراً، لا يمكن الاتصال بخدمة الذكاء الاصطناعي حالياً.',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsTyping(false);
-    }
-    */
+    
   };
 
   const quickActions = [
@@ -191,17 +229,9 @@ function ChatBot() {
               )}
               <div className="message-content">
                 <div className="message-bubble">
-                  {/* دعم تنسيق الأسطر الجديدة */}
-                  <p className="message-text">
-                    {String(message.text)
-                      .split(/\r?\n/)
-                      .map((line, idx, arr) => (
-                        <React.Fragment key={idx}>
-                          {line}
-                          {idx < arr.length - 1 && <br />}
-                        </React.Fragment>
-                      ))}
-                  </p>
+                  <div className="message-text">
+                    {renderMessageText(message.text)}
+                  </div>
                 </div>
                 <span className="message-time">
                   {message.timestamp.toLocaleTimeString('ar-EG', { 

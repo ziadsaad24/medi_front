@@ -40,7 +40,7 @@ export default function MedicalRecordPage() {
   };
 
   const handleOpenRecordsManager = () => {
-    navigate('/demo-emergency-card');
+    navigate('/Recoreded-data');
   };
 
   return (

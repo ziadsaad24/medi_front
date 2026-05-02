@@ -3,6 +3,7 @@ import 'animate.css';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './Components/ProtectedRoute';
+import PublicRoute from './Components/PublicRoute';
 import Login from './Pages/Login';
 import RoleSelection from './Pages/RoleSelection';
 import AuthPage from './Pages/AuthPage';
@@ -38,6 +39,8 @@ import DoctorDashboard from './Pages/doctor/Docdashboard'
 
 import EmergencyCard3DPage from './Pages/EmergencyCard3DPage';
 import PrivacyPolicy from './Pages/PrivacyPolicy';
+import NotFound from './Pages/NotFound';
+import ErrorBoundary from './Components/ErrorBoundary';
 
 import PatientsPage from './Pages/doctor/PatientsPage';
 import Settings  from './Pages/doctor/SettingsPage';
@@ -80,14 +83,27 @@ function ChatBotWrapper() {
     '/reset-password'
   ];
   
+  // المسارات المعروفة للمرضى اللي الشات بوت يظهر فيها
+  const allowedPatientRoutes = [
+    '/patient/home',
+    '/medications',
+    '/appointments',
+    '/contact',
+    '/about',
+    '/doctors',
+    '/privacy-policy',
+    '/emergency-card-3d',
+  ];
+  
   // إخفاء الشات بوت من الصفحات غير المناسبة
   const isAdminRoute = pathname.startsWith('/admin');
   const isDoctorRoute = pathname.startsWith('/doctor');
   const isRecordsRoute = pathname.startsWith('/recorded') || pathname === '/demo-emergency-card';
   const isHiddenRoute = hiddenRoutes.includes(pathname);
+  const isAllowedPatientRoute = allowedPatientRoutes.includes(pathname) || pathname.startsWith('/patient/');
   
-  // إظهار الشات بوت فقط في صفحات المرضى والأطباء
-  if (isHiddenRoute || isAdminRoute || isDoctorRoute || isRecordsRoute) {
+  // إظهار الشات بوت فقط في صفحات المرضى المعروفة
+  if (!isAllowedPatientRoute || isHiddenRoute || isAdminRoute || isDoctorRoute || isRecordsRoute) {
     return null;
   }
   
@@ -109,28 +125,29 @@ function App() {
     <AuthProvider>
       <ProfileProvider>
       <DoctorWorkflowProvider>
+      <ErrorBoundary>
       <Router>
         <Routes>
           {/* Public Routes - الصفحات المتاحة للجميع */}
-          <Route path="/" element={<Login />} />
-          <Route path="/role-selection" element={<RoleSelection />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/success" element={<SuccessPage />} />
-          <Route path="/pending-verification" element={<PendingVerification />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/forgot-password" element={<ForgetPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/recorded" element={<MedicalRecordPage />} />
-        <Route path="/recorded/view/:recordId" element={<ViewRecordPage />} />
-        <Route path="/recorded/public/:token" element={<EmergencyCardDemo />} />
-        <Route path="/meds" element={<MedicationsPage />} />
-        <Route path="/appointments" element={< AppointmentsPage  />} />
-        <Route path="/contact" element={< Contact  />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/role-selection" element={<PublicRoute><RoleSelection /></PublicRoute>} />
+          <Route path="/auth" element={<PublicRoute><AuthPage /></PublicRoute>} />
+          <Route path="/success" element={<PublicRoute><SuccessPage /></PublicRoute>} />
+          <Route path="/pending-verification" element={<PublicRoute><PendingVerification /></PublicRoute>} />
+          <Route path="/verify-email" element={<PublicRoute><VerifyEmail /></PublicRoute>} />
+          <Route path="/forgot-password" element={<PublicRoute><ForgetPassword /></PublicRoute>} />
+          <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+          <Route path="/recorded" element={<ProtectedRoute allowedRoles="patient"><MedicalRecordPage /></ProtectedRoute>} />
+          <Route path="/recorded/view/:recordId" element={<ProtectedRoute allowedRoles="patient"><ViewRecordPage /></ProtectedRoute>} />
+          <Route path="/recorded/public/:token" element={<EmergencyCardDemo />} />
+          <Route path="/medications" element={<ProtectedRoute allowedRoles="patient"><MedicationsPage /></ProtectedRoute>} />
+          <Route path="/appointments" element={<ProtectedRoute allowedRoles="patient"><AppointmentsPage /></ProtectedRoute>} />
+          <Route path="/contact" element={<ProtectedRoute><Contact /></ProtectedRoute>} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
           
           <Route
-            path="/demo-emergency-card"
+            path="/Recoreded-data"
             element={
               <ProtectedRoute allowedRoles="patient">
                 <EmergencyCardDemo />
@@ -140,9 +157,6 @@ function App() {
           
           {/* Emergency Card 3D - بطاقة الطوارئ الطبية ثلاثية الأبعاد */}
           <Route path="/emergency-card-3d" element={<EmergencyCard3DPage />} />
-          
-          {/* Medications Page - صفحة إدارة الأدوية */}
-          <Route path="/medications" element={<MedicationsPage />} />
           
           {/* Protected Routes for Patients - صفحات المرضى المحمية */}
           <Route 
@@ -336,11 +350,13 @@ function App() {
             } 
           />
           
-        
+          {/* 404 - Catch All */}
+          <Route path="*" element={<NotFound />} />
 
         </Routes>
         <ChatBotWrapper />
       </Router>
+      </ErrorBoundary>
       </DoctorWorkflowProvider>
       </ProfileProvider>
     </AuthProvider>

@@ -122,8 +122,11 @@ const normalizeNotification = (item, index) => {
   const looksLikeAppointment =
     /appointment|booking|confirm|schedule|موعد|حجز|تاكيد|تأكيد/.test(type.toLowerCase()) ||
     /appointment|booking|confirm|schedule|موعد|حجز|تاكيد|تأكيد/.test(content);
+  const looksLikeMedicalRecord =
+    /medical_record|medical-record|medical record|سجل|سجلات|كشف/.test(type.toLowerCase()) ||
+    /medical record|medical-record|سجل|سجلات|كشف/.test(content);
 
-  const route = looksLikeAppointment ? '/appointments' : '/medications';
+  const route = looksLikeAppointment ? '/appointments' : (looksLikeMedicalRecord ? '/recorded' : '/medications');
   const fallbackMessage = pickFirstText(item?.message, item?.body, item?.description);
   const appointmentContent = looksLikeAppointment ? buildAppointmentNotificationContent(item) : null;
 
@@ -169,6 +172,7 @@ const toItemsArray = (response) => {
   return [];
 };
 
+
 export const useNotifications = () => {
   const authContext = useContext(AuthContext);
   const userId = authContext?.user?.id ?? 'anonymous';
@@ -204,7 +208,6 @@ export const useNotifications = () => {
           patientAPI.getUpcomingNotifications(),
           patientAPI.getPatientNotifications({ page: 1, per_page: 20 }),
         ]);
-
         const merged = [...toItemsArray(patientResponse), ...toItemsArray(upcomingResponse)];
         const deduped = Array.from(
           new Map(merged.map((item, index) => [String(item?.id ?? `notification-${index}`), item])).values()
@@ -278,6 +281,22 @@ export const useNotifications = () => {
     setReadNotificationIds(notifications.map((item) => item.id));
   };
 
+  const clearAll = async () => {
+    try {
+      await patientAPI.deleteAllPatientNotifications();
+    } catch (error) {
+      console.warn('Unable to delete notifications from backend:', error);
+    }
+
+    setNotifications([]);
+    setReadNotificationIds([]);
+    try {
+      localStorage.removeItem(readStorageKey);
+    } catch {
+      // Ignore storage failures.
+    }
+  };
+
   const unreadCount = notificationsWithReadState.filter((item) => !item.isRead).length;
 
   return {
@@ -285,5 +304,6 @@ export const useNotifications = () => {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    clearAll,
   };
 };
