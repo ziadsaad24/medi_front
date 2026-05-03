@@ -152,12 +152,16 @@ const DoctorsGridPage = ({ allDoctors }) => {
                 {/* صورة الطبيب داخل إطار زجاجي */}
                 <div className="relative mb-6">
                   <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full scale-0 group-hover:scale-125 transition-transform duration-500" />
-                  <img 
-                    src={doc.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80'} 
-                    loading="lazy"
-                    className="w-28 h-28 rounded-3xl mx-auto object-cover border-2 border-white/10 relative z-10 group-hover:border-blue-400/50 transition-colors duration-300 shadow-xl" 
-                    alt={doc.name} 
-                  />
+        <img 
+  src={doc.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80'} 
+  loading="lazy"
+  className="w-28 h-28 rounded-3xl mx-auto object-cover border-2 border-white/10 relative z-10 group-hover:border-blue-400/50 transition-colors duration-300 shadow-xl" 
+  alt={doc.name}
+  onError={(e) => {
+    e.target.onerror = null;
+    e.target.src = 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=400&q=80';
+  }}
+/>
                   {/* شارة التقييم */}
                   <div className="absolute -bottom-2 -right-2 px-2 py-1 rounded-lg flex items-center gap-1 z-20 shadow-lg theme-surface">
                     <Star size={12} className="text-yellow-400 fill-yellow-400" />

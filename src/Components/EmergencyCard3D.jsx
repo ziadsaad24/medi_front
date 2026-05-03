@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
 import { CalendarDays, Droplets, ClipboardList, Ruler } from 'lucide-react';
 import './EmergencyCard3D.css';
@@ -38,7 +38,7 @@ const getIntegerDisplayValue = (value, fallback = '--') => {
     return String(Math.trunc(numericValue));
   }
 
-  const decimalTextMatch = normalized.match(/^(-?\d+)(\.\d+)$/);
+  const decimalTextMatch = normalized.match(/^(\-?\d+)(\.\d+)$/);
   if (decimalTextMatch) {
     return decimalTextMatch[1];
   }
@@ -49,6 +49,19 @@ const getIntegerDisplayValue = (value, fallback = '--') => {
 const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, onFlip, hideFlipButton = false, staticSide = null }) => {
   // Use external flip control if provided, otherwise use internal state
   const [internalFlipped, setInternalFlipped] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const flipState = staticSide ? staticSide === 'back' : (isFlipped !== undefined ? isFlipped : internalFlipped);
   const handleFlip = onFlip || (() => setInternalFlipped(!internalFlipped));
 
@@ -90,13 +103,13 @@ const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, on
 
   return (
     <div className={`emergency-card-container ${staticSide ? `static-side-${staticSide}` : ''}`}>
-      <div className={`emergency-card-3d ${flipState ? 'flipped' : ''}`}>
-        
+      <div className={`emergency-card-3d ${flipState ? 'flipped' : ''} ${isMobile ? 'mobile-view' : ''}`}>
+
         {/* Front Side */}
         <div className="card-face card-front" ref={cardFrontRef}>
           {/* Background gradient */}
           <div className="card-bg-gradient" />
-          
+
           {/* Logo Section - Top Left */}
           <div className="logo-section">
             <div className="logo-icon-box">
@@ -212,8 +225,8 @@ const EmergencyCard3D = ({ patientData, cardFrontRef, cardBackRef, isFlipped, on
         </div>
       </div>
 
-      {/* Flip Button */}
-      {!hideFlipButton && !staticSide && (
+      {/* Flip Button - Desktop only */}
+      {!hideFlipButton && !staticSide && !isMobile && (
         <button 
           className="flip-btn"
           onClick={handleFlip}

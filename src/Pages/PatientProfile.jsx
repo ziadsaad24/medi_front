@@ -732,77 +732,93 @@ const PatientProfile = () => {
         )}
       </AnimatePresence>
 
-      {/* Medical Card Modal */}
-      <AnimatePresence>
-        {showMedicalCard && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] flex items-center justify-center p-3 md:p-4"
-            onClick={() => setShowMedicalCard(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className={`rounded-3xl shadow-2xl max-w-[1120px] w-[95vw] max-h-[85vh] overflow-y-auto ${isDark ? 'bg-slate-900 border border-slate-700' : 'bg-white'}`}
+{/* Medical Card Modal */}
+<AnimatePresence>
+  {showMedicalCard && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] flex items-start md:items-center justify-center p-2 md:p-4 overflow-y-auto"
+      onClick={() => setShowMedicalCard(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.95, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
+        className={`rounded-3xl shadow-2xl w-full max-w-[1120px] max-h-[95vh] md:max-h-[85vh] overflow-y-auto ${isDark ? 'bg-slate-900 border border-slate-700' : 'bg-white'}`}
+      >
+        {/* Modal Header */}
+        <div className={`sticky top-0 p-4 md:p-6 flex justify-between items-center rounded-t-3xl z-10 ${isDark ? 'bg-slate-900 border-b border-slate-700' : 'bg-white border-b border-gray-200'}`}>
+          <h2 className="text-xl md:text-2xl font-black theme-title">البطاقة الطبية</h2>
+          <div className="flex gap-2">
+<button
+  onClick={handleDownloadCard}
+  className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-[#008080] text-white rounded-xl font-bold hover:brightness-110 transition-all text-sm md:text-base"
+>
+  <Download size={16} className="md:w-[18px] md:h-[18px]" />
+  <span className="hidden sm:inline">تحميل</span>
+</button>
+            <button
+              onClick={() => setShowMedicalCard(false)}
+              className="w-10 h-10 flex items-center justify-center bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all"
             >
-              {/* Modal Header */}
-              <div className={`sticky top-0 p-6 flex justify-between items-center rounded-t-3xl z-10 ${isDark ? 'bg-slate-900 border-b border-slate-700' : 'bg-white border-b border-gray-200'}`}>
-                <h2 className="text-2xl font-black theme-title">البطاقة الطبية</h2>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleDownloadCard}
-                    className="hidden xl:flex items-center gap-2 px-4 py-2 bg-[#008080] text-white rounded-xl font-bold hover:brightness-110 transition-all"
-                  >
-                    <Download size={18} />
-                    تحميل
-                  </button>
-                  <button
-                    onClick={() => setShowMedicalCard(false)}
-                    className="w-10 h-10 flex items-center justify-center bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
+              <X size={20} />
+            </button>
+          </div>
+        </div>
 
-              {/* 3D Emergency Medical Card */}
-              <div className="p-5 md:p-6 flex flex-col items-center gap-4">
-                <div className={`w-full max-w-[980px] xl:hidden ${isDark ? 'bg-amber-500/10 border border-amber-400/30 text-amber-100' : 'bg-amber-50 border border-amber-200 text-amber-900'} rounded-2xl px-4 py-3 text-sm text-center`}>
-                  ملاحظة: عرض وتحميل البطاقة الطبية يعمل بشكل افضل على اللابتوب او الكمبيوتر. لو محتاج تشوفها او تحملها، افتحها من جهاز اكبر.
-                </div>
-                <div className="medical-card-stage !hidden xl:!flex">
-                  <EmergencyCard3D 
-                    patientData={patientCardData}
-                    cardFrontRef={cardFrontRef}
-                    cardBackRef={cardBackRef}
-                    isFlipped={cardFlipped}
-                    onFlip={() => setCardFlipped(!cardFlipped)}
-                  />
-                </div>
-                
-                {/* Flip Hint */}
-                <div className={`hidden xl:flex items-center gap-2 ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
-                  <RotateCcw size={18} className="animate-spin" style={{ animationDuration: '3s' }} />
-                  <p className="text-sm">اضغط على زر التقليب لرؤية الوجه الآخر من البطاقة</p>
-                </div>
-              </div>
+        {/* Emergency Medical Card - Responsive for all devices */}
+        <div className="p-3 md:p-6 flex flex-col items-center gap-4">
+          {/* Warning for small screens */}
+          <div className={`w-full max-w-[980px] lg:hidden ${isDark ? 'bg-amber-500/10 border border-amber-400/30 text-amber-100' : 'bg-amber-50 border border-amber-200 text-amber-900'} rounded-2xl px-4 py-3 text-xs md:text-sm text-center`}>
+            ملاحظة: عرض وتحميل البطاقة الطبية يعمل بشكل افضل على الشاشات الكبيرة.
+          </div>
 
-              {/* Instructions */}
-              <div className="px-8 pb-8">
-                <div className={`p-4 rounded-xl ${isDark ? 'bg-blue-500/10 border border-blue-400/20' : 'bg-blue-50 border border-blue-200'}`}>
-                  <p className={`text-sm text-center ${isDark ? 'text-slate-200' : 'text-gray-700'}`}>
-                    <strong className={isDark ? 'text-cyan-300' : 'text-[#0F427D]'}>💡 نصيحة:</strong> عند الضغط على زر التحميل ستفتح نافذة الطباعة بترتيب مناسب: الوجه الأمامي بالأعلى والوجه الخلفي بالأسفل
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {/* Card Container - Desktop uses 3D, Mobile uses stacked layout */}
+          <div className="medical-card-stage w-full flex justify-center">
+            <EmergencyCard3D 
+              patientData={patientCardData}
+              cardFrontRef={cardFrontRef}
+              cardBackRef={cardBackRef}
+              isFlipped={cardFlipped}
+              onFlip={() => setCardFlipped(!cardFlipped)}
+            />
+          </div>
+          
+          {/* Mobile/Tablet Flip Button */}
+          <button
+            onClick={() => setCardFlipped(!cardFlipped)}
+            className={`xl:hidden flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white transition-all hover:brightness-110 shadow-lg ${
+              isDark 
+                ? 'bg-gradient-to-r from-blue-600 to-teal-600' 
+                : 'bg-gradient-to-r from-[#0F427D] to-[#008080]'
+            }`}
+          >
+            <RotateCcw size={18} className={cardFlipped ? 'rotate-180' : ''} />
+            {cardFlipped ? 'عرض الوجه الأمامي' : 'عرض الوجه الخلفي'}
+          </button>
+
+          {/* Desktop Flip Hint */}
+          <div className={`hidden xl:flex items-center gap-2 ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
+            <RotateCcw size={18} className="animate-spin" style={{ animationDuration: '3s' }} />
+            <p className="text-sm">اضغط على زر التقليب لرؤية الوجه الآخر من البطاقة</p>
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <div className="px-4 md:px-8 pb-6 md:pb-8">
+          <div className={`p-3 md:p-4 rounded-xl ${isDark ? 'bg-blue-500/10 border border-blue-400/20' : 'bg-blue-50 border border-blue-200'}`}>
+            <p className={`text-xs md:text-sm text-center ${isDark ? 'text-slate-200' : 'text-gray-700'}`}>
+              <strong className={isDark ? 'text-cyan-300' : 'text-[#0F427D]'}>💡 نصيحة:</strong> عند الضغط على زر التحميل ستفتح نافذة الطباعة بترتيب مناسب: الوجه الأمامي بالأعلى والوجه الخلفي بالأسفل
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>   
 
       <div className="print-card-sheet" aria-hidden="true">
         <div className="print-card-copy">

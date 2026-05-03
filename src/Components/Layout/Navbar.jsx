@@ -121,6 +121,9 @@ const Navbar = (props = {}) => {
 
           {/* User Actions */}
           <div className="flex items-center gap-3 flex-row-reverse">
+                <button onClick={() => setIsMobileMenuOpen(true)} className={`xl:hidden p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}>
+              <Menu size={24} />
+            </button>
             <button
               onClick={toggleTheme}
               className={`p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}
@@ -130,9 +133,7 @@ const Navbar = (props = {}) => {
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
-            <button onClick={() => setIsMobileMenuOpen(true)} className={`xl:hidden p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}>
-              <Menu size={24} />
-            </button>
+        
 
             <div className="relative notifications-dropdown-container">
               <button
