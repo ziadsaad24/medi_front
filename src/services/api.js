@@ -6,7 +6,7 @@ const api = axios.create({
   baseURL:
     (import.meta.env?.DEV
       ? '/api'
-      : import.meta.env?.VITE_API_BASE_URL) || 'https://medicareback-production.up.railway.app/',
+      : import.meta.env?.VITE_API_BASE_URL) || 'https://medicareback-production.up.railway.app/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -123,9 +123,9 @@ api.interceptors.response.use(
     // 🚫 TEMPORARILY DISABLED - Auto redirect on 401 - RESTORE: See RESTORE_INSTRUCTIONS.md
     // إذا كان unauthorized، احذف token وأعد توجيه للـ login
     // لكن استثني صفحات login و register
-    const isAuthEndpoint = error.config?.url?.includes('/login') || 
-                           error.config?.url?.includes('/register');
-    
+    const isAuthEndpoint = error.config?.url?.includes('/login') ||
+      error.config?.url?.includes('/register');
+
     // عند انتهاء الجلسة/توكن غير صالح: نظّف الحالة المحلية وأبلغ الواجهة.
     if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('token');
@@ -377,12 +377,12 @@ export const patientAPI = {
       return response.data;
     } catch (error) {
       console.log('🔄 Medication saved locally - API not available');
-      return { 
-        data: { 
-          id: Date.now().toString(), 
-          ...data, 
-          message: 'تم الحفظ محلياً' 
-        } 
+      return {
+        data: {
+          id: Date.now().toString(),
+          ...data,
+          message: 'تم الحفظ محلياً'
+        }
       };
     }
   },
@@ -394,12 +394,12 @@ export const patientAPI = {
       return response.data;
     } catch (error) {
       console.log('🔄 Medication updated locally - API not available');
-      return { 
-        data: { 
-          id, 
-          ...data, 
-          message: 'تم التحديث محلياً' 
-        } 
+      return {
+        data: {
+          id,
+          ...data,
+          message: 'تم التحديث محلياً'
+        }
       };
     }
   },
