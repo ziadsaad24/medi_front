@@ -208,12 +208,42 @@ export const useNotifications = () => {
           patientAPI.getUpcomingNotifications(),
           patientAPI.getPatientNotifications({ page: 1, per_page: 20 }),
         ]);
-        const merged = [...toItemsArray(patientResponse), ...toItemsArray(upcomingResponse)];
+
+        // Tag upcoming medications with stable IDs based on their medication id
+        const upcomingItems = toItemsArray(upcomingResponse).map((item) => ({
+          ...item,
+          id: item?.id != null ? item.id : `med-${item?.type || 'upcoming'}-${item?.message || item?.title || ''}-${item?.due_at || ''}`,
+          _source: 'upcoming',
+        }));
+
+        // Tag patient notifications (bookings, etc.)
+        const patientItems = toItemsArray(patientResponse).map((item) => ({
+          ...item,
+          _source: 'patient',
+        }));
+
+        // Merge all notifications together
+        const merged = [...patientItems, ...upcomingItems];
+
+        // Deduplicate by stable id
         const deduped = Array.from(
-          new Map(merged.map((item, index) => [String(item?.id ?? `notification-${index}`), item])).values()
+          new Map(merged.map((item) => {
+            const stableKey = String(item?.id ?? `${item?._source}-${item?.title}-${item?.message}-${item?.due_at || item?.created_at || ''}`);
+            return [stableKey, item];
+          })).values()
         );
 
-        setNotifications(deduped.map((item, index) => normalizeNotification(item, index)).slice(0, 8));
+        // Sort ALL notifications by date — newest first, regardless of type
+        const sorted = deduped.sort((a, b) => {
+          const dateA = a.created_at || a.due_at || '';
+          const dateB = b.created_at || b.due_at || '';
+          if (dateA && dateB) return new Date(dateB).getTime() - new Date(dateA).getTime();
+          if (dateA) return -1;
+          if (dateB) return 1;
+          return 0;
+        });
+
+        setNotifications(sorted.map((item, index) => normalizeNotification(item, index)).slice(0, 15));
       } catch (error) {
         console.warn('Unable to load notifications from API:', error);
         setNotifications([]);
@@ -244,7 +274,7 @@ export const useNotifications = () => {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [userId]);
 
   const notificationsWithReadState = useMemo(() => {
     const readSet = new Set(readNotificationIds);

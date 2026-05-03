@@ -153,7 +153,7 @@ export default function Dashboard() {
             مرحباً بعودتك، {profile?.fullName}
           </h2>
           <p className="theme-title text-sm sm:text-base md:text-lg">
-            إليك ملخص مواعيدك اليوم - الثلاثاء، 10 مارس 2026
+            إليك ملخص مواعيدك اليوم - {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
 

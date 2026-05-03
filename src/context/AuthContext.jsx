@@ -63,16 +63,26 @@ export const AuthProvider = ({ children }) => {
 
       if (validToken && savedUser) {
         try {
-          // 🚫 TEMPORARILY DISABLED - API validation - RESTORE: See RESTORE_INSTRUCTIONS.md
-          // const response = await authAPI.getCurrentUser();
-          // setUser(response.user);
-          
-          // ⚠️ FRONTEND DEVELOPMENT MODE: Use localStorage directly
-          setUser(JSON.parse(savedUser));
+          // التحقق من صلاحية التوكن مع الـ Backend
+          const response = await authAPI.getCurrentUser();
+          const freshUser = response?.user || response?.data?.user;
+          if (freshUser) {
+            localStorage.setItem('user', JSON.stringify(freshUser));
+            setUser(freshUser);
+          } else {
+            // الـ Backend رد بنجاح لكن بدون user — استخدم المحفوظ
+            setUser(JSON.parse(savedUser));
+          }
         } catch (err) {
-          // Token غير صالح، احذفه
-          clearClientSession();
-          setUser(null);
+          const status = err?.response?.status;
+          if (status === 401 || status === 403) {
+            // التوكن منتهي أو ملغي — سجل خروج
+            clearClientSession();
+            setUser(null);
+          } else {
+            // خطأ شبكة مؤقت — استخدم البيانات المحفوظة
+            setUser(JSON.parse(savedUser));
+          }
         }
       } else {
         // لو مش فيه token، تأكد إن مفيش user في localStorage

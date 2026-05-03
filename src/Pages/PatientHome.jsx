@@ -47,7 +47,7 @@ const PatientHome = ({ allDoctors }) => {
 
   const patientData = {
     name: user?.name || "زائر",
-    role: "مريض محقق"
+    role: user?.email_verified_at ? "مريض محقق" : "مريض"
   };
 
   const firstName = (patientData.name || "زائر").trim().split(/\s+/)[0] || "زائر";

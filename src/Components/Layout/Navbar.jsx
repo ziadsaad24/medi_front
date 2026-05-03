@@ -239,7 +239,7 @@ const Navbar = (props = {}) => {
                     {user?.name || patientData?.name || "زائر"}
                   </p>
                   <p className={`text-[10px] font-bold uppercase transition-colors ${!isHomePage || isScrolled ? 'text-gray-400' : 'text-teal-200/70'}`}>
-                    مريض محقق
+                    {user?.email_verified_at ? 'مريض محقق' : 'مريض'}
                   </p>
                 </div>
                 <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-teal-50 border-2 border-white overflow-hidden flex items-center justify-center">
@@ -262,8 +262,8 @@ const Navbar = (props = {}) => {
                     <div className="p-4 border-b border-gray-100 bg-gradient-to-br from-[#0F427D]/5 to-[#008080]/5">
                       <p className="text-sm font-black text-[#004060]">{user?.name || patientData?.name || "زائر"}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{user?.email || "guest@medicare.com"}</p>
-                      <span className="inline-block mt-2 px-3 py-1 bg-teal-50 text-[#008080] text-[10px] font-bold rounded-full border border-teal-100">
-                        مريض محقق
+                      <span className={`inline-block mt-2 px-3 py-1 text-[10px] font-bold rounded-full border ${user?.email_verified_at ? 'bg-teal-50 text-[#008080] border-teal-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                        {user?.email_verified_at ? 'مريض محقق' : 'مريض'}
                       </span>
                     </div>
 

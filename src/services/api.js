@@ -258,51 +258,14 @@ export const patientAPI = {
 
   // احصل على ملفي الشخصي
   getProfile: async () => {
-    try {
-      const response = await api.get('/patient/profile');
-      return response.data;
-    } catch (error) {
-      // Mock data عندما تكون API غير متوفرة
-      console.log('🔄 Using mock profile data - API not available');
-      return {
-        data: {
-          id: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).id : '1',
-          medical_card_id: JSON.parse(localStorage.getItem('user') || '{}').medical_card_id || '6',
-          name: JSON.parse(localStorage.getItem('user') || '{}').name || 'أحمد محمد علي',
-          email: JSON.parse(localStorage.getItem('user') || '{}').email || 'ahmed@example.com',
-          phone: '01012345678',
-          birth_date: '1995-05-15',
-          address: 'القاهرة، مصر',
-          blood_type: 'A+',
-          emergency_contact: '01098765432',
-          emergency_name: 'محمد علي (الأخ)',
-          allergies: 'حساسية من البنسلين',
-          chronic_diseases: 'لا يوجد',
-          height: '175',
-          weight: '75',
-        }
-      };
-    }
+    const response = await api.get('/patient/profile');
+    return response.data;
   },
 
   // تحديث ملفي الشخصي
   updateProfile: async (data) => {
-    try {
-      const response = await api.put('/patient/profile', data);
-      return response.data;
-    } catch (error) {
-      console.log('🔄 Profile updated locally - API not available');
-      // حفظ البيانات في localStorage كبديل
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const updatedUser = {
-        ...user,
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-      };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      return { data: { success: true, message: 'تم الحفظ محلياً' } };
-    }
+    const response = await api.put('/patient/profile', data);
+    return response.data;
   },
 
   // احجز موعد
@@ -577,26 +540,7 @@ export const patientAPI = {
   },
 };
 
-// دوال للأطباء (Doctor Routes)
-export const doctorAPI = {
-  // احصل على مواعيدي كطبيب
-  getMyAppointments: async () => {
-    const response = await api.get('/doctor/appointments');
-    return response.data;
-  },
-
-  // تحديث حالة موعد
-  updateAppointmentStatus: async (id, status) => {
-    const response = await api.patch(`/doctor/appointments/${id}`, { status });
-    return response.data;
-  },
-
-  // تحديث ملفي الشخصي
-  updateProfile: async (data) => {
-    const response = await api.put('/doctor/profile', data);
-    return response.data;
-  },
-};
+// ملاحظة: دوال الأطباء الكاملة موجودة في doctorApi.js — استخدم import doctorApi from './doctorApi'
 
 // دوال للمسؤولين (Admin Routes)
 export const adminAPI = {

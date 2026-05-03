@@ -105,9 +105,21 @@ const doctorApi = {
   getDoctorNotifications: async (query = {}) =>
     (await api.get('/doctor/notifications', buildQuery(query))).data,
 
-  markNotificationRead: async (id) => (await api.patch(`/doctor/notifications/${id}/read`)).data,
+  markNotificationRead: async (id) => {
+    try {
+      return (await api.patch(`/doctor/notifications/${id}/read`)).data;
+    } catch {
+      return (await api.post(`/doctor/notifications/${id}/read`)).data;
+    }
+  },
 
-  markAllNotificationsRead: async () => (await api.patch('/doctor/notifications/read-all')).data,
+  markAllNotificationsRead: async () => {
+    try {
+      return (await api.patch('/doctor/notifications/read-all')).data;
+    } catch {
+      return (await api.post('/doctor/notifications/read-all')).data;
+    }
+  },
 
   // Medical Records + Prescriptions
   createDoctorMedicalRecord: async (patientId, payload) => {
