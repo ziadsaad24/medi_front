@@ -124,7 +124,8 @@ api.interceptors.response.use(
     // إذا كان unauthorized، احذف token وأعد توجيه للـ login
     // لكن استثني صفحات login و register
     const isAuthEndpoint = error.config?.url?.includes('/login') ||
-      error.config?.url?.includes('/register');
+      error.config?.url?.includes('/register') ||
+      error.config?.url?.includes('/email/resend');
 
     // عند انتهاء الجلسة/توكن غير صالح: نظّف الحالة المحلية وأبلغ الواجهة.
     if (error.response?.status === 401 && !isAuthEndpoint) {
