@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Calendar,
@@ -46,8 +47,79 @@ export default function Sidebar() {
   );
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/', { replace: true });
+    const result = await Swal.fire({
+      html: `
+        <div style="direction: rtl; text-align: center; font-family: 'Segoe UI', sans-serif;">
+          <div style="width: 56px; height: 56px; margin: 0 auto 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.08)); border: 1px solid rgba(220,38,38,0.2);">
+            <span style="font-size: 28px; font-weight: 900; color: #dc2626;">!</span>
+          </div>
+          <h2 style="font-size: 22px; font-weight: 900;  margin-bottom: 16px; color: ${isDark ? '#ffffff' : '#0f427d'}; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+            تسجيل الخروج
+          </h2>
+          <div style="background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15, 67, 125, 0.06)'}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 20px; padding: 18px; margin-bottom: 10px; border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15, 67, 125, 0.12)'}; box-shadow: inset 0 1px 0 ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)'};">
+            <p style="margin: 0; font-size: 15px; line-height: 1.8; color: ${isDark ? '#cbd5e1' : '#0f427d'};">
+              هل أنت متأكد من تسجيل الخروج؟
+            </p>
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'تسجيل الخروج',
+      cancelButtonText: 'إلغاء',
+      confirmButtonColor: 'transparent',
+      cancelButtonColor: 'transparent',
+      background: isDark ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.9)',
+      backdrop: `rgba(0, 0, 0, 0.4)`,
+      reverseButtons: true,
+      customClass: {
+        popup: 'swal-glass-popup',
+      },
+      didOpen: (modal) => {
+        // Glass popup style
+        const popup = modal.querySelector('.swal2-popup');
+        if (popup) {
+          popup.style.backdropFilter = 'blur(24px) saturate(180%)';
+          popup.style.webkitBackdropFilter = 'blur(24px) saturate(180%)';
+          popup.style.borderRadius = '24px';
+          popup.style.border = isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(15, 67, 125, 0.15)';
+          popup.style.boxShadow = isDark
+            ? '0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
+            : '0 8px 32px rgba(15, 67, 125, 0.15), inset 0 1px 0 rgba(255,255,255,0.8)';
+        }
+
+        const confirmBtn = modal.querySelector('.swal2-confirm');
+        const cancelBtn = modal.querySelector('.swal2-cancel');
+        if (confirmBtn) {
+          confirmBtn.style.borderRadius = '16px';
+          confirmBtn.style.padding = '12px 28px';
+          confirmBtn.style.fontWeight = 'bold';
+          confirmBtn.style.background = isDark
+            ? 'linear-gradient(135deg, rgba(220,38,38,0.8), rgba(185,28,28,0.9))'
+            : 'linear-gradient(135deg, rgba(220,38,38,0.85), rgba(185,28,28,0.95))';
+          confirmBtn.style.backdropFilter = 'blur(12px)';
+          confirmBtn.style.border = '1px solid rgba(255,255,255,0.15)';
+          confirmBtn.style.boxShadow = '0 4px 16px rgba(220, 38, 38, 0.35)';
+          confirmBtn.style.color = '#fff';
+        }
+        if (cancelBtn) {
+          cancelBtn.style.borderRadius = '16px';
+          cancelBtn.style.padding = '12px 28px';
+          cancelBtn.style.fontWeight = 'bold';
+          cancelBtn.style.background = isDark
+            ? 'linear-gradient(135deg, rgba(15,66,125,0.7), rgba(0,128,128,0.7))'
+            : 'linear-gradient(135deg, rgba(15,66,125,0.8), rgba(0,128,128,0.8))';
+          cancelBtn.style.backdropFilter = 'blur(12px)';
+          cancelBtn.style.border = '1px solid rgba(255,255,255,0.15)';
+          cancelBtn.style.boxShadow = '0 4px 16px rgba(15, 67, 125, 0.3)';
+          cancelBtn.style.color = '#fff';
+        }
+      }
+    });
+
+    if (result.isConfirmed) {
+      await logout();
+      navigate('/', { replace: true });
+    }
   };
 
   useEffect(() => {
@@ -291,7 +363,7 @@ export default function Sidebar() {
         </div>
 
         {/* Menu */}
-        <nav className="space-y-2 relative z-10">
+        <nav className="space-y-2 relative  z-10">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.path ? location.pathname === item.path : false;
@@ -303,11 +375,10 @@ export default function Sidebar() {
                   key={item.name}
                   type="button"
                   onClick={handleLogout}
-                  className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 relative overflow-hidden group ${
-                    isDark
-                      ? 'text-white/60 hover:text-white hover:bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700'
-                      : 'text-[#0f427d]/70 hover:text-[#0f427d] hover:bg-[#0f427d]/10'
-                  }`}
+                  className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 relative overflow-hidden group ${isDark
+                    ? 'text-white/60 hover:text-white hover:bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700'
+                    : 'text-[#0f427d]/70 hover:text-[#0f427d] hover:bg-[#0f427d]/10'
+                    }`}
                 >
                   <Icon className="w-5 h-5 relative z-10" />
                   <span className="font-medium relative z-10 text-sm">{item.name}</span>
@@ -346,44 +417,110 @@ export default function Sidebar() {
         </nav>
       </aside>
 
-      {/* 📱 Bottom Navigation (Mobile Only) */}
-      <div
-        className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t backdrop-blur-xl ${
-          isDark
-            ? "bg-gradient-to-r from-slate-950 via-slate-900 to-cyan-950 border-white/10"
-            : "theme-surface border-[#0f427d]/20"
-        }`}
-      >
-        <div className="flex justify-around items-center py-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.path ? location.pathname === item.path : false;
+      {/* 📱 Bottom Navigation (Mobile Only) — iOS Style Animated */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40" dir="ltr">
+        {/* Backdrop fade */}
+        <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent' : 'bg-gradient-to-t from-white via-white/95 to-transparent'}`} style={{ bottom: '-10px', top: '-20px' }} />
 
-            if (item.action === 'logout') {
+        <div
+          className={`relative mx-3 mb-3 px-1 py-1.5 rounded-[22px] border backdrop-blur-2xl shadow-2xl ${isDark
+            ? "bg-slate-900/80 border-white/10 shadow-black/40"
+            : "bg-white/80 border-[#0f427d]/10 shadow-[#0f427d]/10"
+            }`}
+        >
+          <div className="flex items-center justify-around relative">
+            {/* 🔵 Sliding Circle Indicator */}
+            {menuItems.map((item, index) => {
+              const isActive = item.path ? location.pathname === item.path : false;
+              if (!isActive) return null;
+
+              const itemWidth = 100 / menuItems.length;
+              const centerOffset = itemWidth * index + itemWidth / 2;
+
               return (
-                <button
+                <motion.div
+                  key="circle-indicator"
+                  className="absolute top-1/2 w-11 h-11 rounded-full"
+                  style={{
+                    background: isDark
+                      ? 'linear-gradient(135deg, #0f427d, #008080)'
+                      : 'linear-gradient(135deg, #0f427d, #006666)',
+                    boxShadow: isDark
+                      ? '0 0 20px rgba(0, 128, 128, 0.5), 0 4px 15px rgba(15, 66, 125, 0.4)'
+                      : '0 0 15px rgba(0, 128, 128, 0.3), 0 4px 12px rgba(15, 66, 125, 0.25)',
+                    x: '-50%',
+                    y: '-50%',
+                  }}
+                  animate={{
+                    left: `${centerOffset}%`,
+                  }}
+                  layoutId="circleIndicator"
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 22,
+                    mass: 0.8,
+                  }}
+                />
+              );
+            })}
+
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = item.path ? location.pathname === item.path : false;
+              const isLogout = item.action === 'logout';
+              const isRequestsItem = item.path === '/doctor/requests';
+
+              return (
+                <motion.button
                   type="button"
                   key={item.name}
-                  onClick={handleLogout}
-                  className="flex flex-col items-center justify-center"
+                  onClick={isLogout ? handleLogout : () => handleProtectedNavigation(item.path)}
+                  className="relative flex items-center justify-center py-3 flex-1 z-10"
+                  whileTap={{ scale: 0.8 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
                 >
-                  <Icon className={`w-6 h-6 ${isDark ? 'text-white/50' : 'text-[#0f427d]/50'}`} />
-                </button>
-              );
-            }
+                  {/* Icon */}
+                  <motion.div
+                    className="relative"
+                    animate={{
+                      scale: isActive ? 1.1 : 1,
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 20,
+                    }}
+                  >
+                    <Icon
+                      className={`w-[21px] h-[21px] transition-colors duration-300 ${isLogout
+                        ? (isDark ? 'text-rose-400/50' : 'text-rose-500/40')
+                        : isActive
+                          ? 'text-white'
+                          : (isDark ? 'text-white/35' : 'text-[#0f427d]/35')
+                        }`}
+                      strokeWidth={isActive ? 2.5 : 1.8}
+                    />
 
-            return (
-              <button
-                type="button"
-                onClick={() => handleProtectedNavigation(item.path)}
-                key={item.name}
-                className="flex flex-col items-center justify-center"
-              >
-                <Icon className={`w-6 h-6 ${isActive ? "text-[#008080]" : isDark ? "text-white/50" : "text-[#0f427d]/50"}`} />
-                {isActive && <div className="w-1 h-1 bg-[#008080] rounded-full mt-1" />}
-              </button>
-            );
-          })}
+                    {/* Notification Badge */}
+                    <AnimatePresence>
+                      {isRequestsItem && pendingRequestsCount > 0 && (
+                        <motion.span
+                          className="absolute -top-2.5 -right-2.5 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center shadow-lg shadow-rose-500/40 border border-white/20"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                        >
+                          {pendingRequestsCount > 9 ? '9+' : pendingRequestsCount}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </>

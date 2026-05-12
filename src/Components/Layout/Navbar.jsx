@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, User, Menu, X, Home, Users, Calendar, Pill, FileText, PhoneCall, Info, LogOut, UserCircle, ChevronDown, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/use-notifications';
 import { useTheme } from '../../context/ThemeContext';
@@ -97,33 +97,34 @@ const Navbar = (props = {}) => {
 
           {/* Desktop Links */}
           <ul className="hidden xl:flex items-center gap-6 flex-row-reverse">
-            {navLinks.map((link, idx) => (
-              <li key={idx}>
-                <NavLink 
-                  to={link.path}
-                  className={({ isActive }) => `
-                    text-[13px] font-bold transition-all duration-300 relative group
-                    ${isActive 
-                      ? 'text-[#008080]' 
-                      : (!isHomePage || isScrolled ? 'text-gray-500 hover:text-[#0F427D]' : 'text-white/80 hover:text-white')}
-                  `}
-                >
-                  {({ isActive }) => (
-                    <>
-                      {link.name}
-                      <span className={`absolute -bottom-1 left-0 h-0.5 bg-[#008080] transition-all duration-300 ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-                    </>
-                  )}
-                </NavLink>
-              </li>
-            ))}
+            {navLinks.map((link, idx) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <li key={idx}>
+                  <Link 
+                    to={link.path}
+                    className={`
+                      text-[13px] font-bold transition-all duration-300 relative group
+                      ${isActive 
+                        ? 'text-[#008080]' 
+                        : (!isHomePage || isScrolled ? 'text-gray-500 hover:text-[#0F427D]' : 'text-white/80 hover:text-white')}
+                    `}
+                  >
+                    {link.name}
+                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-[#008080] transition-all duration-300 ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
           {/* User Actions */}
           <div className="flex items-center gap-3 flex-row-reverse">
-                <button onClick={() => setIsMobileMenuOpen(true)} className={`xl:hidden p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}>
+            {/* Hamburger - Mobile Only */}
+            <button onClick={() => setIsMobileMenuOpen(true)} className={`xl:hidden p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}>
               <Menu size={24} />
             </button>
+
             <button
               onClick={toggleTheme}
               className={`p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}
@@ -133,12 +134,10 @@ const Navbar = (props = {}) => {
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
-        
-
             <div className="relative notifications-dropdown-container">
               <button
                 onClick={() => setIsNotificationsOpen((prev) => !prev)}
-                className={`relative p-2 md:p-2.5 rounded-2xl border shadow-sm cursor-pointer transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-gray-600 hover:bg-gray-50' : 'bg-white/20 border-white/20 text-white hover:bg-white/30'}`}
+                className={`relative p-2.5 rounded-2xl border shadow-sm cursor-pointer transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-gray-600 hover:bg-gray-50' : 'bg-white/20 border-white/20 text-white hover:bg-white/30'}`}
                 aria-label="notifications"
               >
                 <Bell size={20} />
@@ -154,78 +153,88 @@ const Navbar = (props = {}) => {
 
               <AnimatePresence>
                 {isNotificationsOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute left-0 mt-2 w-[340px] bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[150]"
-                    dir="rtl"
-                  >
-                    <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-l from-cyan-50 to-blue-50">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-black text-[#004060]">التنبيهات</h3>
-                        <div className="flex items-center gap-2">
-                          {unreadCount > 0 && (
-                            <button
-                              type="button"
-                              onClick={markAllAsRead}
-                              className="text-[11px] font-bold text-[#0F427D] bg-white border border-blue-100 rounded-full px-2 py-0.5 hover:bg-blue-50 transition-colors"
-                            >
-                              قراءة الكل
-                            </button>
-                          )}
-                          {notifications.length > 0 && (
-                            <button
-                              type="button"
-                              onClick={clearAll}
-                              className="text-[11px] font-bold text-rose-600 bg-white border border-rose-100 rounded-full px-2 py-0.5 hover:bg-rose-50 transition-colors"
-                            >
-                              حذف الكل
-                            </button>
-                          )}
-                          <span className="text-[11px] font-bold text-[#008080] bg-white border border-teal-100 rounded-full px-2 py-0.5">
-                            {unreadCount} جديد
-                          </span>
+                  <>
+                    {/* Mobile overlay */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="fixed inset-0 bg-black/30 z-[140] md:hidden"
+                      onClick={() => setIsNotificationsOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
+                      className="fixed md:absolute top-[68px] md:top-full left-4 right-4 md:left-0 md:right-auto md:mt-2 md:w-[340px] bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[150]"
+                      dir="rtl"
+                    >
+                      <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-l from-cyan-50 to-blue-50">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-black text-[#004060]">التنبيهات</h3>
+                          <div className="flex items-center gap-2">
+                            {unreadCount > 0 && (
+                              <button
+                                type="button"
+                                onClick={markAllAsRead}
+                                className="text-[11px] font-bold text-[#0F427D] bg-white border border-blue-100 rounded-full px-2 py-0.5 hover:bg-blue-50 transition-colors"
+                              >
+                                قراءة الكل
+                              </button>
+                            )}
+                            {notifications.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={clearAll}
+                                className="text-[11px] font-bold text-rose-600 bg-white border border-rose-100 rounded-full px-2 py-0.5 hover:bg-rose-50 transition-colors"
+                              >
+                                حذف الكل
+                              </button>
+                            )}
+                            <span className="text-[11px] font-bold text-[#008080] bg-white border border-teal-100 rounded-full px-2 py-0.5">
+                              {unreadCount} جديد
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="max-h-[340px] overflow-y-auto">
-                      {notifications.length === 0 ? (
-                        <div className="p-8 text-center text-slate-400 text-sm font-bold">
-                          لا توجد تنبيهات حالياً
-                        </div>
-                      ) : (
-                        notifications.map((item) => (
-                          <button
-                            key={item.id}
-                            onClick={() => {
-                              markAsRead(item.id);
-                              navigate(item.route || '/medications');
-                              setIsNotificationsOpen(false);
-                            }}
-                            className={`w-full text-right px-4 py-3 border-b last:border-b-0 border-slate-100 hover:bg-slate-50 transition-colors ${item.isRead ? 'opacity-70' : ''}`}
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="text-sm font-black text-slate-700">{item.title}</p>
-                                <p className="text-xs text-slate-500 mt-1 leading-5">{item.message}</p>
-                                <p className="text-[11px] text-[#008080] font-bold mt-1">{item.meta}</p>
+                      <div className="max-h-[60vh] md:max-h-[340px] overflow-y-auto">
+                        {notifications.length === 0 ? (
+                          <div className="p-8 text-center text-slate-400 text-sm font-bold">
+                            لا توجد تنبيهات حالياً
+                          </div>
+                        ) : (
+                          notifications.map((item) => (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                markAsRead(item.id);
+                                navigate(item.route || '/medications');
+                                setIsNotificationsOpen(false);
+                              }}
+                              className={`w-full text-right px-4 py-3 border-b last:border-b-0 border-slate-100 hover:bg-slate-50 transition-colors ${item.isRead ? 'opacity-70' : ''}`}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-black text-slate-700">{item.title}</p>
+                                  <p className="text-xs text-slate-500 mt-1 leading-5">{item.message}</p>
+                                  <p className="text-[11px] text-[#008080] font-bold mt-1">{item.meta}</p>
+                                </div>
+                                <span className={`mt-1 w-2.5 h-2.5 rounded-full shrink-0 ${item.isRead ? 'bg-slate-300' : (item.priority === 'urgent' ? 'bg-rose-500' : 'bg-emerald-500')}`}></span>
                               </div>
-                              <span className={`mt-1 w-2.5 h-2.5 rounded-full ${item.isRead ? 'bg-slate-300' : (item.priority === 'urgent' ? 'bg-rose-500' : 'bg-emerald-500')}`}></span>
-                            </div>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  </motion.div>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
 
             {/* User Dropdown */}
-            <div className="relative user-dropdown-container">
+            <div className="relative user-dropdown-container hidden xl:block">
               <div 
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 className={`flex items-center gap-2 md:gap-3 p-1 rounded-2xl border shadow-sm cursor-pointer group transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 hover:border-gray-200' : 'bg-white/20 border-white/20 hover:bg-white/30'}`}
@@ -300,35 +309,128 @@ const Navbar = (props = {}) => {
         </div>
       </nav>
 
-      {/* --- Mobile Menu --- */}
+      {/* --- Mobile Sidebar --- */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] xl:hidden" />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed top-0 right-0 h-full w-[280px] bg-white z-[201] shadow-2xl xl:hidden flex flex-col p-6">
-              <div className="flex items-center justify-between flex-row-reverse mb-10">
-                <h2 className="text-xl font-black text-[#004060]">القائمة</h2>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-gray-50 rounded-lg text-gray-400"><X size={20} /></button>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] xl:hidden"
+            />
+
+            {/* Sidebar Panel */}
+            <motion.aside
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className={`fixed top-0 right-0 h-full w-[280px] z-[201] xl:hidden flex flex-col p-6 overflow-hidden
+                ${isDark
+                  ? 'bg-gradient-to-b from-slate-950/95 via-slate-900/90 to-cyan-950/70 border-l border-white/10 shadow-2xl'
+                  : 'bg-white border-l border-gray-100 shadow-2xl'
+                }`}
+              dir="rtl"
+            >
+              {/* Ambient Lights */}
+              <div className={`absolute top-[-10%] right-[-20%] w-64 h-64 rounded-full blur-[120px] pointer-events-none ${isDark ? 'bg-[#144A89]/15' : 'bg-[#0F427D]/5'}`} />
+              <div className={`absolute bottom-[-5%] left-[-20%] w-64 h-64 rounded-full blur-[120px] pointer-events-none ${isDark ? 'bg-[#008080]/15' : 'bg-[#008080]/5'}`} />
+
+              {/* Header: Logo + Close */}
+              <div className="flex items-center justify-between mb-10 relative z-10">
+                <Link to="/" className="flex items-center gap-3 group" onClick={() => setIsMobileMenuOpen(false)}>
+                  <div className="w-11 h-11 bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700 rounded-xl flex items-center justify-center shadow-lg border border-white/10">
+                    <svg viewBox="0 0 50 55" fill="none" className="w-[22px] h-[24px]">
+                      <path
+                        d="M46.7513 25.9969H40.9233C39.8963 25.9945 38.8968 26.3642 38.0777 27.0496C37.2587 27.735 36.6651 28.6984 36.3878 29.7923L30.8653 51.5246C30.8297 51.6596 30.7555 51.7782 30.6538 51.8626C30.5521 51.9469 30.4284 51.9925 30.3013 51.9925C30.1742 51.9925 30.0505 51.9469 29.9488 51.8626C29.8471 51.7782 29.7729 51.6596 29.7373 51.5246L16.7653 0.469173C16.7297 0.334181 16.6555 0.2156 16.5538 0.131229C16.4521 0.0468591 16.3284 0.00125122 16.2013 0.00125122C16.0742 0.00125122 15.9505 0.0468591 15.8488 0.131229C15.7471 0.2156 15.6729 0.334181 15.6373 0.469173L10.1148 22.2015C9.8386 23.2911 9.24856 24.2513 8.43424 24.9363C7.61993 25.6213 6.62581 25.9937 5.60281 25.9969H-0.248688"
+                        stroke="white"
+                        strokeWidth="5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex flex-col">
+                    <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#004060]'}`}>MediCare</h1>
+                    <p className="text-[9px] font-bold tracking-[1px] text-[#008080] uppercase">Health System</p>
+                  </div>
+                </Link>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`p-2 rounded-xl transition-all ${isDark ? 'bg-white/10 text-white/60 hover:bg-white/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                >
+                  <X size={20} />
+                </button>
               </div>
-              <div className="flex flex-col gap-2">
-                {navLinks.map((link, idx) => (
-                  <NavLink 
-                    key={idx}
-                    to={link.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={({ isActive }) => `
-                      flex items-center justify-end gap-4 p-4 rounded-2xl font-bold transition-all duration-300 group
-                      ${isActive 
-                        ? 'bg-gradient-to-l from-[#008080] to-[#0F427D] text-white shadow-lg shadow-teal-900/20' 
-                        : 'text-gray-500 hover:bg-gray-50 hover:pr-6 hover:text-[#008080]'}
-                    `}
-                  >
-                    <span>{link.name}</span>
-                    <span className="shrink-0">{link.icon}</span>
-                  </NavLink>
-                ))}
+
+              {/* Navigation Links */}
+              <nav className="space-y-2 relative z-10 flex-1">
+                {navLinks.map((link, idx) => {
+                  const isActive = location.pathname === link.path;
+                  return (
+                    <button
+                      type="button"
+                      key={idx}
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        navigate(link.path);
+                      }}
+                      className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 relative overflow-hidden group
+                        ${isActive
+                          ? 'text-white shadow-lg'
+                          : isDark
+                            ? 'text-white/60 hover:text-white hover:bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700'
+                            : 'text-gray-500 hover:text-[#0F427D] hover:bg-[#0F427D]/10'
+                        }`}
+                    >
+                      {isActive && (
+                        <div className="absolute inset-0 bg-gradient-to-l from-[#008080] to-[#0F427D] opacity-90" />
+                      )}
+                      <span className="relative z-10 shrink-0">
+                        {React.cloneElement(link.icon, { size: 20 })}
+                      </span>
+                      <span className="font-bold text-sm relative z-10">{link.name}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+
+              {/* Bottom Section: Profile + Logout */}
+              <div className="relative z-10 mt-6 pt-6" style={{ borderTop: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
+                {/* Profile */}
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/patient/profile');
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all mb-2 ${isDark ? 'hover:bg-white/10 text-white/70' : 'hover:bg-gray-50 text-gray-600'}`}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${isDark ? 'bg-white/10 border-white/20' : 'bg-teal-50 border-teal-100'}`}>
+                    <User size={18} className={isDark ? 'text-white/70' : 'text-[#008080]'} />
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-black ${isDark ? 'text-white' : 'text-[#004060]'}`}>{user?.name || 'زائر'}</p>
+                    <p className={`text-[10px] font-bold ${isDark ? 'text-white/40' : 'text-gray-400'}`}>الملف الشخصي</p>
+                  </div>
+                </button>
+
+                {/* Logout */}
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    logout();
+                    navigate('/');
+                  }}
+                  className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all ${isDark ? 'text-rose-400/70 hover:text-rose-300 hover:bg-rose-500/10' : 'text-gray-500 hover:text-red-600 hover:bg-red-50'}`}
+                >
+                  <LogOut size={20} />
+                  <span className="font-bold text-sm">تسجيل الخروج</span>
+                </button>
               </div>
-            </motion.div>
+            </motion.aside>
           </>
         )}
       </AnimatePresence>

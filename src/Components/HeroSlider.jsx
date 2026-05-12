@@ -198,7 +198,9 @@ export default function HeroSlider() {
                   >
                     {slides[currentSlide].cta}
                   </button>
-                  <button className="px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-lg font-medium border border-white/20 transition-all duration-300 hover:scale-105">
+                  <button
+                    onClick={() => navigate('/contact')}
+                    className="px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-lg font-medium border border-white/20 transition-all duration-300 hover:scale-105">
                     تواصل معنا
                   </button>
                 </motion.div>
