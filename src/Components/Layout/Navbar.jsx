@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, User, Menu, X, Home, Users, Calendar, Pill, FileText, PhoneCall, Info, LogOut, UserCircle, ChevronDown, Moon, Sun } from 'lucide-react';
+import { Bell, User, Home, Users, Calendar, Pill, FileText, PhoneCall, Info, LogOut, UserCircle, ChevronDown, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -9,7 +9,7 @@ import { useTheme } from '../../context/ThemeContext';
 const Navbar = (props = {}) => {
   const { patientData } = props;
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { user, logout } = useAuth();
@@ -30,6 +30,8 @@ const Navbar = (props = {}) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+
+
   // إغلاق الـ dropdown لما تضغط برة
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -47,7 +49,7 @@ const Navbar = (props = {}) => {
   }, [isUserMenuOpen, isNotificationsOpen]);
 
   const navLinks = [
-    { name: 'الرئيسية', icon: <Home size={18} />, path: '/home' },
+    { name: 'الرئيسية', icon: <Home size={18} />, path: '/patient/home' },
     { name: 'من نحن', icon: <Info size={18} />, path: '/about' },
     { name: 'الأطباء', icon: <Users size={18} />, path: '/doctors' },
     { name: 'المواعيد', icon: <Calendar size={18} />, path: '/appointments' },
@@ -59,7 +61,7 @@ const Navbar = (props = {}) => {
   return (
     <>
       {/* 3. تحديث الكلاسات بناءً على الصفحة والسكول */}
-      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 px-4 md:px-10 py-4 ${
+      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 px-4 md:px-6 lg:px-10 py-4 ${
         isHomePage 
           ? (isScrolled ? 'bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-100' : 'bg-transparent')
           : 'bg-white/70 backdrop-blur-md shadow-sm border-b border-gray-200/50' 
@@ -96,7 +98,7 @@ const Navbar = (props = {}) => {
           </Link>
 
           {/* Desktop Links */}
-          <ul className="hidden xl:flex items-center gap-6 flex-row-reverse">
+          <ul className="hidden lg:flex items-center gap-3 xl:gap-6 flex-row-reverse">
             {navLinks.map((link, idx) => {
               const isActive = location.pathname === link.path;
               return (
@@ -104,7 +106,7 @@ const Navbar = (props = {}) => {
                   <Link 
                     to={link.path}
                     className={`
-                      text-[13px] font-bold transition-all duration-300 relative group
+                      text-[12px] xl:text-[13px] font-bold transition-all duration-300 relative group
                       ${isActive 
                         ? 'text-[#008080]' 
                         : (!isHomePage || isScrolled ? 'text-gray-500 hover:text-[#0F427D]' : 'text-white/80 hover:text-white')}
@@ -120,10 +122,6 @@ const Navbar = (props = {}) => {
 
           {/* User Actions */}
           <div className="flex items-center gap-3 flex-row-reverse">
-            {/* Hamburger - Mobile Only */}
-            <button onClick={() => setIsMobileMenuOpen(true)} className={`xl:hidden p-2 rounded-xl border shadow-sm transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 text-[#004060]' : 'bg-white/20 border-white/20 text-white'}`}>
-              <Menu size={24} />
-            </button>
 
             <button
               onClick={toggleTheme}
@@ -234,7 +232,7 @@ const Navbar = (props = {}) => {
             </div>
 
             {/* User Dropdown */}
-            <div className="relative user-dropdown-container hidden xl:block">
+            <div className="relative user-dropdown-container">
               <div 
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 className={`flex items-center gap-2 md:gap-3 p-1 rounded-2xl border shadow-sm cursor-pointer group transition-all ${!isHomePage || isScrolled ? 'bg-white border-gray-100 hover:border-gray-200' : 'bg-white/20 border-white/20 hover:bg-white/30'}`}
@@ -309,131 +307,117 @@ const Navbar = (props = {}) => {
         </div>
       </nav>
 
-      {/* --- Mobile Sidebar --- */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            {/* Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] xl:hidden"
-            />
+      {/* 📱 Bottom Navigation (Mobile Only) — iOS Style Animated */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100]" dir="ltr">
+        {/* Backdrop fade */}
+        <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent' : 'bg-gradient-to-t from-white via-white/95 to-transparent'}`} style={{ bottom: '-10px', top: '-20px' }} />
 
-            {/* Sidebar Panel */}
-            <motion.aside
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className={`fixed top-0 right-0 h-full w-[280px] z-[201] xl:hidden flex flex-col p-6 overflow-hidden
-                ${isDark
-                  ? 'bg-gradient-to-b from-slate-950/95 via-slate-900/90 to-cyan-950/70 border-l border-white/10 shadow-2xl'
-                  : 'bg-white border-l border-gray-100 shadow-2xl'
-                }`}
-              dir="rtl"
-            >
-              {/* Ambient Lights */}
-              <div className={`absolute top-[-10%] right-[-20%] w-64 h-64 rounded-full blur-[120px] pointer-events-none ${isDark ? 'bg-[#144A89]/15' : 'bg-[#0F427D]/5'}`} />
-              <div className={`absolute bottom-[-5%] left-[-20%] w-64 h-64 rounded-full blur-[120px] pointer-events-none ${isDark ? 'bg-[#008080]/15' : 'bg-[#008080]/5'}`} />
+        <div
+          className={`relative mx-3 mb-3 px-1 py-1.5 rounded-[22px] border backdrop-blur-2xl shadow-2xl ${isDark
+            ? "bg-slate-900/80 border-white/10 shadow-black/40"
+            : "bg-white/80 border-[#0f427d]/10 shadow-[#0f427d]/10"
+            }`}
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+          <div className="flex items-center justify-around relative">
+            {/* Sliding Circle Indicator */}
+            {navLinks.map((link, index) => {
+              const isActive = location.pathname === link.path;
+              if (!isActive) return null;
 
-              {/* Header: Logo + Close */}
-              <div className="flex items-center justify-between mb-10 relative z-10">
-                <Link to="/" className="flex items-center gap-3 group" onClick={() => setIsMobileMenuOpen(false)}>
-                  <div className="w-11 h-11 bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700 rounded-xl flex items-center justify-center shadow-lg border border-white/10">
-                    <svg viewBox="0 0 50 55" fill="none" className="w-[22px] h-[24px]">
-                      <path
-                        d="M46.7513 25.9969H40.9233C39.8963 25.9945 38.8968 26.3642 38.0777 27.0496C37.2587 27.735 36.6651 28.6984 36.3878 29.7923L30.8653 51.5246C30.8297 51.6596 30.7555 51.7782 30.6538 51.8626C30.5521 51.9469 30.4284 51.9925 30.3013 51.9925C30.1742 51.9925 30.0505 51.9469 29.9488 51.8626C29.8471 51.7782 29.7729 51.6596 29.7373 51.5246L16.7653 0.469173C16.7297 0.334181 16.6555 0.2156 16.5538 0.131229C16.4521 0.0468591 16.3284 0.00125122 16.2013 0.00125122C16.0742 0.00125122 15.9505 0.0468591 15.8488 0.131229C15.7471 0.2156 15.6729 0.334181 15.6373 0.469173L10.1148 22.2015C9.8386 23.2911 9.24856 24.2513 8.43424 24.9363C7.61993 25.6213 6.62581 25.9937 5.60281 25.9969H-0.248688"
-                        stroke="white"
-                        strokeWidth="5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex flex-col">
-                    <h1 className={`text-xl font-black ${isDark ? 'text-white' : 'text-[#004060]'}`}>MediCare</h1>
-                    <p className="text-[9px] font-bold tracking-[1px] text-[#008080] uppercase">Health System</p>
-                  </div>
-                </Link>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`p-2 rounded-xl transition-all ${isDark ? 'bg-white/10 text-white/60 hover:bg-white/20' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+              const itemWidth = 100 / navLinks.length;
+              const centerOffset = itemWidth * index + itemWidth / 2;
+
+              return (
+                <motion.div
+                  key="circle-indicator"
+                  className="absolute top-1/2 w-11 h-11 rounded-full"
+                  style={{
+                    background: isDark
+                      ? 'linear-gradient(135deg, #0f427d, #008080)'
+                      : 'linear-gradient(135deg, #0f427d, #006666)',
+                    boxShadow: isDark
+                      ? '0 0 20px rgba(0, 128, 128, 0.5), 0 4px 15px rgba(15, 66, 125, 0.4)'
+                      : '0 0 15px rgba(0, 128, 128, 0.3), 0 4px 12px rgba(15, 66, 125, 0.25)',
+                    x: '-50%',
+                    y: '-50%',
+                  }}
+                  animate={{
+                    left: `${centerOffset}%`,
+                  }}
+                  layoutId="patientCircleIndicator"
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 22,
+                    mass: 0.8,
+                  }}
+                />
+              );
+            })}
+
+            {navLinks.map((link, idx) => {
+              const isActive = location.pathname === link.path;
+
+              return (
+                <motion.button
+                  type="button"
+                  key={idx}
+                  onClick={() => navigate(link.path)}
+                  className="relative flex items-center justify-center py-3 flex-1 z-10"
+                  whileTap={{ scale: 0.8 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
                 >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Navigation Links */}
-              <nav className="space-y-2 relative z-10 flex-1">
-                {navLinks.map((link, idx) => {
-                  const isActive = location.pathname === link.path;
-                  return (
-                    <button
-                      type="button"
-                      key={idx}
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        navigate(link.path);
-                      }}
-                      className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 relative overflow-hidden group
-                        ${isActive
-                          ? 'text-white shadow-lg'
-                          : isDark
-                            ? 'text-white/60 hover:text-white hover:bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700'
-                            : 'text-gray-500 hover:text-[#0F427D] hover:bg-[#0F427D]/10'
+                  {/* Active Tooltip — always visible on active icon */}
+                  <AnimatePresence>
+                    {isActive && (
+                      <motion.span
+                        initial={{ opacity: 0, y: 6, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className={`absolute -top-10 left-1/2 -translate-x-1/2 text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap pointer-events-none z-50 ${
+                          isDark
+                            ? 'bg-slate-800 text-white border border-white/10 shadow-xl'
+                            : 'bg-[#004060] text-white shadow-xl'
                         }`}
-                    >
-                      {isActive && (
-                        <div className="absolute inset-0 bg-gradient-to-l from-[#008080] to-[#0F427D] opacity-90" />
-                      )}
-                      <span className="relative z-10 shrink-0">
-                        {React.cloneElement(link.icon, { size: 20 })}
-                      </span>
-                      <span className="font-bold text-sm relative z-10">{link.name}</span>
-                    </button>
-                  );
-                })}
-              </nav>
+                      >
+                        {link.name}
+                        <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 ${
+                          isDark ? 'bg-slate-800' : 'bg-[#004060]'
+                        }`} />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
 
-              {/* Bottom Section: Profile + Logout */}
-              <div className="relative z-10 mt-6 pt-6" style={{ borderTop: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
-                {/* Profile */}
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    navigate('/patient/profile');
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all mb-2 ${isDark ? 'hover:bg-white/10 text-white/70' : 'hover:bg-gray-50 text-gray-600'}`}
-                >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${isDark ? 'bg-white/10 border-white/20' : 'bg-teal-50 border-teal-100'}`}>
-                    <User size={18} className={isDark ? 'text-white/70' : 'text-[#008080]'} />
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-black ${isDark ? 'text-white' : 'text-[#004060]'}`}>{user?.name || 'زائر'}</p>
-                    <p className={`text-[10px] font-bold ${isDark ? 'text-white/40' : 'text-gray-400'}`}>الملف الشخصي</p>
-                  </div>
-                </button>
-
-                {/* Logout */}
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    logout();
-                    navigate('/');
-                  }}
-                  className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all ${isDark ? 'text-rose-400/70 hover:text-rose-300 hover:bg-rose-500/10' : 'text-gray-500 hover:text-red-600 hover:bg-red-50'}`}
-                >
-                  <LogOut size={20} />
-                  <span className="font-bold text-sm">تسجيل الخروج</span>
-                </button>
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+                  {/* Icon */}
+                  <motion.div
+                    className="relative"
+                    animate={{
+                      scale: isActive ? 1.1 : 1,
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 20,
+                    }}
+                  >
+                    {React.cloneElement(link.icon, {
+                      size: 21,
+                      className: `transition-colors duration-300 ${
+                        isActive
+                          ? 'text-white'
+                          : isDark ? 'text-white/35' : 'text-[#0f427d]/35'
+                      }`,
+                      strokeWidth: isActive ? 2.5 : 1.8,
+                    })}
+                  </motion.div>
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      </div>  
     </>
   );
 };

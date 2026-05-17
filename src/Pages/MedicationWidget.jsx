@@ -30,24 +30,25 @@ const MedicationWidget = () => {
           backgroundPosition: { duration: 30, repeat: Infinity, ease: "linear" },
           y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
         }}
+        dir="rtl"
         className="
           relative w-full max-w-[1400px] overflow-hidden
           border border-white/10 
-          rounded-2xl md:rounded-[3rem]
-          p-5 sm:p-6 md:p-10
+          rounded-2xl md:rounded-[2.5rem] lg:rounded-[3rem]
+          p-5 sm:p-6 md:p-10 lg:p-10
           shadow-2xl
-          flex flex-col md:flex-row
-          items-stretch md:items-center
+          flex flex-col xl:flex-row
+          items-stretch xl:items-center
           justify-between
-          gap-6 md:gap-10
+          gap-6 md:gap-8 xl:gap-10
         "
       >
 
-        {/* العنوان */}
-        <div className="flex items-center gap-4 md:gap-6 min-w-fit relative z-10">
+        {/* العنوان — فوق يمين */}
+        <div className="flex items-center gap-4 md:gap-5 xl:gap-6 min-w-fit relative z-10">
           <motion.div 
             whileHover={{ scale: 1.05 }}
-            className="p-3 md:p-5 bg-white/5 backdrop-blur-md rounded-2xl md:rounded-3xl border border-white/10"
+            className="p-3 md:p-5 bg-white/5 backdrop-blur-md rounded-2xl lg:rounded-3xl border border-white/10"
           >
             <Pill className="text-blue-400" size={24} />
           </motion.div>
@@ -62,17 +63,18 @@ const MedicationWidget = () => {
           </div>
         </div>
 
-        {/* الجرعة القادمة */}
-        <div className="flex w-full md:w-auto justify-center relative z-10">
+        {/* الجرعة + الالتزام — جنب بعض على الآيباد */}
+        <div className="flex flex-col sm:flex-row items-center gap-5 md:gap-8 w-full xl:w-auto relative z-10">
+          
+          {/* الجرعة القادمة */}
           <div className="
-            relative group flex flex-col sm:flex-row items-center 
-            gap-4 sm:gap-8 
+            relative group flex flex-col sm:flex-row items-center flex-1
+            gap-4 sm:gap-6 md:gap-8
             bg-white/[0.03] border border-white/5 
-            py-4 px-5 sm:px-8 md:px-12 
+            py-4 md:py-5 px-5 sm:px-8 md:px-10 xl:px-12 
             rounded-2xl md:rounded-[2.5rem] 
-            w-full md:w-fit
+            w-full xl:w-fit
           ">
-            
             <motion.div 
               animate={{ x: [-500, 700] }}
               transition={{ duration: 5, repeat: Infinity, repeatDelay: 7 }}
@@ -85,7 +87,7 @@ const MedicationWidget = () => {
                 <p className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                   القادمة
                 </p>
-                <p className="text-white font-bold text-base md:text-xl text-center sm:text-left">
+                <p className="text-white font-bold text-base md:text-xl text-center sm:text-right">
                   {nextMed ? nextMed.name : 'تم الإنجاز'}
                 </p>
               </div>
@@ -95,16 +97,8 @@ const MedicationWidget = () => {
               {nextMed ? nextMed.time : '--:--'}
             </p>
           </div>
-        </div>
 
-        {/* الإحصائيات + الزر */}
-        <div className="
-          flex flex-col sm:flex-row 
-          items-center gap-5 md:gap-8 
-          w-full md:w-auto
-          relative z-10
-        ">
-
+          {/* الالتزام */}
           <div className="flex flex-col gap-2 w-full sm:w-40 md:w-48">
             <div className="flex justify-between items-end px-1">
               <span className="text-[8px] md:text-[9px] text-slate-400 font-bold uppercase">
@@ -124,8 +118,11 @@ const MedicationWidget = () => {
               />
             </div>
           </div>
+        </div>
 
-          <Link to="/medications" className="relative group w-full sm:w-auto">
+        {/* عرض الكل — تحتهم */}
+        <div className="w-full xl:w-auto relative z-10">
+          <Link to="/medications" className="relative group block">
             <div className="absolute -inset-0.5 bg-blue-500/20 rounded-xl blur group-hover:bg-blue-500/40 transition duration-500"></div>
             
             <div className="
@@ -140,7 +137,6 @@ const MedicationWidget = () => {
               </span>
             </div>
           </Link>
-
         </div>
 
         {/* الإضاءة */}

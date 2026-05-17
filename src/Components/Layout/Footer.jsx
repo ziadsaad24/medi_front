@@ -115,7 +115,7 @@ const Footer = () => {
               <Instagram size={18} className="text-gray-400 transition-all duration-300" />
             </a>
             <a
-              href="https://www.linkedin.com/in/medi-care-316255403"
+              href="https://www.linkedin.com/company/medicare1"
               className="social-icon-circle ln-h group"
               title="LinkedIn"
               target="_blank"

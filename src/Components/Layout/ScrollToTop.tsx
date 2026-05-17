@@ -20,7 +20,7 @@ const ScrollToTop = () => {
   }, []);
 
   useEffect(() => {
-    const updateViewport = () => setIsMobile(window.innerWidth <= 768);
+    const updateViewport = () => setIsMobile(window.innerWidth < 1024);
     updateViewport();
     window.addEventListener("resize", updateViewport);
     return () => window.removeEventListener("resize", updateViewport);
@@ -47,8 +47,8 @@ const ScrollToTop = () => {
           whileTap={{ scale: 0.9 }}
           onClick={scrollToTop}
           // تم إضافة bg-slate-900/10 لضمان وجود ظل خفيف خلف السهم دائماً
-          className={`fixed z-[1050] flex items-center justify-center rounded-2xl bg-white/20 backdrop-blur-2xl border border-blue-500/30 shadow-2xl transition-all group overflow-hidden ${
-            isMobile ? "bottom-[92px] right-6 w-12 h-12" : "bottom-32 right-8 w-14 h-14"
+          className={`fixed z-[999] flex items-center justify-center rounded-2xl bg-white/20 backdrop-blur-2xl border border-blue-500/30 shadow-2xl transition-all group overflow-hidden ${
+            isMobile ? "bottom-[160px] right-6 w-12 h-12" : "bottom-32 right-8 w-14 h-14"
           }`}
         >
           {/* طبقة سواد خفيفة جداً في الخلفية لزيادة التباين */}

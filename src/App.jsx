@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import 'animate.css';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
@@ -111,6 +112,15 @@ function ChatBotWrapper() {
 }
 
 
+// Scroll to top on every navigation
+function ScrollToTopOnNavigate() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 function App() {
   const allDoctors = [
     { id: 1, name: 'د. محمد أحمد', specialty: 'أخصائي أعصاب', image: Doctor1, exp: '15 عاماً', clinic: 'عيادة النور' },
@@ -127,6 +137,7 @@ function App() {
       <DoctorWorkflowProvider>
       <ErrorBoundary>
       <Router>
+        <ScrollToTopOnNavigate />
         <Routes>
           {/* Public Routes - الصفحات المتاحة للجميع */}
           <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
