@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Layout/Navbar";
@@ -17,6 +17,7 @@ const ImageWithFallback = ({ src, alt, className }) => {
       alt={alt}
       className={className}
       onError={() => setError(true)}
+      loading="lazy"
     />
   );
 };
@@ -38,7 +39,7 @@ const Counter = ({ end, suffix = "" }) => {
   useEffect(() => {
     if (!inView) return;
     let current = 0;
-    const step = end / 100;
+    const step = end / 80;
 
     const timer = setInterval(() => {
       current += step;
@@ -48,7 +49,7 @@ const Counter = ({ end, suffix = "" }) => {
       } else {
         setCount(Math.floor(current));
       }
-    }, 20);
+    }, 25);
 
     return () => clearInterval(timer);
   }, [inView, end]);
@@ -60,6 +61,8 @@ const Counter = ({ end, suffix = "" }) => {
     </span>
   );
 };
+
+
 
 /* ================= PAGE ================= */
 
@@ -96,33 +99,33 @@ export default function App() {
     <div className="theme-page font-sans" dir="rtl">
 
       {/* ================= HERO ================= */}
-      <section className="relative min-h-[90vh] flex items-center" style={{ background: 'var(--hero-about-bg)' }}>
-        <div className="absolute top-0 left-0 w-[420px] h-[420px] rounded-full blur-[120px] opacity-60 pointer-events-none" style={{ background: 'var(--app-glow-a)' }} />
-        <div className="absolute bottom-0 right-0 w-[420px] h-[420px] rounded-full blur-[120px] opacity-60 pointer-events-none" style={{ background: 'var(--app-glow-b)' }} />
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+      <section className="relative min-h-[60vh] sm:min-h-[70vh] lg:min-h-[90vh] flex items-center" style={{ background: 'var(--hero-about-bg)' }}>
+        <div className="absolute top-0 left-0 w-[200px] sm:w-[420px] h-[200px] sm:h-[420px] rounded-full blur-[80px] sm:blur-[120px] opacity-60 pointer-events-none" style={{ background: 'var(--app-glow-a)' }} />
+        <div className="absolute bottom-0 right-0 w-[200px] sm:w-[420px] h-[200px] sm:h-[420px] rounded-full blur-[80px] sm:blur-[120px] opacity-60 pointer-events-none" style={{ background: 'var(--app-glow-b)' }} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-0 grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
 
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1 }}
-            className="space-y-6 text-right"
+            className="space-y-4 sm:space-y-6 text-right"
           >
-            <h1 className="text-5xl lg:text-6xl font-black text-white leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-black text-white leading-tight">
               رعاية صحية <span className={isDark ? 'theme-primary' : 'text-teal-400'}>ذكية</span><br />
               تليق بك
             </h1>
 
-            <p className="text-blue-100/80 text-lg max-w-xl">
+            <p className="text-blue-100/80 text-sm sm:text-base lg:text-lg max-w-xl">
               منصة متكاملة لإدارة صحتك، سجلاتك، ومواعيدك بسهولة وأمان.
             </p>
 
             <button
               onClick={() => navigate('/home')}
               className={`
-                px-12 py-4
-                rounded-2xl
+                px-8 sm:px-12 py-3 sm:py-4
+                rounded-xl sm:rounded-2xl
                 font-black
-                text-white
+                text-white text-sm sm:text-base
                 shadow-xl
                 flex items-center gap-2
                 transition-all duration-300 hover:brightness-110
@@ -130,7 +133,7 @@ export default function App() {
               `}
               style={isDark ? { backgroundColor: 'var(--app-primary)' } : undefined}
             >
-              ابدء رحلتك الآن <ArrowRight size={20} />
+              ابدء رحلتك الآن <ArrowRight size={18} />
             </button>
           </motion.div>
 
@@ -138,11 +141,12 @@ export default function App() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1 }}
+            className="hidden sm:block"
           >
             <ImageWithFallback
               src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200"
               alt="Healthcare"
-              className="rounded-[2.5rem] shadow-2xl"
+              className="rounded-2xl sm:rounded-[2.5rem] shadow-2xl w-full"
             />
           </motion.div>
         </div>
@@ -154,33 +158,33 @@ export default function App() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.3 }}
-        className="-mt-20 px-6 relative z-10"
+        className="-mt-12 sm:-mt-20 px-4 sm:px-6 relative z-10"
       >
-        <div className="max-w-6xl mx-auto theme-card rounded-[3rem] shadow-2xl p-10 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+        <div className="max-w-6xl mx-auto theme-card rounded-2xl sm:rounded-[3rem] shadow-2xl p-5 sm:p-8 lg:p-10 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 text-center">
           <div>
-            <div className="text-4xl font-black text-teal-600">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-teal-600">
               <Counter end={12000} suffix="+" />
             </div>
-            <p className="theme-text-muted font-bold">مريض</p>
+            <p className="theme-text-muted font-bold text-xs sm:text-sm lg:text-base mt-1">مريض</p>
           </div>
 
           <div>
-            <div className="text-4xl font-black text-blue-700">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-blue-700">
               <Counter end={550} suffix="+" />
             </div>
-            <p className="theme-text-muted font-bold">طبيب</p>
+            <p className="theme-text-muted font-bold text-xs sm:text-sm lg:text-base mt-1">طبيب</p>
           </div>
 
           <div>
-            <div className="text-4xl font-black text-teal-600">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-teal-600">
               <Counter end={52000} suffix="+" />
             </div>
-            <p className="theme-text-muted font-bold">موعد</p>
+            <p className="theme-text-muted font-bold text-xs sm:text-sm lg:text-base mt-1">موعد</p>
           </div>
 
           <div>
-            <div className="text-4xl font-black text-blue-700">24/7</div>
-            <p className="theme-text-muted font-bold">دعم</p>
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-blue-700">24/7</div>
+            <p className="theme-text-muted font-bold text-xs sm:text-sm lg:text-base mt-1">دعم</p>
           </div>
         </div>
       </motion.section>
@@ -191,32 +195,32 @@ export default function App() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        className="py-24 px-6"
+        className="py-16 sm:py-24 px-4 sm:px-6"
         style={{
           background: isDark
             ? 'linear-gradient(180deg, #06142f 0%, #081a39 55%, #051227 100%)'
             : 'color-mix(in srgb, var(--app-bg) 86%, white)'
         }}
       >
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8">
+        <div className="max-w-7xl mx-auto grid sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {features.map((f, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -10 }}
-              className={`group relative p-10 rounded-[2.5rem] shadow-md overflow-hidden ${isDark ? 'bg-slate-900/80 border border-slate-700/60 hover:border-cyan-400/35' : 'theme-card'}`}
+              className={`group relative p-6 sm:p-8 lg:p-10 rounded-2xl sm:rounded-[2.5rem] shadow-md overflow-hidden ${isDark ? 'bg-slate-900/80 border border-slate-700/60 hover:border-cyan-400/35' : 'theme-card'}`}
             >
               <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isDark ? 'bg-gradient-to-r from-[#0b2a4d] to-[#0a4f66]' : 'bg-gradient-to-r from-[#004060] to-[#008080]'}`} />
 
-              <div className={`relative z-10 flex gap-6 items-start group-hover:text-white transition-colors ${isDark ? 'text-cyan-200' : 'theme-primary'}`}>
+              <div className={`relative z-10 flex gap-4 sm:gap-6 items-start transition-colors duration-500 ${isDark ? 'text-cyan-200' : 'text-[#004060]'}`}>
                 <lord-icon
                   src={f.icon}
                   trigger="loop"
                   colors={isDark ? 'primary:#67e8f9' : 'primary:#004060'}
-                  style={{ width: 56, height: 56 }}
+                  style={{ width: 48, height: 48, minWidth: 48 }}
                 />
                 <div>
-                  <h3 className="text-xl font-black">{f.title}</h3>
-                  <p className={`mt-2 opacity-80 ${isDark ? 'text-slate-300 group-hover:text-white' : ''}`}>{f.desc}</p>
+                  <h3 className="text-lg sm:text-xl font-black group-hover:text-white transition-colors duration-500">{f.title}</h3>
+                  <p className={`mt-1 sm:mt-2 text-sm sm:text-base group-hover:text-white/90 transition-colors duration-500 ${isDark ? 'text-slate-300' : 'text-gray-500'}`}>{f.desc}</p>
                 </div>
               </div>
             </motion.div>
@@ -230,7 +234,7 @@ export default function App() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.25 }}
-        className="relative py-32 px-6 overflow-hidden"
+        className="relative py-16 sm:py-24 lg:py-32 px-4 sm:px-6 overflow-hidden"
         style={{
           background: isDark
             ? 'linear-gradient(180deg, #071a35 0%, #051226 100%)'
@@ -242,22 +246,22 @@ export default function App() {
             src="https://cdn.lordicon.com/egiwmiit.json"
             trigger="loop"
             colors="primary:#0f766e"
-            style={{ width: 620, height: 620, opacity: 0.15 }}
+            style={{ width: 320, height: 320, opacity: 0.15 }}
           />
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto rounded-[3rem] bg-[#004060]/80 backdrop-blur-2xl border border-white/20 p-16 text-center shadow-[0_40px_90px_rgba(0,64,96,0.45)]">
-          <h2 className="text-4xl lg:text-5xl font-black text-white">
+        <div className="relative z-10 max-w-4xl mx-auto rounded-2xl sm:rounded-[3rem] bg-[#004060]/80 backdrop-blur-2xl border border-white/20 p-8 sm:p-12 lg:p-16 text-center shadow-[0_40px_90px_rgba(0,64,96,0.45)]">
+          <h2 className="text-2xl sm:text-3xl lg:text-5xl font-black text-white">
             ابدء رحلتك الصحية اليوم
           </h2>
 
-          <p className="mt-6 text-lg text-blue-100/80">
+          <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-blue-100/80">
             منصة واحدة، كل احتياجاتك الصحية في مكان آمن وسهل.
           </p>
 
           <button
             onClick={() => navigate('/home')}
-            className={`mt-10 px-16 py-5 rounded-2xl font-black text-white shadow-xl transition-all duration-300 hover:brightness-110 ${!isDark ? 'bg-gradient-to-r from-teal-400 via-[#00bfa6] to-teal-400 animate-gradient' : ''}`}
+            className={`mt-6 sm:mt-10 px-10 sm:px-16 py-3 sm:py-5 rounded-xl sm:rounded-2xl font-black text-white text-sm sm:text-base shadow-xl transition-all duration-300 hover:brightness-110 ${!isDark ? 'bg-gradient-to-r from-teal-400 via-[#00bfa6] to-teal-400 animate-gradient' : ''}`}
             style={isDark ? { backgroundColor: 'var(--app-primary)' } : undefined}
           >
             ابدء الآن مجانًا
@@ -266,8 +270,8 @@ export default function App() {
       </motion.section>
 
       {/* ================= FOOTER ================= */}
-      <footer className="py-10 text-center border-t">
-        <p className="theme-text-muted font-bold text-sm">
+      <footer className="py-6 sm:py-10 text-center border-t">
+        <p className="theme-text-muted font-bold text-xs sm:text-sm">
           © 2026 MediCare Health System
         </p>
       </footer>

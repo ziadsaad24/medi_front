@@ -119,7 +119,7 @@ export default function Dashboard() {
   const stats = [
     { title: "مواعيد اليوم", value: String(dashboardStats.todayAppointmentsCount), icon: CalendarCheck, color: "from-blue-900 via-blue-800 to-cyan-700" },
     { title: "المواعيد القادمة", value: String(dashboardStats.upcomingAppointmentsCount), icon: CalendarDays, color: "from-blue-900 via-blue-800 to-cyan-700" },
-    { title: "المرضى النشطين", value: String(dashboardStats.activePatientsCount), icon: UserCheck, color: "from-blue-900 via-blue-800 to-cyan-700"},
+    { title: "المرضى النشطين", value: String(dashboardStats.activePatientsCount), icon: UserCheck, color: "from-blue-900 via-blue-800 to-cyan-700" },
     { title: "إجمالي المواعيد", value: String(dashboardStats.totalAppointmentsCount), icon: ClipboardCheck, color: "from-blue-900 via-blue-800 to-cyan-700" }
   ];
 
@@ -127,103 +127,106 @@ export default function Dashboard() {
     <DoctorLayout>
       <div className="min-h-screen p-4 sm:p-6 md:p-8 lg:p-12 overflow-x-hidden theme-page">
 
-    {loading && (
-      <div className={`rounded-2xl border p-4 mb-4 text-center ${isDark ? 'bg-slate-900/60 border-white/15 text-white/80' : 'bg-white border-[#0f427d]/15 text-[#0f427d]/80'}`}>
-        جارٍ تحميل بيانات لوحة التحكم...
-      </div>
-    )}
-
-    {error && (
-      <div className={`rounded-2xl border p-4 mb-4 text-center ${isDark ? 'bg-rose-900/30 border-rose-400/30 text-rose-200' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
-        {error}
-      </div>
-    )}
-
-    {/* Header */}
-    <div className="mb-6 md:mb-10 mt-5 overflow-hidden rounded-3xl 
-      backdrop-blur-2xl theme-card shadow-2xl 
-      p-4 sm:p-8 md:p-8">
-
-      <div className="absolute top-0 right-0 w-80 h-80 bg-[#008080]/20 rounded-full blur-[120px]" />
-
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        
-        <div>
-          <h2 className="text-xl sm:text-2xl md:text-4xl font-bold mb-2 md:mb-3 theme-title">
-            مرحباً بعودتك، {profile?.fullName}
-          </h2>
-          <p className="theme-title text-sm sm:text-base md:text-lg">
-            إليك ملخص مواعيدك اليوم - {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
-        </div>
-
-        <div className="hidden md:flex w-16 h-16 md:w-20 md:h-20 rounded-3xl 
-          bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700 
-          items-center justify-center border border-white/20 shadow-lg">
-          <CalendarDays className="w-8 h-8 md:w-10 md:h-10 text-white" />
-        </div>
-
-      </div>
-    </div>
-
-    {/* Stats */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
-      {stats.map((stat, i) => (
-        <StatCard key={i} {...stat} />
-      ))}
-    </div>
-
-    {/* Appointments */}
-    <div className="space-y-4 
-      theme-card backdrop-blur-md p-4 sm:p-6 border rounded-3xl shadow-xl">
-
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 md:mb-6">
-        
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold theme-title pr-3 border-r-4 border-[#144A89]">
-          مواعيد اليوم
-        </h2>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Link to="/doctor/settings#appointments">
-            <button className="px-4 sm:px-6 py-2 rounded-xl 
-              bg-gradient-to-b from-blue-900 via-blue-800 to-cyan-700 
-              text-white hover:brightness-110 transition-all shadow-lg text-sm sm:text-base">
-              عرض الكل
-            </button>
-          </Link>
-        </div>
-
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 md:gap-4">
-        {actionableAppointments.slice(0, 6).map((appointment: any) => (
-          <AppointmentCard
-            key={appointment.id}
-            appointment={appointment}
-            onCancelRequest={handleCancelRequest}
-            isCancelling={isCancellingOne && cancelTarget?.id === appointment.id}
-          />
-        ))}
-
-        {actionableAppointments.length === 0 && (
-          <div className={`rounded-2xl border p-6 text-center ${isDark ? 'bg-slate-900/60 border-white/15 text-white/70' : 'bg-white border-[#0f427d]/15 text-[#0f427d]/70'}`}>
-            لا توجد مواعيد جارية حالياً. المواعيد المكتملة انتقلت إلى سجلات المرضى.
+        {loading && (
+          <div className={`rounded-2xl border p-4 mb-4 text-center ${isDark ? 'bg-slate-900/60 border-white/15 text-white/80' : 'bg-white border-[#0f427d]/15 text-[#0f427d]/80'}`}>
+            جارٍ تحميل بيانات لوحة التحكم...
           </div>
         )}
+
+        {error && (
+          <div className={`rounded-2xl border p-4 mb-4 text-center ${isDark ? 'bg-rose-900/30 border-rose-400/30 text-rose-200' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
+            {error}
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="mb-5 sm:mb-6 md:mb-10 mt-2 sm:mt-4 md:mt-5 overflow-hidden rounded-2xl sm:rounded-3xl 
+          backdrop-blur-2xl theme-card shadow-2xl 
+          py-5 px-4 sm:py-8 sm:px-6 md:py-10 md:px-8 relative">
+
+          {/* Gradient accent bar */}
+          <div className="absolute top-0 right-0 w-1.5 sm:w-2 h-full bg-gradient-to-b from-blue-900 via-blue-700 to-cyan-600 rounded-r-2xl" />
+
+          <div className="absolute top-0 right-0 w-40 sm:w-80 h-40 sm:h-80 bg-[#008080]/20 rounded-full blur-[80px] sm:blur-[120px]" />
+
+          <div className="relative z-10 flex flex-row items-center justify-between gap-4">
+
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-2xl md:text-4xl font-bold mb-1.5 sm:mb-2 md:mb-3 theme-title">
+                مرحباً بعودتك، {profile?.fullName}
+              </h2>
+              <p className="theme-title text-xs sm:text-sm md:text-lg leading-relaxed opacity-80">
+                إليك ملخص مواعيدك اليوم - {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+
+            <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl sm:rounded-2xl md:rounded-3xl 
+              bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-700 
+              flex items-center justify-center border border-white/20 shadow-lg">
+              <CalendarDays className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
+          {stats.map((stat, i) => (
+            <StatCard key={i} {...stat} />
+          ))}
+        </div>
+
+        {/* Appointments */}
+        <div className="space-y-4 
+      theme-card backdrop-blur-md p-4 sm:p-6 border rounded-3xl shadow-xl">
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 md:mb-6">
+
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold theme-title pr-3 border-r-4 border-[#144A89]">
+              مواعيد اليوم
+            </h2>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Link to="/doctor/settings#appointments">
+                <button className="px-4 sm:px-6 py-2 rounded-xl 
+              bg-gradient-to-b from-blue-900 via-blue-800 to-cyan-700 
+              text-white hover:brightness-110 transition-all shadow-lg text-sm sm:text-base">
+                  عرض الكل
+                </button>
+              </Link>
+            </div>
+
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:gap-4">
+            {actionableAppointments.slice(0, 6).map((appointment: any) => (
+              <AppointmentCard
+                key={appointment.id}
+                appointment={appointment}
+                onCancelRequest={handleCancelRequest}
+                isCancelling={isCancellingOne && cancelTarget?.id === appointment.id}
+              />
+            ))}
+
+            {actionableAppointments.length === 0 && (
+              <div className={`rounded-2xl border p-6 text-center ${isDark ? 'bg-slate-900/60 border-white/15 text-white/70' : 'bg-white border-[#0f427d]/15 text-[#0f427d]/70'}`}>
+                لا توجد مواعيد جارية حالياً. المواعيد المكتملة انتقلت إلى سجلات المرضى.
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
-    </div>
 
-  </div>
-
-  <CancelReasonModal
-    isOpen={Boolean(cancelTarget)}
-    title="تأكيد إلغاء الحجز"
-    description="هل أنت متأكد من إلغاء هذا الحجز؟ سيتم إرسال إشعار للمريض بسبب الإلغاء."
-    confirmLabel={isCancellingOne ? 'جارٍ الإلغاء...' : 'تأكيد الإلغاء'}
-    requireReason
-    onClose={() => !isCancellingOne && setCancelTarget(null)}
-    onConfirm={handleConfirmCancel}
-  />
-</DoctorLayout>
+      <CancelReasonModal
+        isOpen={Boolean(cancelTarget)}
+        title="تأكيد إلغاء الحجز"
+        description="هل أنت متأكد من إلغاء هذا الحجز؟ سيتم إرسال إشعار للمريض بسبب الإلغاء."
+        confirmLabel={isCancellingOne ? 'جارٍ الإلغاء...' : 'تأكيد الإلغاء'}
+        requireReason
+        onClose={() => !isCancellingOne && setCancelTarget(null)}
+        onConfirm={handleConfirmCancel}
+      />
+    </DoctorLayout>
   );
 }

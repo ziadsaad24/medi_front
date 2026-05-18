@@ -724,7 +724,7 @@ const PatientProfile = () => {
 
               <div className={`p-4 md:p-6 ${isDark ? 'bg-slate-900' : 'bg-[#f8fafc]'}`}>
                 <div className={`rounded-3xl p-5 md:p-6 border ${isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-white border-[#0f427d]/12'}`}>
-                  <ChangePassword popupMode />
+                  <ChangePassword popupMode role="patient" />
                 </div>
               </div>
             </motion.div>

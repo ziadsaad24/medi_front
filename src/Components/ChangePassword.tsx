@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Lock, Eye, EyeOff, Shield, Edit2, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import doctorApi from '../services/doctorApi';
+import { patientAPI } from '../services/api';
 
 type ChangePasswordProps = {
   popupMode?: boolean;
+  role?: 'patient' | 'doctor';
 };
 
-export function ChangePassword({ popupMode = false }: ChangePasswordProps) {
+export function ChangePassword({ popupMode = false, role = 'doctor' }: ChangePasswordProps) {
   const { isDark } = useTheme();
   const [isEditing, setIsEditing] = useState(popupMode);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -44,11 +46,17 @@ export function ChangePassword({ popupMode = false }: ChangePasswordProps) {
 
     try {
       setIsSubmitting(true);
-      await doctorApi.changeDoctorPassword({
+      const payload = {
         current_password: passwords.current,
         new_password: passwords.new,
         new_password_confirmation: passwords.confirm,
-      });
+      };
+
+      if (role === 'patient') {
+        await patientAPI.changePassword(payload);
+      } else {
+        await doctorApi.changeDoctorPassword(payload);
+      }
 
       if (!popupMode) {
         setIsEditing(false);

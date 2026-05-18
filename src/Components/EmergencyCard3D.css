@@ -272,10 +272,21 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.purple-bg { background: rgba(173, 70, 255, 0.25); }
-.red-bg { background: rgba(251, 44, 54, 0.25); }
-.blue-bg { background: rgba(43, 127, 255, 0.25); }
-.teal-bg { background: rgba(0, 187, 167, 0.25); }
+.purple-bg {
+  background: rgba(173, 70, 255, 0.25);
+}
+
+.red-bg {
+  background: rgba(251, 44, 54, 0.25);
+}
+
+.blue-bg {
+  background: rgba(43, 127, 255, 0.25);
+}
+
+.teal-bg {
+  background: rgba(0, 187, 167, 0.25);
+}
 
 /* Alert Boxes */
 .alert-box {
@@ -330,8 +341,13 @@
   line-height: 16px;
 }
 
-.red-label { color: #f44336; }
-.orange-label { color: #ff8800; }
+.red-label {
+  color: #f44336;
+}
+
+.orange-label {
+  color: #ff8800;
+}
 
 .allergy-pill {
   display: flex;
@@ -510,7 +526,9 @@
 }
 
 /* Print Styles */
-.print-card-sheet { display: none; }
+.print-card-sheet {
+  display: none;
+}
 
 .medical-card-stage {
   width: 100%;
@@ -552,8 +570,13 @@
   backface-visibility: visible;
 }
 
-.static-side-front .card-back { display: none; }
-.static-side-back .card-front { display: none; }
+.static-side-front .card-back {
+  display: none;
+}
+
+.static-side-back .card-front {
+  display: none;
+}
 
 .static-side-back .card-back {
   transform: none;
@@ -597,15 +620,21 @@
 
 /* Specific tablet sizes */
 @media screen and (width: 768px) {
-  .emergency-card-container { --card-scale: 0.72; }
+  .emergency-card-container {
+    --card-scale: 0.72;
+  }
 }
 
 @media screen and (width: 820px) {
-  .emergency-card-container { --card-scale: 0.78; }
+  .emergency-card-container {
+    --card-scale: 0.78;
+  }
 }
 
 @media screen and (width: 1024px) {
-  .emergency-card-container { --card-scale: 0.88; }
+  .emergency-card-container {
+    --card-scale: 0.88;
+  }
 }
 
 /* ==================== RESPONSIVE: MOBILE (<= 768px) ==================== */
@@ -979,7 +1008,8 @@
     margin: 10mm;
   }
 
-  html, body {
+  html,
+  body {
     background: #ffffff !important;
   }
 
@@ -1086,5 +1116,8 @@
     justify-content: center !important;
     flex-shrink: 0 !important;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    position: relative !important;
+    left: -5px !important;
+    top: -5px !important;
   }
 }

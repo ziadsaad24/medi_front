@@ -269,6 +269,12 @@ export const patientAPI = {
     return response.data;
   },
 
+  // تغيير كلمة المرور
+  changePassword: async (payload) => {
+    const response = await api.post('/patient/change-password', payload);
+    return response.data;
+  },
+
   // احجز موعد
   bookAppointment: async (data) => {
     const response = await api.post('/patient/appointments', data);

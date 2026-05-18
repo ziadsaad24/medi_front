@@ -376,8 +376,8 @@ export default function Sidebar() {
                   type="button"
                   onClick={handleLogout}
                   className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 relative overflow-hidden group ${isDark
-                    ? 'text-white/60 hover:text-white hover:bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700'
-                    : 'text-[#0f427d]/70 hover:text-[#0f427d] hover:bg-[#0f427d]/10'
+                    ? 'text-white/60 hover:text-rose-400 hover:bg-rose-500/10'
+                    : 'text-[#0f427d]/70 hover:text-rose-600 hover:bg-rose-50'
                     }`}
                 >
                   <Icon className="w-5 h-5 relative z-10" />
@@ -395,12 +395,15 @@ export default function Sidebar() {
                   ${isActive
                     ? "text-white shadow-lg"
                     : isDark
-                      ? "text-white/60 hover:text-white hover:bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700"
-                      : "text-[#0f427d]/70 hover:text-[#0f427d] hover:bg-[#0f427d]/10"
+                      ? "text-white/60 hover:text-white hover:bg-white/5"
+                      : "text-[#0f427d]/60 hover:text-[#0f427d] hover:bg-[#0f427d]/[0.06]"
                   }`}
               >
                 {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 opacity-50 backdrop-blur-lg" />
+                  <div className={`absolute inset-0 backdrop-blur-lg ${isDark
+                    ? "bg-gradient-to-r from-blue-900 via-blue-800 to-cyan-700 opacity-50"
+                    : "bg-[#0f427d]"
+                  }`} />
                 )}
                 <Icon className="w-5 h-5 relative z-10" />
                 <div className="relative z-10 flex items-center w-full">
