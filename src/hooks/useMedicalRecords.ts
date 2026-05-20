@@ -148,15 +148,16 @@ export const useMedicalRecords = () => {
 
     if (!share?.token) {
       try {
-        const rotateResponse = await patientAPI.rotateMedicalRecordsShareToken();
-        const rotatePayload = rotateResponse?.data || rotateResponse || {};
+        // استخدام GET (آمن) بدلاً من rotate (بيلغي التوكن القديم ويبوظ الكارت المطبوع)
+        const tokenResponse = await patientAPI.getShareToken();
+        const tokenPayload = tokenResponse?.data || tokenResponse || {};
         share = {
-          token: rotatePayload?.token,
-          qr_view_url: rotatePayload?.qr_view_url,
-          expires_at: rotatePayload?.expires_at,
+          token: tokenPayload?.token,
+          qr_view_url: tokenPayload?.qr_view_url,
+          expires_at: tokenPayload?.expires_at,
         };
       } catch {
-        // Keep record creation success even if token rotation fails.
+        // Keep record creation success even if token fetch fails.
       }
     }
 

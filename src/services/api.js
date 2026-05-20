@@ -335,6 +335,12 @@ export const patientAPI = {
     return response.data;
   },
 
+  // جلب التوكن النشط (أو إنشاء واحد جديد بدون إلغاء القديم)
+  getShareToken: async () => {
+    const response = await api.get('/patient/medical-records/share-token');
+    return response.data;
+  },
+
   rotateMedicalRecordsShareToken: async (payload = {}) => {
     const response = await api.post('/patient/medical-records/share-token/rotate', payload);
     return response.data;

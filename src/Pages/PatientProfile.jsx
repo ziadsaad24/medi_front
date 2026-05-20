@@ -64,9 +64,10 @@ const PatientProfile = () => {
         }
 
         try {
-          const rotateResponse = await patientAPI.rotateMedicalRecordsShareToken();
-          const rotatePayload = rotateResponse?.data || rotateResponse || {};
-          const token = rotatePayload?.token || null;
+          // استخدام GET (آمن) بدلاً من rotate (بيلغي التوكن القديم)
+          const response = await patientAPI.getShareToken();
+          const payload = response?.data || response || {};
+          const token = payload?.token || null;
 
           if (token) {
             localStorage.setItem('medical_records_share_token', token);
